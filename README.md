@@ -1,69 +1,61 @@
-# COSC360 – Client-side Experience Design (Winter 2025, Term 2)
+# COSC360 – Client-side Experience Design & Project Structure
 
-This repository contains the **client-side experience design** for our COSC 360 group project.
+This repository contains the **client-side experience design** and **planned front-end structure**
+for our COSC 360 group project (Winter 2025, Term 2).
 
-The purpose of this project is to demonstrate:
-- User roles and permissions
-- Navigation structure
-- Key pages of the web application
-- User flow between pages
-
-This submission focuses on **wireframes and mockups only**.  
-No backend or functional implementation is included.
+The project currently focuses on **wireframes and user flow design**, and is structured to
+support **future front-end development**.
 
 ---
 
-## Project Overview
+## Project Scope
 
-Our application supports **three types of users**:
+At this stage, the project includes:
+- Wireframes and mockups
+- User roles and access rules
+- Navigation flow between major pages
 
-- **Guest** – can browse and search public courses
-- **User** – can apply to courses and manage personal content
-- **Admin** – can create and manage courses
+Future stages may include:
+- Front-end implementation
+- API integration
+- Backend services (not included here)
+
+---
+
+## User Roles
+
+- **Guest**: browse and search public courses
+- **User**: apply to courses, manage personal dashboard
+- **Admin**: create and manage courses
 
 Authentication is required for personalized and management features.
 
 ---
 
-## User Roles & Access
-
-| Role  | Accessible Pages |
-|------|------------------|
-| Guest | Home, Login, Course Browser |
-| User  | Dashboard, Applied Courses, Course Application |
-| Admin | Dashboard, Course Management (Create Course) |
-
----
-
-## Major Pages Included
+## Major Pages (Planned)
 
 - Guest Home Page
 - Login Page
-- Main Page / Course Browser
+- Course Browser (Public)
 - User Dashboard
 - Admin Dashboard
 - Course Management – Create Course
 
-Each page is represented as a **wireframe**, focusing on layout and navigation rather than visual styling.
+---
+
+## Tools
+
+- Figma – wireframes and UI design
+- Git / GitHub – version control
+- (Planned) React / HTML / CSS / JavaScript
 
 ---
 
-## Tools Used
+## Project Structure
 
-- **Figma** – wireframes and mockups
-- GitHub – project version control
+This repository is organized to support **future development** while keeping design assets separate.
 
----
+See the directory structure below.
 
-## Repository Structure
 
-See the folder structure below for details.
-
----
-
-## Notes
-
-- All content uses placeholder text.
-- Designs are low-fidelity to emphasize structure and user flow.
-- This project satisfies the rubric requirement for major pages and multiple user roles.
 
