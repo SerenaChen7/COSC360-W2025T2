@@ -7,6 +7,14 @@ The project currently focuses on **wireframes and user flow design**, and is str
 support **future front-end development**.
 
 ---
+## Design
+
+The wireframe design link is located in
+```
+/design/figma-link/figma-link.txt
+```
+
+---
 
 ## Project Scope
 
