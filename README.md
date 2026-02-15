@@ -14,6 +14,7 @@ The wireframe design link is located in
 /design/figma-link/figma-link.txt
 ```
 
+The documentation of the design can be found in [this link](https://docs.google.com/presentation/d/1vV17YDIOLZ9a2R61B4Wm1pQWVvqDi8HX42hClHv2PcQ/edit?usp=sharing)
 ---
 
 ## Project Scope
