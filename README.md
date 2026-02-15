@@ -1,5 +1,6 @@
 # COSC360 – Client-side Experience Design & Project Structure
 ## Team Members: Serena Chen, TianXing Chen, Ruoyan Xu, Johanes Panjaitan
+---
 
 This repository contains the **client-side experience design** and **planned front-end structure**
 for our COSC 360 group project (Winter 2025, Term 2).
