@@ -1,0 +1,46 @@
+.navbar {
+  height: 60px;
+  background: #001d40;
+  display: flex;
+  justify-content: flex-end; /* push everything to the right */
+  align-items: center;
+  padding: 0 60px;
+  box-sizing: border-box;
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: nowrap; /* NEVER wrap to next line */
+}
+
+.navIconBtn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+
+  /* make button not act weird */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+}
+
+.navIconBtn img {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.navLoginText {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}

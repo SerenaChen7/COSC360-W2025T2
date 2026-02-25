@@ -1,0 +1,131 @@
+.loginPage {
+  background: #efefef;
+  min-height: 100vh;
+}
+
+.loginMain {
+  padding: 40px 100px 70px;
+}
+
+.loginTitle {
+  font-size: 36px;
+  font-weight: 600;
+  text-align: center;
+  margin: 40px 0 60px;
+}
+
+.linkText {
+  color: #001d40;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.linkText:hover {
+  text-decoration: underline;
+}
+
+.cantLogin {
+  display: block;
+  text-align: center;
+  margin-top: 35px;
+  font-size: 12px;
+}
+
+.loginGrid {
+  display: grid;
+  grid-template-columns: 340px 80px 360px;
+  justify-content: center;
+  gap: 60px;
+  align-items: start;
+}
+
+.formSide {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #777;
+}
+
+.lineInput {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #9c9c9c;
+  padding: 10px 6px;
+  background: transparent;
+  outline: none;
+}
+
+.passwordRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyeBtn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: #001d40;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.loginBtn {
+  height: 42px;
+  background: #001d40;
+  color: white;
+  border: none;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.orCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.orLine {
+  width: 1px;
+  height: 70px;
+  background: #d7d7d7;
+}
+
+.orText {
+  font-size: 12px;
+  color: #777;
+}
+
+.socialSide {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-top: 18px;
+}
+
+.socialBtn {
+  height: 45px;
+  border: 1px solid #9c9c9c;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.socialBtn img {
+  width: 18px;
+}
