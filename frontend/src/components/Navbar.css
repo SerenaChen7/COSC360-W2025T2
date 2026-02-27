@@ -44,3 +44,17 @@
   line-height: 1;
   white-space: nowrap;
 }
+.navLoginBtn {
+  height: 42px;
+  background: #001d40;
+  color: rgb(255, 255, 255);
+  border: none;
+  letter-spacing: 0.05em;
+  font-size:100%;
+  cursor: pointer;
+}
+
+button:hover{
+  background: #001024;
+  color: white;
+  }

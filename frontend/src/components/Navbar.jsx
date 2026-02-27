@@ -18,8 +18,9 @@ export default function Navbar() {
         <button className="navIconBtn" onClick={() => (window.location.href = "/dashboard")}>
           <img src={dashboardIcon} alt="Dashboard" />
         </button>
-
-<button className="navLoginBtn">Login</button>      </div>
+{/*Will have to add condition whether it is logged in or not.
+If logged in, will have to remove log in button*/}
+<button className="navLoginBtn">LOGIN</button>      </div>
     </nav>
   );
 }
