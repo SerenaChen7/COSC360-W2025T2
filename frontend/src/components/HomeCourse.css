@@ -1,0 +1,126 @@
+.course-card{
+display: flex;
+width: 382px;
+padding-bottom: 30px;
+flex-direction: column;
+align-items: flex-start;
+gap: 30px;
+border-radius: 10px;
+border: 1.5px solid #DAE2E9;
+background-color: #DAE2E9;
+}
+
+.course-image {
+  width: 382px;
+  border-radius: 10px 10px 0 0;
+  height: 191px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.course-image__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.course-title {
+    align-self: stretch;
+    color: #001D40;
+    font-family: "Public Sans";
+    font-size: 22px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 25px; /* 113.636% */
+}
+.course-details {
+    display: flex;
+padding: 0 20px;
+flex-direction: column;
+align-items: flex-start;
+gap: 20px;
+align-self: stretch;
+}
+.course-tags{
+    display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 10px;
+align-self: stretch;
+
+}
+.card-chips{
+    display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 10px;
+align-self: stretch;
+}
+.card-chips__filled{
+    display: flex;
+align-items: center;
+align-content: center;
+gap: 10px;
+flex-wrap: wrap;
+}
+.course-tag{
+    display: flex;
+    padding: 2px 8px;
+    align-items: center;
+    border-radius: 10px;
+    font-family: "Public Sans";
+    font-size: 13px;
+    font-weight: 500;
+}
+.course-tag--filled {
+background-color: #0480A7;
+color: #fff;
+}
+.card-chips__outline {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    gap: 10px;
+    align-self: stretch;
+    flex-wrap: wrap;
+}
+.course-tag--outline {
+    border: 1px solid #0480A7;
+    color: #0480A7;
+}
+
+.course-status{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+.course-status__row{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #999;
+}
+.course-status__row svg {
+    flex-shrink: 0;
+    color: #999;
+}
+.course-status__row span {
+    font-family: "Public Sans";
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 18px;
+}
+
+.course-btn {
+    width: 100%;
+    padding: 14px 0;
+    background-color: #001D40;
+    color: #fff;
+    font-family: "Public Sans";
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+

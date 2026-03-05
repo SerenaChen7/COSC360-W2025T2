@@ -1,0 +1,12 @@
+.spotlight-section__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.spotlight-section__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+}
