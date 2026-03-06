@@ -3,6 +3,10 @@ import ProjectTabs from "../components/ProjectTabs";
 import SearchBar from "../components/SearchBar";
 import Filter from "../components/Filter";
 
+import HomeCourse from "../components/HomeCourse";
+import Header from "../components/Header";
+import Navbar from "../components/Navbar";
+import SpotlightSection from "../components/SpotlightSection";
 export default function Home() {
   const handleSearchUpdate = (value) => {
     console.log("Search input received in Home:", value);
@@ -10,6 +14,8 @@ export default function Home() {
 
   return (
     <>
+      <Header />
+      <Navbar />
       <HeroBanner />
       
       <div style={{ padding: "40px 60px" }}>
@@ -26,6 +32,7 @@ export default function Home() {
       </div>
 
       <ProjectTabs />
+      <SpotlightSection /> 
     </>
   );
 }
