@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
+import CoverPage  from "./pages/CoverPage";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -8,13 +9,21 @@ export default function App() {
   return (
     <>
       <div style={{ padding: 12 }}>
-        <button onClick={() => setPage("login")}>Login</button>
+        <button onClick={() => setPage("cover")} style={{ marginLeft: 8 }}>
+          Cover Page
+        </button>
+
+        <button onClick={() => setPage("login")} style={{ marginLeft: 8 }}>
+          Login
+        </button>
         <button onClick={() => setPage("home")} style={{ marginLeft: 8 }}>
           Home
         </button>
       </div>
 
-      {page === "login" ? <Login /> : <Home />}
+      {page === "cover" && <CoverPage />}
+      {page === "home" && <Home />}
+      {page === "login" && <Login />}
     </>
   );
 }
