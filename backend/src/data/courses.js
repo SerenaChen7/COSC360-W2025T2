@@ -23,7 +23,7 @@ const courses = [
   },
   {
     id: 3,
-    title: "Coding Interview Prep",
+    title: "COSC 489 - Coding Interview Prep",
     category: "Computer Science",
     level: "Career Development",
     tags: ["Mock Interviews", "Resume Review", "LeetCode Practice", "Peer Feedback"],
