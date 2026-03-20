@@ -37,14 +37,6 @@ export default function Submit() {
           required
         />
 
-        {/* Second Input (Added to meet requirement ) */}
-        <textarea
-          placeholder="Project Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-          style={{ display: 'block', margin: '10px 0' }}
-        />
         <input
           type="text"
           placeholder="Course Description"
