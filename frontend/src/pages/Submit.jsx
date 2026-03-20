@@ -1,23 +1,25 @@
 import { useState } from "react";
 
 export default function Submit() {
+  // Requirement: Collect at least TWO pieces of information 
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState(""); // Second piece of info
   const [responseMsg, setResponseMsg] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    //react is sending an HTTP POST request to the backend server at http://localhost:3000/api/submit with a JSON body containing the project title. 
-    //The backend server will process this request and return a JSON response, which we will then display on the frontend.
+    // Requirement: Send data using fetch() and an Express POST route 】
     const res = await fetch("http://localhost:3000/api/submit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ title }),
+      // Sending both pieces of information in the body
+      body: JSON.stringify({ title, description }), 
     });
 
-    //Data is the JSON response from the backend
+    // Requirement: Return a JSON response and display it 
     const data = await res.json();
     setResponseMsg(data.message);
   };
@@ -27,17 +29,29 @@ export default function Submit() {
       <h2>Submit Project</h2>
 
       <form onSubmit={handleSubmit}>
+        {/* First Input */}
         <input
           type="text"
           placeholder="Project Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+
+        {/* Second Input (Added to meet requirement ) */}
+        <textarea
+          placeholder="Project Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+          style={{ display: 'block', margin: '10px 0' }}
         />
 
         <button type="submit">Submit</button>
       </form>
 
-      <p>{responseMsg}</p>
+      {/* Requirement: Display the response in React  */}
+      {responseMsg && <p>Server Response: {responseMsg}</p>}
     </div>
   );
 }
