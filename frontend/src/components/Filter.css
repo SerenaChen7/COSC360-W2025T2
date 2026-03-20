@@ -32,3 +32,37 @@
   color: #666;
   margin-left: 5px;
 }
+
+.filter-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 160px;
+  overflow: hidden;
+}
+
+.filter-option {
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.filter-option:hover {
+  background: #f0f4f8;
+}
+
+.filter-option--selected {
+  background: #e8f0f7;
+  color: #3d82ab;
+  font-weight: 600;
+}

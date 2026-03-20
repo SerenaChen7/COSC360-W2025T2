@@ -1,17 +1,29 @@
+import { useState } from 'react';
 import './SearchBar.css';
 
-const SearchBar = ({ onSearchChange }) => {
+const SearchBar = ({ onSearch }) => {
+  const [value, setValue] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSearch(value);
+    setValue('');
+  };
+
   return (
-    <div className="search-pill">
+    <form className="search-pill" onSubmit={handleSubmit}>
       <span className="menu-icon">☰</span>
-      <input 
-        type="text" 
-        className="search-input" 
-        placeholder="Hinted search text" 
-        onChange={(e) => onSearchChange(e.target.value)}
+      <input
+        type="text"
+        className="search-input"
+        placeholder="Search courses..."
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
       />
-      <span className="search-icon">🔍</span>
-    </div>
+      <button type="submit" className="search-icon" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+        🔍
+      </button>
+    </form>
   );
 };
 
