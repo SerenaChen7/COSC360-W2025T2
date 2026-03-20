@@ -1,31 +1,17 @@
-import React, { useState } from 'react';
 import './SearchBar.css';
 
-const SearchBar = ({ onSearchSubmit }) => {
-  const [term, setTerm] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Pass the term to the parent component's fetch function
-    onSearchSubmit(term); 
-    // Requirement: Clear the search box after submission 
-    setTerm(""); 
-  };
-
+const SearchBar = ({ onSearchChange }) => {
   return (
-    <form className="search-pill" onSubmit={handleSubmit}>
+    <div className="search-pill">
       <span className="menu-icon">☰</span>
       <input 
         type="text" 
         className="search-input" 
-        placeholder="Search courses..." 
-        value={term}
-        onChange={(e) => setTerm(e.target.value)}
+        placeholder="Hinted search text" 
+        onChange={(e) => onSearchChange(e.target.value)}
       />
-      <button type="submit" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-        <span className="search-icon">🔍</span>
-      </button>
-    </form>
+      <span className="search-icon">🔍</span>
+    </div>
   );
 };
 
