@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 export default function Submit() {
+  // Requirement: Collect at least TWO pieces of information 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [responseMsg, setResponseMsg] = useState("");
@@ -8,8 +9,7 @@ export default function Submit() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    //react is sending an HTTP POST request to the backend server at http://localhost:3000/api/submit with a JSON body containing the project title. 
-    //The backend server will process this request and return a JSON response, which we will then display on the frontend.
+    // Requirement: Send data using fetch() and an Express POST route 】
     const res = await fetch("http://localhost:3000/api/submit", {
       method: "POST",
       headers: {
@@ -18,7 +18,7 @@ export default function Submit() {
       body: JSON.stringify({ title, description }),
     });
 
-    //Data is the JSON response from the backend
+    // Requirement: Return a JSON response and display it 
     const data = await res.json();
     setResponseMsg(data.message);
   };
@@ -28,11 +28,22 @@ export default function Submit() {
       <h2>Edit Course Detail</h2>
 
       <form onSubmit={handleSubmit}>
+        {/* First Input */}
         <input
           type="text"
           placeholder="Course Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+
+        {/* Second Input (Added to meet requirement ) */}
+        <textarea
+          placeholder="Project Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+          style={{ display: 'block', margin: '10px 0' }}
         />
         <input
           type="text"
