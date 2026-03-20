@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export default function Submit() {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [responseMsg, setResponseMsg] = useState("");
 
   const handleSubmit = async (e) => {
@@ -14,7 +15,7 @@ export default function Submit() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ title }),
+      body: JSON.stringify({ title, description }),
     });
 
     //Data is the JSON response from the backend
@@ -24,20 +25,26 @@ export default function Submit() {
 
   return (
     <div>
-      <h2>Submit Project</h2>
+      <h2>Edit Course Detail</h2>
 
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Project Title"
+          placeholder="Course Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-
+        <input
+          type="text"
+          placeholder="Course Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          style={{ marginLeft: 8 }}
+        />
         <button type="submit">Submit</button>
       </form>
 
-      <p>{responseMsg}</p>
+      <p>{responseMsg}</p >
     </div>
   );
 }

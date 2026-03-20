@@ -4,10 +4,10 @@ const router = express.Router();
 
 router.post("/submit", (req, res) => {
   // Extract the project title from the request body
-  const { title } = req.body;
+  const { title, description } = req.body;
   // Generate a response message confirming the submission of the project and send it back as JSON
   res.json({
-    message: `Project "${title}" submitted successfully`
+    message: `Project "${title}" with description "${description}" submitted successfully`
   });
 });
 
