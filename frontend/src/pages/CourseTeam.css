@@ -97,6 +97,32 @@
   color: #5f6f86;
 }
 
+.remove-icon-button {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+
+.remove-icon-button img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  display: block;
+}
+
+.remove-icon-button:hover {
+  transform: scale(1.05);
+}
+
 .member-detail {
   margin: 2px 0 0;
   font-size: 13px;

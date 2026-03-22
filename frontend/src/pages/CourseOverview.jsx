@@ -3,8 +3,9 @@ import Navbar from "../components/Navbar";
 import CourseBanner from "../components/CourseBanner";
 import ProjectTabs from "../components/ProjectTabs";
 import "./CourseOverview.css";
+import AdminActions from "../components/AdminActions";
 
-function CourseOverview({ setPage }) {
+function CourseOverview({ setPage , role }) {
   const guidelines = [
     "Be respectful and constructive.",
     "Do not share solutions that violate academic integrity policies.",
@@ -104,6 +105,7 @@ function CourseOverview({ setPage }) {
             </p>
             <button className="join-button">➤ Log in to Join</button>
           </div>
+          {role === "admin" && <AdminActions />}
         </aside>
       </main>
     </div>

@@ -1,10 +1,14 @@
 import Header from "../components/Header";
+import { useState } from "react";
 import Navbar from "../components/Navbar";
 import CourseBanner from "../components/CourseBanner";
 import ProjectTabs from "../components/ProjectTabs";
 import "./CourseDiscussion.css";
+import AdminActions from "../components/AdminActions";
+import removeIcon from "../assets/remove.png";
 
-function CourseDiscussion({ setPage }) {
+function CourseDiscussion({ setPage , role }) {
+  const [fileName, setFileName] = useState("");
   const discussions = [
     {
       id: 1,
@@ -59,8 +63,36 @@ function CourseDiscussion({ setPage }) {
                 placeholder="Add your comment..."
                 className="discussion-input"
               />
+
+              <label className="file-upload-button">
+                📎
+                <input
+                type="file"
+                onChange={(e) => setFileName(e.target.files[0]?.name)}
+                hidden
+                />
+              </label>
               <button className="discussion-send-button">Send</button>
             </div>
+
+            {fileName && (
+                <div className="file-name-row">
+                    <p className="file-name">{fileName}</p>
+                    <button
+                    type="button"
+                    className="remove-file-button"
+                    onClick={() => setFileName("")}
+                    >
+                    ×
+                    </button>
+
+                    {role === "admin" && (
+                        <button className="remove-icon-button" title="Remove file">
+                            <img src={removeIcon} alt="Remove" />
+                        </button>
+                    )}
+                </div>
+            )}
 
             <div className="discussion-list">
               {discussions.map((post) => (
@@ -73,6 +105,12 @@ function CourseDiscussion({ setPage }) {
                       <p className="discussion-author">{post.author}</p>
                       <p className="discussion-meta">{post.meta}</p>
                     </div>
+
+                    {role === "admin" && (
+                        <button className="remove-icon-button" title="Remove comment">
+                            <img src={removeIcon} alt="Remove" />
+                        </button>
+                    )}
                   </div>
 
                   <p className="discussion-content">{post.content}</p>
@@ -94,6 +132,11 @@ function CourseDiscussion({ setPage }) {
                                 </p>
                                 <p className="discussion-meta">{reply.meta}</p>
                               </div>
+                              {role === "admin" && (
+                                    <button className="remove-icon-button" title="Remove comment">
+                                        <img src={removeIcon} alt="Remove" />
+                                    </button>
+                                )}
                             </div>
 
                             <p className="discussion-content">
@@ -126,6 +169,7 @@ function CourseDiscussion({ setPage }) {
             </p>
             <button className="join-button">➤ Log in to Join</button>
           </div>
+          {role === "admin" && <AdminActions />}
         </aside>
       </main>
     </div>
