@@ -3,7 +3,7 @@ import { useState } from "react";
 export default function Submit() {
   // Requirement: Collect at least TWO pieces of information 
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState(""); // Second piece of info
+  const [description, setDescription] = useState("");
   const [responseMsg, setResponseMsg] = useState("");
 
   const handleSubmit = async (e) => {
@@ -15,8 +15,7 @@ export default function Submit() {
       headers: {
         "Content-Type": "application/json",
       },
-      // Sending both pieces of information in the body
-      body: JSON.stringify({ title, description }), 
+      body: JSON.stringify({ title, description }),
     });
 
     // Requirement: Return a JSON response and display it 
@@ -26,32 +25,29 @@ export default function Submit() {
 
   return (
     <div>
-      <h2>Submit Project</h2>
+      <h2>Edit Course Detail</h2>
 
       <form onSubmit={handleSubmit}>
         {/* First Input */}
         <input
           type="text"
-          placeholder="Project Title"
+          placeholder="Course Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
         />
 
-        {/* Second Input (Added to meet requirement ) */}
-        <textarea
-          placeholder="Project Description"
+        <input
+          type="text"
+          placeholder="Course Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          required
-          style={{ display: 'block', margin: '10px 0' }}
+          style={{ marginLeft: 8 }}
         />
-
         <button type="submit">Submit</button>
       </form>
 
-      {/* Requirement: Display the response in React  */}
-      {responseMsg && <p>Server Response: {responseMsg}</p>}
+      <p>{responseMsg}</p >
     </div>
   );
 }
