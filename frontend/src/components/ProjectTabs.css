@@ -24,5 +24,7 @@
 }
 
 .project-tabs button.active {
-  background: white;
+  background: #1f2a44;
+  color: white;
+  font-weight: 600;
 }
