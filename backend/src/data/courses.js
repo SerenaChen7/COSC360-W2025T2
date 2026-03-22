@@ -25,7 +25,7 @@ const courses = [
     id: 3,
     title: "COSC 400 - Coding Interview Prep",
     category: "Computer Science",
-    level: "Career Development",
+    level: "400 Level",
     tags: ["Mock Interviews", "Resume Review", "LeetCode Practice", "Peer Feedback"],
     memberCount: 92,
     location: "Remote",

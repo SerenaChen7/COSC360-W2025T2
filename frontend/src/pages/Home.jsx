@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import HeroBanner from "../components/HeroBanner";
 import ProjectTabs from "../components/ProjectTabs";
 import SearchBar from "../components/SearchBar";
@@ -9,12 +9,29 @@ import Navbar from "../components/Navbar";
 import SpotlightSection from "../components/SpotlightSection";
 import { useFavorites } from "../hooks/useFavorites";
 
+const LEVEL_OPTIONS = [
+  { value: "100 Level", label: "100 Level" },
+  { value: "200 Level", label: "200 Level" },
+  { value: "300 Level", label: "300 Level" },
+  { value: "400 Level", label: "400 Level" },
+  { value: "Career Development", label: "Career Development" },
+];
+
+const SORT_OPTIONS = [
+  { value: "az", label: "A → Z" },
+  { value: "za", label: "Z → A" },
+  { value: "most", label: "Most Members" },
+  { value: "least", label: "Least Members" },
+];
+
 export default function Home() {
   const [allCourses, setAllCourses] = useState([]);
   const [searchResults, setSearchResults] = useState(null);
+  const [courseFilter, setCourseFilter] = useState([]);
+  const [levelFilter, setLevelFilter] = useState([]);
+  const [sortFilter, setSortFilter] = useState([]);
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
-  // Load all courses for Browse Hubs on mount
   useEffect(() => {
     fetch("http://localhost:3000/api/courses")
       .then((res) => res.json())
@@ -36,7 +53,38 @@ export default function Home() {
     }
   };
 
-  const displayedCourses = searchResults !== null ? searchResults : allCourses;
+  // Derive course type options (COSC, MATH, STAT, etc.) from loaded courses
+  const courseTypeOptions = useMemo(() => {
+    const types = [...new Set(allCourses.map((c) => c.title.split(" ")[0]))].sort();
+    return types.map((t) => ({ value: t, label: t }));
+  }, [allCourses]);
+
+  const displayedCourses = useMemo(() => {
+    let courses = searchResults !== null ? searchResults : allCourses;
+
+    if (courseFilter.length > 0) {
+      courses = courses.filter((c) => courseFilter.some((f) => c.title.startsWith(f)));
+    }
+
+    if (levelFilter.length > 0) {
+      courses = courses.filter((c) => levelFilter.includes(c.level));
+    }
+
+    if (sortFilter.length > 0) {
+      const sort = sortFilter[0];
+      if (sort === "az") {
+        courses = [...courses].sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sort === "za") {
+        courses = [...courses].sort((a, b) => b.title.localeCompare(a.title));
+      } else if (sort === "most") {
+        courses = [...courses].sort((a, b) => b.memberCount - a.memberCount);
+      } else if (sort === "least") {
+        courses = [...courses].sort((a, b) => a.memberCount - b.memberCount);
+      }
+    }
+
+    return courses;
+  }, [allCourses, searchResults, courseFilter, levelFilter, sortFilter]);
 
   return (
     <>
@@ -51,12 +99,27 @@ export default function Home() {
           BROWSE HUBS
         </h2>
 
-        {/* Search and Filtering Section */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "20px", marginBottom: "30px" }}>
           <div style={{ display: "flex", gap: "15px" }}>
-            <Filter label="Field" count="1" />
-            <Filter label="Type" count="1" />
-            <Filter label="Sort" count="✓" />
+            <Filter
+              label="Course"
+              options={courseTypeOptions}
+              selectedValues={courseFilter}
+              onChange={setCourseFilter}
+            />
+            <Filter
+              label="Level"
+              options={LEVEL_OPTIONS}
+              selectedValues={levelFilter}
+              onChange={setLevelFilter}
+            />
+            <Filter
+              label="Sort"
+              options={SORT_OPTIONS}
+              selectedValues={sortFilter}
+              onChange={setSortFilter}
+              singleSelect
+            />
           </div>
           <SearchBar onSearchSubmit={handleSearchUpdate} />
         </div>
@@ -71,11 +134,11 @@ export default function Home() {
                 onToggleFavorite={toggleFavorite}
               />
             ))
-          ) : searchResults !== null ? (
+          ) : (
             <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "20px" }}>
-              <p style={{ color: "red", fontSize: "18px" }}>No results found for your search.</p>
+              <p style={{ color: "red", fontSize: "18px" }}>No results found.</p>
             </div>
-          ) : null}
+          )}
         </div>
       </div>
 
