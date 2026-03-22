@@ -1,3 +1,8 @@
+.filter-container {
+  position: relative;
+  display: inline-block;
+}
+
 .filter-pill {
   display: inline-flex;
   align-items: center;
@@ -7,16 +12,23 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   gap: 10px;
   cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.filter-pill--open {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 .filter-text {
   font-size: 16px;
   color: #333;
   font-weight: 500;
+  font-family: 'Public Sans', sans-serif;
 }
 
 .filter-badge {
-  background-color: #3d82ab; /* Blue badge from wireframe */
+  background-color: #3d82ab;
   color: white;
   min-width: 22px;
   height: 22px;
@@ -30,5 +42,53 @@
 
 .dropdown-arrow {
   color: #666;
-  margin-left: 5px;
+  margin-left: 2px;
+  display: inline-block;
+  transition: transform 0.2s ease;
+  line-height: 1;
+}
+
+.dropdown-arrow--up {
+  transform: rotate(180deg);
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-family: 'Public Sans', sans-serif;
+  font-size: 14px;
+  color: #333;
+  transition: background 0.12s;
+}
+
+.filter-option:hover {
+  background: #f0f4f8;
+}
+
+.filter-option--selected {
+  color: #3d82ab;
+  font-weight: 600;
+}
+
+.filter-option-check {
+  width: 14px;
+  color: #3d82ab;
+  font-weight: bold;
+  font-size: 12px;
+  flex-shrink: 0;
 }

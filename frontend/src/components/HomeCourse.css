@@ -11,11 +11,39 @@ background-color: #DAE2E9;
 }
 
 .course-image {
+  position: relative;
   width: 382px;
   border-radius: 10px 10px 0 0;
   height: 191px;
   flex-shrink: 0;
   overflow: hidden;
+}
+
+.course-favorite-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #aaa;
+  transition: color 0.2s, background 0.2s;
+  backdrop-filter: blur(2px);
+}
+
+.course-favorite-btn:hover {
+  color: #f5a623;
+  background: rgba(255, 255, 255, 1);
+}
+
+.course-favorite-btn--active {
+  color: #f5a623;
 }
 
 .course-image__img {
