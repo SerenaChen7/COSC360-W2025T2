@@ -1,3 +1,7 @@
+.spotlight-section {
+  padding: 40px 60px;
+}
+
 .spotlight-section__inner {
   display: flex;
   flex-direction: column;
@@ -5,8 +9,15 @@
 }
 
 .spotlight-section__grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+.spotlight-section__empty {
+  color: #888;
+  font-family: "Public Sans", sans-serif;
+  font-size: 15px;
+  margin-top: 10px;
 }
