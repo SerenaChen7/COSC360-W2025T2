@@ -1,0 +1,142 @@
+.course-overview-page {
+  background-color: #eef0ff;
+  min-height: 100vh;
+}
+
+.course-overview-hero {
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.course-overview-tabs {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 14px 24px 0;
+}
+
+.course-overview-content {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 14px 24px 40px;
+  display: grid;
+  grid-template-columns: 2.3fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.course-overview-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.overview-card {
+  background: #ffffff;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  padding: 16px 18px;
+  box-shadow: none;
+}
+
+.overview-card h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #17305c;
+}
+
+.overview-card ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.overview-card li {
+  margin-bottom: 8px;
+  color: #25324a;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.course-overview-sidebar {
+  position: static;
+}
+
+.join-card {
+  background: #ffffff;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  padding: 16px 18px;
+}
+
+.join-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #17305c;
+}
+
+.join-subtitle {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #56657f;
+}
+
+.join-card p {
+  color: #5a6780;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.join-button {
+  width: 100%;
+  margin-top: 14px;
+  background: #0b2d5c;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.join-button:hover {
+  background: #123d79;
+}
+
+.resource-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.resource-item {
+  padding: 0 0 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e8edf4;
+}
+
+.resource-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.resource-title {
+  margin: 0 0 5px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #17305c;
+}
+
+.resource-meta {
+  margin: 0;
+  font-size: 12px;
+  color: #7b879b;
+}
+
+@media (max-width: 900px) {
+  .course-overview-content {
+    grid-template-columns: 1fr;
+  }
+}
