@@ -6,6 +6,7 @@ import Submit from "./pages/Submit";
 import CourseOverview from "./pages/CourseOverview";
 import CourseTeam from "./pages/CourseTeam";
 import CourseDiscussion from "./pages/CourseDiscussion";
+import CreateCourse from "./pages/CreateCourse";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -31,6 +32,10 @@ export default function App() {
 
           <button onClick={() => setPage("course")} style={{ marginLeft: 8 }}>
             Course Overview
+          </button>
+
+          <button onClick={() => setPage("create")} style={{ marginLeft: 8 }}>
+            Create Course
           </button>
         </div>
 
@@ -76,6 +81,12 @@ export default function App() {
       {page === "course" && <CourseOverview setPage={setPage} role={role} />}
       {page === "course-team" && <CourseTeam setPage={setPage} role={role} />}
       {page === "course-discussion" && <CourseDiscussion setPage={setPage} role={role} />}
+      {page === "create" && (
+        <>
+          <Home />
+          <CreateCourse setPage={setPage} />
+        </>
+      )}
     </>
   );
 }
