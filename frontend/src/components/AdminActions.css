@@ -1,0 +1,35 @@
+.admin-actions-card {
+  background: #ffffff;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  padding: 16px 18px;
+  margin-top: 16px;
+}
+
+.admin-actions-card h3 {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #17305c;
+}
+
+.admin-action-button {
+  width: 100%;
+  margin-bottom: 12px;
+  background: #0b2d5c;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-action-button:last-child {
+  margin-bottom: 0;
+}
+
+.admin-action-button.danger {
+  background: #0b2d5c;
+}

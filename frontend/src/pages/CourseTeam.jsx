@@ -3,8 +3,10 @@ import Navbar from "../components/Navbar";
 import CourseBanner from "../components/CourseBanner";
 import ProjectTabs from "../components/ProjectTabs";
 import "./CourseTeam.css";
+import AdminActions from "../components/AdminActions";
+import removeIcon from "../assets/remove.png";
 
-function CourseTeam({ setPage }) {
+function CourseTeam({ setPage , role }) {
   const instructors = [
     {
       name: "Jacob Liu",
@@ -56,14 +58,19 @@ function CourseTeam({ setPage }) {
             <div className="member-list">
               {instructors.map((member, index) => (
                 <div className="member-row" key={index}>
-                  <div className="member-avatar">
-                    {member.name.charAt(0)}
-                  </div>
-                  <div className="member-info">
-                    <p className="member-name">{member.name}</p>
-                    <p className="member-role">{member.role}</p>
-                    <p className="member-detail">{member.detail}</p>
-                  </div>
+                    <div className="member-avatar">{member.name.charAt(0)}</div>
+
+                    <div className="member-info">
+                        <p className="member-name">{member.name}</p>
+                        <p className="member-role">{member.role}</p>
+                        <p className="member-detail">{member.detail}</p>
+                    </div>
+
+                    {role === "admin" && (
+                        <button className="remove-icon-button" title="Remove member">
+                        <img src={removeIcon} alt="Remove" />
+                        </button>
+                    )}
                 </div>
               ))}
             </div>
@@ -82,6 +89,11 @@ function CourseTeam({ setPage }) {
                     <p className="member-role">{member.role}</p>
                     <p className="member-detail">{member.detail}</p>
                   </div>
+                  {role === "admin" && (
+                        <button className="remove-icon-button" title="Remove member">
+                        <img src={removeIcon} alt="Remove" />
+                        </button>
+                    )}
                 </div>
               ))}
             </div>
@@ -98,6 +110,7 @@ function CourseTeam({ setPage }) {
             </p>
             <button className="join-button">➤ Log in to Join</button>
           </div>
+          {role === "admin" && <AdminActions />}
         </aside>
       </main>
     </div>

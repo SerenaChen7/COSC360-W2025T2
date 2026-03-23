@@ -9,36 +9,73 @@ import CourseDiscussion from "./pages/CourseDiscussion";
 
 export default function App() {
   const [page, setPage] = useState("home");
-
+  const [role, setRole] = useState("user");
   return (
     <>
       <div style={{ padding: 12 }}>
-        <button onClick={() => setPage("cover")} style={{ marginLeft: 8 }}>
-          Cover Page
-        </button>
+        <div>
+          Set Page:
+          <button onClick={() => setPage("cover")} style={{ marginLeft: 8 }}>
+            Cover Page
+          </button>
 
-        <button onClick={() => setPage("login")} style={{ marginLeft: 8 }}>
-          Login
-        </button>
-        <button onClick={() => setPage("home")} style={{ marginLeft: 8 }}>
-          Home
-        </button>
-        <button onClick={() => setPage("submit")} style={{ marginLeft: 8 }}>
-          Submit
-        </button>
+          <button onClick={() => setPage("login")} style={{ marginLeft: 8 }}>
+            Login
+          </button>
+          <button onClick={() => setPage("home")} style={{ marginLeft: 8 }}>
+            Home
+          </button>
+          <button onClick={() => setPage("submit")} style={{ marginLeft: 8 }}>
+            Submit
+          </button>
 
-        <button onClick={() => setPage("course")} style={{ marginLeft: 8 }}>
-          Course Overview
-        </button>
+          <button onClick={() => setPage("course")} style={{ marginLeft: 8 }}>
+            Course Overview
+          </button>
+        </div>
+
+        <div>
+          Set Role:
+          <button
+            onClick={() => setRole("guest")}
+            style={{
+              marginLeft: 8,
+              background: role === "guest" ? "#0b2d5c" : "",
+              color: role === "guest" ? "white" : ""
+            }}
+          >
+            Guest
+          </button>
+          <button
+            onClick={() => setRole("user")}
+            style={{
+              marginLeft: 8,
+              background: role === "user" ? "#0b2d5c" : "",
+              color: role === "user" ? "white" : ""
+            }}
+          >
+            User
+          </button>
+          <button
+            onClick={() => setRole("admin")}
+            style={{
+              marginLeft: 8,
+              background: role === "admin" ? "#0b2d5c" : "",
+              color: role === "admin" ? "white" : ""
+            }}
+          >
+            Admin
+          </button>
+        </div>
       </div>
 
       {page === "cover" && <CoverPage />}
       {page === "home" && <Home />}
       {page === "login" && <Login />}
       {page === "submit" && <Submit />}
-      {page === "course" && <CourseOverview setPage={setPage} />}
-      {page === "course-team" && <CourseTeam setPage={setPage} />}
-      {page === "course-discussion" && <CourseDiscussion setPage={setPage} />}
+      {page === "course" && <CourseOverview setPage={setPage} role={role} />}
+      {page === "course-team" && <CourseTeam setPage={setPage} role={role} />}
+      {page === "course-discussion" && <CourseDiscussion setPage={setPage} role={role} />}
     </>
   );
 }
