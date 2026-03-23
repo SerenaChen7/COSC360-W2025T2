@@ -190,7 +190,7 @@ export default function CreateCourse({ setPage }) {
           <div className="upload-section">
             <label className="section-title">Course Thumbnail</label>
             <p className="section-subtitle">
-              Upload an image to showcase your course (Optional)
+              Upload an image to showcase your course
             </p>
 
             <div className="upload-box" onClick={handleUploadClick}>
