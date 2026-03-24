@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+#config
+.env
+
+# Demo code
+cosc360-demo-code/
