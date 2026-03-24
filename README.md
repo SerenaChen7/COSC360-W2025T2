@@ -69,5 +69,45 @@ This repository is organized to support **future development** while keeping des
 
 See the directory structure below.
 
+## Run with Docker
 
+### Prerequisites
+- Install Docker Desktop
+- Make sure Docker is running
 
+### Steps
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+## Access the application
+Frontend: http://localhost:5173
+Backend: http://localhost:3000
+
+## Notes
+MongoDB runs inside Docker (no local installation required)
+Backend connects to MongoDB via mongodb://mongo:27017/cosc360
+Environment variables are configured via Docker and .env files
+
+## Development (Optional)
+
+To run without Docker:
+
+### Backend
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### Running Modes
+
+- Docker mode: use `docker compose up` (recommended for full stack)
+- Local development mode:
+  - Backend: `npm run dev`
+  - Frontend: `npm run dev`
+
+⚠️ Do not run both modes at the same time!!!
