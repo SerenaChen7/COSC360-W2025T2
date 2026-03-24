@@ -1,10 +1,35 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  passwordHash: { type: String, required: true },
-  role: { type: String, enum: ['user', 'admin'], default: 'user' }
-}, { timestamps: true });
+  // Unique, Required username
+  username: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    trim: true 
+  },
+  // Unique, Required email for authentication
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    lowercase: true, 
+    trim: true 
+  },
+  // Security: Stores the hashed version of the password
+  passwordHash: { 
+    type: String, 
+    required: true 
+  },
+  // System-level access control
+  role: { 
+    type: String, 
+    enum: ['user', 'admin'], 
+    default: 'user' 
+  }
+}, { 
+  // Automatically adds createdAt and updatedAt fields (Auto-timestamp)
+  timestamps: true 
+});
 
 export default mongoose.model('User', userSchema);
