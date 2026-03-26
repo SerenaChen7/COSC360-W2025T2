@@ -11,6 +11,7 @@ import CreateCourse from "./pages/CreateCourse";
 export default function App() {
   const [page, setPage] = useState("home");
   const [role, setRole] = useState("user");
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
   return (
     <>
       <div style={{ padding: 12 }}>
@@ -78,13 +79,35 @@ export default function App() {
       {page === "home" && <Home />}
       {page === "login" && <Login />}
       {page === "submit" && <Submit />}
-      {page === "course" && <CourseOverview setPage={setPage} role={role} />}
-      {page === "course-team" && <CourseTeam setPage={setPage} role={role} />}
-      {page === "course-discussion" && <CourseDiscussion setPage={setPage} role={role} />}
+      {page === "course" && (
+        <CourseOverview 
+          setPage={setPage} 
+          role={role} 
+          courseId={selectedCourseId}
+        />
+      )}
+      {page === "course-team" && (
+        <CourseTeam
+          setPage={setPage}
+          role={role}
+          courseId={selectedCourseId}
+        />
+      )}
+
+      {page === "course-discussion" && (
+        <CourseDiscussion
+          setPage={setPage}
+          role={role}
+          courseId={selectedCourseId}
+        />
+      )}
       {page === "create" && (
         <>
           <Home />
-          <CreateCourse setPage={setPage} />
+          <CreateCourse
+            setPage={setPage}
+            setSelectedCourseId={setSelectedCourseId}
+          />
         </>
       )}
     </>

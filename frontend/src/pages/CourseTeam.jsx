@@ -5,8 +5,26 @@ import ProjectTabs from "../components/ProjectTabs";
 import "./CourseTeam.css";
 import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
+import { useEffect, useState } from "react";
 
-function CourseTeam({ setPage , role }) {
+function CourseTeam({ setPage , role, courseId }) {
+  const [course, setCourse] = useState(null);
+
+  useEffect(() => {
+    if (courseId) {
+      fetch(`http://localhost:3000/api/courses/${courseId}`)
+        .then((res) => res.json())
+        .then((data) => setCourse(data))
+        .catch((err) => console.error(err));
+      return;
+    }
+
+    fetch("http://localhost:3000/api/courses")
+      .then((res) => res.json())
+      .then((data) => setCourse(data[0]))
+      .catch((err) => console.error(err));
+  }, [courseId]);
+
   const instructors = [
     {
       name: "Jacob Liu",
@@ -44,7 +62,7 @@ function CourseTeam({ setPage , role }) {
       <Navbar />
 
       <div className="course-team-hero">
-        <CourseBanner />
+        <CourseBanner course={course} />
       </div>
 
       <div className="course-team-tabs">
@@ -108,7 +126,12 @@ function CourseTeam({ setPage , role }) {
               Become part of the community to participate in discussions,
               access shared resources, and stay updated on course discussions.
             </p>
-            <button className="join-button">➤ Log in to Join</button>
+            {role === "guest" && (
+              <button className="join-button">➤ Log in to Join</button>
+            )}
+            {role === "user" && (
+              <button className="join-button">➤ Join Course</button>
+            )}
           </div>
           {role === "admin" && <AdminActions />}
         </aside>
