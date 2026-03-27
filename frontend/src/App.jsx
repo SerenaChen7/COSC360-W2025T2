@@ -7,6 +7,7 @@ import CourseOverview from "./pages/CourseOverview";
 import CourseTeam from "./pages/CourseTeam";
 import CourseDiscussion from "./pages/CourseDiscussion";
 import CreateCourse from "./pages/CreateCourse";
+import Dashboard from "./pages/Dashboard";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -37,6 +38,10 @@ export default function App() {
 
           <button onClick={() => setPage("create")} style={{ marginLeft: 8 }}>
             Create Course
+          </button>
+
+          <button onClick={() => setPage("dashboard")} style={{ marginLeft: 8 }}>
+            Dashboard
           </button>
         </div>
 
@@ -76,13 +81,13 @@ export default function App() {
       </div>
 
       {page === "cover" && <CoverPage />}
-      {page === "home" && <Home />}
+      {page === "home" && <Home setPage={setPage} setSelectedCourseId={setSelectedCourseId} />}
       {page === "login" && <Login />}
       {page === "submit" && <Submit />}
       {page === "course" && (
-        <CourseOverview 
-          setPage={setPage} 
-          role={role} 
+        <CourseOverview
+          setPage={setPage}
+          role={role}
           courseId={selectedCourseId}
         />
       )}
@@ -103,12 +108,18 @@ export default function App() {
       )}
       {page === "create" && (
         <>
-          <Home />
+          <Home setPage={setPage} setSelectedCourseId={setSelectedCourseId} />
           <CreateCourse
             setPage={setPage}
             setSelectedCourseId={setSelectedCourseId}
           />
         </>
+      )}
+      {page === "dashboard" && (
+        <Dashboard
+          setPage={setPage}
+          setSelectedCourseId={setSelectedCourseId}
+        />
       )}
     </>
   );
