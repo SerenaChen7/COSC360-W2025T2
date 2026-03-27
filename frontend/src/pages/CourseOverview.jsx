@@ -6,8 +6,38 @@ import "./CourseOverview.css";
 import AdminActions from "../components/AdminActions";
 import { useEffect, useState } from "react";
 
-function CourseOverview({ setPage , role, courseId }) {
+function CourseOverview({ setPage, role, courseId }) {
   const [course, setCourse] = useState(null);
+
+  const [isJoined, setIsJoined] = useState(() => {
+    try {
+      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
+      return ids.includes(courseId);
+    } catch {
+      return false;
+    }
+  });
+  const [joining, setJoining] = useState(false);
+
+  const handleJoin = async () => {
+    if (!courseId) return;
+    setJoining(true);
+    try {
+      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to join");
+      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
+      if (!ids.includes(courseId)) {
+        localStorage.setItem("joinedCourseIds", JSON.stringify([...ids, courseId]));
+      }
+      setIsJoined(true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setJoining(false);
+    }
+  };
 
   useEffect(() => {
     if (courseId) {
@@ -114,16 +144,22 @@ function CourseOverview({ setPage , role, courseId }) {
         </section>
 
         <aside className="course-overview-sidebar">
-          <div className="join-card">
-            <h3>Join This Hub</h3>
-            <p className="join-subtitle">Ready to join?</p>
-            <p>
-              Become part of the community to participate in discussions,
-              access shared resources, and stay updated on course discussions.
-            </p>
-            {role === "guest" && <button className="join-button">➤ Login to Join</button>}
-            {role === "user" && <button className="join-button">➤ Join Course</button>}
-          </div>
+          {!isJoined && (
+            <div className="join-card">
+              <h3>Join This Hub</h3>
+              <p className="join-subtitle">Ready to join?</p>
+              <p>
+                Become part of the community to participate in discussions,
+                access shared resources, and stay updated on course discussions.
+              </p>
+              {role === "guest" && <button className="join-button">➤ Login to Join</button>}
+              {role === "user" && (
+                <button className="join-button" onClick={handleJoin} disabled={joining}>
+                  ➤ {joining ? "Joining..." : "Join Course"}
+                </button>
+              )}
+            </div>
+          )}
           {role === "admin" && <AdminActions />}
         </aside>
       </main>

@@ -4,46 +4,62 @@ export const getAllCourses = async (req, res) => {
   try {
     const { title, type, sort, q } = req.query;
 
-    let filter = {};
+    let matchStage = {};
 
     if (q) {
-      filter = {
-        $or: [
-          { title: { $regex: q, $options: "i" } },
-          { field: { $regex: q, $options: "i" } },
-          { type: { $regex: q, $options: "i" } },
-          { tags: { $elemMatch: { $regex: q, $options: "i" } } }
-        ]
-      };
+      matchStage.$or = [
+        { title: { $regex: q, $options: "i" } },
+        { field: { $regex: q, $options: "i" } },
+        { type: { $regex: q, $options: "i" } },
+        { tags: { $elemMatch: { $regex: q, $options: "i" } } }
+      ];
     }
 
-    if (title) {
-      filter.title = { $regex: title, $options: "i" };
-    }
+    if (title) matchStage.title = { $regex: title, $options: "i" };
+    if (type) matchStage.type = { $regex: type, $options: "i" };
 
-    if (type) {
-      filter.type = { $regex: type, $options: "i" };
-    }
+    const pipeline = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "posts",
+          localField: "_id",
+          foreignField: "course",
+          as: "posts"
+        }
+      },
+      {
+        $addFields: { discussionCount: { $size: "$posts" } }
+      },
+      { $unset: "posts" }
+    ];
 
-    let query = Course.find(filter);
+    if (sort === "az") pipeline.push({ $sort: { title: 1 } });
+    else if (sort === "za") pipeline.push({ $sort: { title: -1 } });
+    else if (sort === "most") pipeline.push({ $sort: { memberCount: -1 } });
+    else if (sort === "least") pipeline.push({ $sort: { memberCount: 1 } });
 
-    if (sort === "az") {
-      query = query.sort({ title: 1 });
-    } else if (sort === "za") {
-      query = query.sort({ title: -1 });
-    } else if (sort === "most") {
-      query = query.sort({ memberCount: -1 });
-    } else if (sort === "least") {
-      query = query.sort({ memberCount: 1 });
-    }
-
-    const courses = await query;
+    const courses = await Course.aggregate(pipeline);
     res.status(200).json(courses);
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch courses",
       error: error.message
     });
+  }
+};
+
+export const joinCourse = async (req, res) => {
+  try {
+    const course = await Course.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { memberCount: 1 } },
+      { new: true }
+    );
+    if (!course) return res.status(404).json({ message: "Course not found" });
+    res.status(200).json({ message: "Joined successfully", memberCount: course.memberCount });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to join course", error: error.message });
   }
 };
 
