@@ -90,3 +90,49 @@ export const searchCourses = async (req, res) => {
     });
   }
 };
+
+export async function createCourse(req, res) {
+  try {
+    const {
+      title,
+      type,
+      field,
+      description,
+      startDate,
+      endDate,
+      location,
+      tags
+    } = req.body;
+
+    if (!title || !type || !field || !description) {
+      return res.status(400).json({
+        message: "Missing required fields"
+      });
+    }
+
+    const newCourse = new Course({
+      title,
+      type,
+      field,
+      description,
+      startDate,
+      endDate,
+      location: location || "",
+      tags: tags || [],
+      duration: {
+        startDate: startDate || null,
+        endDate: endDate || null
+      },
+      createdBy: null
+    });
+
+    const savedCourse = await newCourse.save();
+
+    res.status(201).json(savedCourse);
+  } catch (error) {
+    console.error("Error creating course:", error);
+    res.status(500).json({
+      message: "Failed to create course"
+    });
+  }
+}

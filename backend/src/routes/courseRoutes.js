@@ -2,10 +2,14 @@ import express from "express";
 import {
   getAllCourses,
   getCourseById,
-  searchCourses
+  searchCourses,
+  createCourse
 } from "../controllers/courseController.js";
 
 const router = express.Router();
+
+// POST /api/courses
+router.post("/", createCourse);
 
 // GET /api/courses
 router.get("/", getAllCourses);

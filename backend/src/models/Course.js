@@ -29,9 +29,9 @@ const courseSchema = new mongoose.Schema({
     endDate: { type: Date }
   },
   location: { 
-    type: String, 
-    required: true 
-  },
+  type: String, 
+  default: "" 
+},
   // Array of objects for open roles/positions
   positions: [{
     name: String,
@@ -53,10 +53,11 @@ const courseSchema = new mongoose.Schema({
   },
   // Foreign Key: Refers to the User who created this course
   createdBy: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
-    required: true 
-  }
+  type: mongoose.Schema.Types.ObjectId, 
+  ref: 'User', 
+  required: false,
+  default: null
+}
 }, { 
   // Automatically adds createdAt and updatedAt fields
   timestamps: true 
