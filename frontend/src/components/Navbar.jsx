@@ -3,11 +3,11 @@ import notificationsIcon from "../assets/notifications-icon.png";
 import dashboardIcon from "../assets/darhboard-icon.png";
 import "./Navbar.css";
 
-export default function Navbar() {
+export default function Navbar({ setPage }) {
   return (
     <nav className="navbar">
       <div className="navRight">
-        <button className="navIconBtn" onClick={() => (window.location.href = "/home")}>
+        <button className="navIconBtn" onClick={() => setPage ? setPage("home") : (window.location.href = "/home")}>
           <img src={homeIcon} alt="Home" />
         </button>
 
@@ -15,12 +15,13 @@ export default function Navbar() {
           <img src={notificationsIcon} alt="Notifications" />
         </button>
 
-        <button className="navIconBtn" onClick={() => (window.location.href = "/dashboard")}>
+        <button className="navIconBtn" onClick={() => setPage ? setPage("dashboard") : (window.location.href = "/dashboard")}>
           <img src={dashboardIcon} alt="Dashboard" />
         </button>
-{/*Will have to add condition whether it is logged in or not.
-If logged in, will have to remove log in button*/}
-<button className="navLoginBtn">LOGIN</button>      </div>
+        {/*Will have to add condition whether it is logged in or not.
+        If logged in, will have to remove log in button*/}
+        <button className="navLoginBtn">LOGIN</button>
+      </div>
     </nav>
   );
 }
