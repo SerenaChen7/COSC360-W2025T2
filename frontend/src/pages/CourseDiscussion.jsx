@@ -1,5 +1,5 @@
 import Header from "../components/Header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import CourseBanner from "../components/CourseBanner";
 import ProjectTabs from "../components/ProjectTabs";
@@ -7,8 +7,25 @@ import "./CourseDiscussion.css";
 import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 
-function CourseDiscussion({ setPage , role }) {
+function CourseDiscussion({ setPage, role, courseId }) {
   const [fileName, setFileName] = useState("");
+  const [course, setCourse] = useState(null);
+
+  useEffect(() => {
+    if (courseId) {
+      fetch(`http://localhost:3000/api/courses/${courseId}`)
+        .then((res) => res.json())
+        .then((data) => setCourse(data))
+        .catch((err) => console.error(err));
+      return;
+    }
+
+    fetch("http://localhost:3000/api/courses")
+      .then((res) => res.json())
+      .then((data) => setCourse(data[0]))
+      .catch((err) => console.error(err));
+  }, [courseId]);
+
   const discussions = [
     {
       id: 1,
@@ -42,7 +59,7 @@ function CourseDiscussion({ setPage , role }) {
       <Navbar />
 
       <div className="course-discussion-hero">
-        <CourseBanner />
+        <CourseBanner course={course} />
       </div>
 
       <div className="course-discussion-tabs">
@@ -67,31 +84,25 @@ function CourseDiscussion({ setPage , role }) {
               <label className="file-upload-button">
                 📎
                 <input
-                type="file"
-                onChange={(e) => setFileName(e.target.files[0]?.name)}
-                hidden
+                  type="file"
+                  onChange={(e) => setFileName(e.target.files[0]?.name)}
+                  hidden
                 />
               </label>
               <button className="discussion-send-button">Send</button>
             </div>
 
             {fileName && (
-                <div className="file-name-row">
-                    <p className="file-name">{fileName}</p>
-                    <button
-                    type="button"
-                    className="remove-file-button"
-                    onClick={() => setFileName("")}
-                    >
-                    ×
-                    </button>
-
-                    {role === "admin" && (
-                        <button className="remove-icon-button" title="Remove file">
-                            <img src={removeIcon} alt="Remove" />
-                        </button>
-                    )}
-                </div>
+              <div className="file-name-row">
+                <p className="file-name">{fileName}</p>
+                <button
+                  type="button"
+                  className="remove-file-button"
+                  onClick={() => setFileName("")}
+                >
+                  ×
+                </button>
+              </div>
             )}
 
             <div className="discussion-list">
@@ -107,9 +118,9 @@ function CourseDiscussion({ setPage , role }) {
                     </div>
 
                     {role === "admin" && (
-                        <button className="remove-icon-button" title="Remove comment">
-                            <img src={removeIcon} alt="Remove" />
-                        </button>
+                      <button className="remove-icon-button" title="Remove comment">
+                        <img src={removeIcon} alt="Remove" />
+                      </button>
                     )}
                   </div>
 
@@ -127,21 +138,17 @@ function CourseDiscussion({ setPage , role }) {
                                 {reply.author.charAt(0)}
                               </div>
                               <div className="discussion-post-info">
-                                <p className="discussion-author">
-                                  {reply.author}
-                                </p>
+                                <p className="discussion-author">{reply.author}</p>
                                 <p className="discussion-meta">{reply.meta}</p>
                               </div>
                               {role === "admin" && (
-                                    <button className="remove-icon-button" title="Remove comment">
-                                        <img src={removeIcon} alt="Remove" />
-                                    </button>
-                                )}
+                                <button className="remove-icon-button" title="Remove comment">
+                                  <img src={removeIcon} alt="Remove" />
+                                </button>
+                              )}
                             </div>
 
-                            <p className="discussion-content">
-                              {reply.content}
-                            </p>
+                            <p className="discussion-content">{reply.content}</p>
 
                             <input
                               type="text"
@@ -167,7 +174,12 @@ function CourseDiscussion({ setPage , role }) {
               Become part of the community to participate in discussions,
               access shared resources, and stay updated on upcoming sessions.
             </p>
-            <button className="join-button">➤ Log in to Join</button>
+            {role === "guest" && (
+              <button className="join-button">➤ Log in to Join</button>
+            )}
+            {role === "user" && (
+              <button className="join-button">➤ Join Course</button>
+            )}
           </div>
           {role === "admin" && <AdminActions />}
         </aside>

@@ -67,7 +67,7 @@ export default function Home() {
     }
 
     if (levelFilter.length > 0) {
-      courses = courses.filter((c) => levelFilter.includes(c.level));
+      courses = courses.filter((c) => levelFilter.includes(c.type));
     }
 
     if (sortFilter.length > 0) {
@@ -128,9 +128,10 @@ export default function Home() {
           {displayedCourses.length > 0 ? (
             displayedCourses.map((course) => (
               <HomeCourse
-                key={course.id}
+                key={course._id}
                 {...course}
-                isFavorite={isFavorite(course.id)}
+                id={course._id}
+                isFavorite={isFavorite(course._id)}
                 onToggleFavorite={toggleFavorite}
               />
             ))

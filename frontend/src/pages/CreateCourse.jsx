@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import "./CreateCourse.css";
 import SearchableDropdown from "../components/SearchableDropdown";
 
-export default function CreateCourse({ setPage }) {
+export default function CreateCourse({ setPage, setSelectedCourseId }) {
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
@@ -122,52 +122,79 @@ export default function CreateCourse({ setPage }) {
     }));
   };
 
-  const handleSubmit = (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  // REQUIRED FIELD VALIDATION
-  if (!formData.title.trim()) {
-    alert("Course title is required.");
-    return;
-  }
-
-  if (!formData.type.trim()) {
-    alert("Course type is required.");
-    return;
-  }
-
-  if (!formData.field.trim()) {
-    alert("Course field is required.");
-    return;
-  }
-
-  if (!formData.description.trim()) {
-    alert("Course description is required.");
-    return;
-  }
-
-  if (formData.tags.length === 0) {
-    alert("Please add at least one tag.");
-    return;
-  }
-
-  // OPTIONAL: validate date logic only if user entered both
-  if (formData.startDate && formData.endDate) {
-    if (new Date(formData.startDate) > new Date(formData.endDate)) {
-      alert("Start date cannot be after end date.");
+    if (!formData.title.trim()) {
+      alert("Course title is required.");
       return;
     }
-  }
 
-  const courseData = {
-    ...formData,
-    image,
+    if (!formData.type.trim()) {
+      alert("Course type is required.");
+      return;
+    }
+
+    if (!formData.field.trim()) {
+      alert("Course field is required.");
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      alert("Course description is required.");
+      return;
+    }
+
+    if (formData.tags.length === 0) {
+      alert("Please add at least one tag.");
+      return;
+    }
+
+    if (formData.startDate && formData.endDate) {
+      if (new Date(formData.startDate) > new Date(formData.endDate)) {
+        alert("Start date cannot be after end date.");
+        return;
+      }
+    }
+
+    try {
+      const payload = {
+        title: formData.title,
+        type: formData.type,
+        field: formData.field,
+        description: formData.description,
+        startDate: formData.startDate || null,
+        endDate: formData.endDate || null,
+        location: formData.location || "",
+        tags: formData.tags,
+      };
+
+      const res = await fetch("http://localhost:3000/api/courses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to create course.");
+      }
+
+      const data = await res.json();
+
+      alert("Course submitted successfully!");
+
+      if (data?._id) {
+        setSelectedCourseId(data._id);
+      }
+
+      setPage("course");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit course.");
+    }
   };
-
-  console.log("Submitted course:", courseData);
-  alert("Course submitted successfully!");
-  setPage("home");
-};
   return (
     <div className="create-course-overlay">
       <div className="create-course-modal">
