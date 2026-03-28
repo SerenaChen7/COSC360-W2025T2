@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv"; 
+import dotenv from "dotenv";
+import bcrypt from "bcryptjs";
 import Course from "./src/models/Course.js";
 import User from "./src/models/User.js";
 
@@ -7,24 +8,36 @@ dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI;
 
+async function makeUser(username, email, password, role = "user") {
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  return {
+    username,
+    email: email.toLowerCase().trim(),
+    passwordHash,
+    role
+  };
+}
+
 async function seed() {
   try {
-    // Try to connect to your MongoDB Atlas cloud database
     await mongoose.connect(MONGO_URI);
     console.log("Connected to MongoDB");
 
-    // Clear out any old courses and specific admin user
+    // clear old data
     await Course.deleteMany({});
-    await User.deleteMany({ email: "admin@test.com" });
+    await User.deleteMany({});
 
-    // Create a new admin user to own the courses
-    const user = await User.create({
-      username: "admin",
-      email: "admin@test.com",
-      passwordHash: "dummyhash123"
-    });
+    // create users
+    const users = await User.insertMany([
+      await makeUser("admin", "admin@test.com", "admin123", "admin"),
+      await makeUser("serena", "user@test.com", "user123", "user")
+    ]);
 
-    // Putting many courses into the database
+    const adminUser = users.find(u => u.role === "admin");
+    const normalUser = users.find(u => u.role === "user");
+
+    // create courses (mixed ownership)
     await Course.insertMany([
       {
         title: "COSC 360 - Web Programming",
@@ -33,7 +46,7 @@ async function seed() {
         field: "Computer Science",
         type: "300 Level",
         tags: ["COSC 360", "Web", "Frontend", "Backend"],
-        createdBy: user._id
+        createdBy: adminUser._id
       },
       {
         title: "MATH 200 - Multivariable Calculus",
@@ -42,7 +55,7 @@ async function seed() {
         field: "Mathematics",
         type: "200 Level",
         tags: ["MATH 200", "Calculus", "Math"],
-        createdBy: user._id
+        createdBy: normalUser._id
       },
       {
         title: "COSC 400 - Interview Prep",
@@ -51,7 +64,7 @@ async function seed() {
         field: "Computer Science",
         type: "400 Level",
         tags: ["COSC 400", "Career", "Coding"],
-        createdBy: user._id
+        createdBy: adminUser._id
       },
       {
         title: "PHYS 101 - Energy and Waves",
@@ -60,7 +73,7 @@ async function seed() {
         field: "Physics",
         type: "100 Level",
         tags: ["PHYS 101", "Science", "Physics"],
-        createdBy: user._id
+        createdBy: normalUser._id
       },
       {
         title: "COSC 221 - Discrete Structures",
@@ -69,7 +82,7 @@ async function seed() {
         field: "Computer Science",
         type: "200 Level",
         tags: ["COSC 221", "Math", "Theory"],
-        createdBy: user._id
+        createdBy: adminUser._id
       },
       {
         title: "ECON 101 - Microeconomics",
@@ -78,7 +91,7 @@ async function seed() {
         field: "Economics",
         type: "100 Level",
         tags: ["ECON 101", "Business", "Econ"],
-        createdBy: user._id
+        createdBy: normalUser._id
       },
       {
         title: "STAT 200 - Statistics",
@@ -87,7 +100,7 @@ async function seed() {
         field: "Statistics",
         type: "200 Level",
         tags: ["STAT 200", "Data", "Stats"],
-        createdBy: user._id
+        createdBy: adminUser._id
       },
       {
         title: "ENGL 301 - Technical Writing",
@@ -96,7 +109,7 @@ async function seed() {
         field: "English",
         type: "300 Level",
         tags: ["ENGL 301", "Writing", "Arts"],
-        createdBy: user._id
+        createdBy: normalUser._id
       },
       {
         title: "BIOL 112 - Cell Biology",
@@ -105,7 +118,7 @@ async function seed() {
         field: "Biology",
         type: "100 Level",
         tags: ["BIOL 112", "Science", "Bio"],
-        createdBy: user._id
+        createdBy: adminUser._id
       },
       {
         title: "COSC 315 - Operating Systems",
@@ -114,11 +127,14 @@ async function seed() {
         field: "Computer Science",
         type: "300 Level",
         tags: ["COSC 315", "OS", "Systems"],
-        createdBy: user._id
+        createdBy: normalUser._id
       }
     ]);
 
-    console.log("Seeded! 10 courses are ready.");
+    console.log("Seeded successfully");
+    console.log("Admin login: admin@test.com / admin123");
+    console.log("User login: user@test.com / user123");
+
     process.exit(0);
   } catch (err) {
     console.error("Seed failed:", err);
@@ -126,5 +142,4 @@ async function seed() {
   }
 }
 
-// Run the script
 seed();

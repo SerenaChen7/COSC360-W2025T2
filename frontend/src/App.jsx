@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
-import CoverPage  from "./pages/CoverPage";
+import CoverPage from "./pages/CoverPage";
 import Submit from "./pages/Submit";
 import CourseOverview from "./pages/CourseOverview";
 import CourseTeam from "./pages/CourseTeam";
@@ -10,7 +10,7 @@ import CreateCourse from "./pages/CreateCourse";
 import Dashboard from "./pages/Dashboard";
 
 export default function App() {
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState("login");
   const [role, setRole] = useState("user");
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   return (
@@ -25,9 +25,11 @@ export default function App() {
           <button onClick={() => setPage("login")} style={{ marginLeft: 8 }}>
             Login
           </button>
+
           <button onClick={() => setPage("home")} style={{ marginLeft: 8 }}>
             Home
           </button>
+
           <button onClick={() => setPage("submit")} style={{ marginLeft: 8 }}>
             Submit
           </button>
@@ -81,8 +83,20 @@ export default function App() {
       </div>
 
       {page === "cover" && <CoverPage />}
-      {page === "home" && <Home setPage={setPage} setSelectedCourseId={setSelectedCourseId} />}
-      {page === "login" && <Login />}
+      {page === "home" && (
+        <Home
+          setPage={setPage}
+          setSelectedCourseId={setSelectedCourseId}
+        />
+      )}
+
+      {page === "login" && (
+        <Login
+          setPage={setPage}
+          setRole={setRole}
+        />
+      )}
+
       {page === "submit" && <Submit />}
       {page === "course" && (
         <CourseOverview
@@ -108,7 +122,10 @@ export default function App() {
       )}
       {page === "create" && (
         <>
-          <Home setPage={setPage} setSelectedCourseId={setSelectedCourseId} />
+          <Home
+            setPage={setPage}
+            setSelectedCourseId={setSelectedCourseId}
+          />
           <CreateCourse
             setPage={setPage}
             setSelectedCourseId={setSelectedCourseId}
