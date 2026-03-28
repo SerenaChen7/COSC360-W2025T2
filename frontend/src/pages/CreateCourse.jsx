@@ -192,7 +192,7 @@ export default function CreateCourse({ setPage, setSelectedCourseId }) {
           <button
             type="button"
             className="close-btn"
-            onClick={() => setPage("home")}
+            onClick={() => setPage("dashboard")}
           >
             ×
           </button>
@@ -351,7 +351,7 @@ export default function CreateCourse({ setPage, setSelectedCourseId }) {
             <button
               type="button"
               className="cancel-btn"
-              onClick={() => setPage("home")}
+              onClick={() => setPage("dashboard")}
             >
               Cancel
             </button>

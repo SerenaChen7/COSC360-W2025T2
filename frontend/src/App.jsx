@@ -83,6 +83,7 @@ export default function App() {
       </div>
 
       {page === "cover" && <CoverPage />}
+<<<<<<< Updated upstream
       {page === "home" && (
         <Home
           setPage={setPage}
@@ -97,6 +98,10 @@ export default function App() {
         />
       )}
 
+=======
+      {page === "home" && <Home setPage={setPage} setSelectedCourseId={setSelectedCourseId} />}
+      {page === "login" && <Login setPage={setPage} />}
+>>>>>>> Stashed changes
       {page === "submit" && <Submit />}
       {page === "course" && (
         <CourseOverview
