@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import JoinCourseModal from "../components/JoinCourseModal";
 import "./Dashboard.css";
 
+// Helper keys and functions for local storage
 const JOINED_KEY = "joinedCourseIds";
 
 function getJoinedIds() {
@@ -18,11 +19,13 @@ function saveJoinedIds(ids) {
   localStorage.setItem(JOINED_KEY, JSON.stringify(ids));
 }
 
+// Check if the course is Ongoing or Done
 function getStatus(duration) {
   if (!duration?.endDate) return "Ongoing";
   return new Date(duration.endDate) < new Date() ? "Done" : "Ongoing";
 }
 
+// Make the date look like "Winter 2025/2026 Term 2"
 function formatTerm(duration) {
   if (!duration?.startDate) return null;
   const start = new Date(duration.startDate);
@@ -38,7 +41,10 @@ export default function Dashboard({ setPage, setSelectedCourseId }) {
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  // Fetch details for all joined courses
+  // Tab state: "joined" or "requests"
+  const [activeTab, setActiveTab] = useState("joined"); 
+
+  // Get data from the server
   useEffect(() => {
     if (joinedIds.length === 0) {
       setJoinedCourses([]);
@@ -85,96 +91,123 @@ export default function Dashboard({ setPage, setSelectedCourseId }) {
       <Navbar setPage={setPage} />
 
       <div className="dashboard-page">
+        {/* --- HEADER --- */}
         <div className="dashboard-header">
           <div>
-            <h1 className="dashboard-heading">My Dashboard</h1>
-            <p className="dashboard-subheading">Manage and browse your course hubs</p>
+            <h1 className="dashboard-heading">Dashboard</h1>
+            <p className="dashboard-subheading">Welcome back to your learning hub</p>
           </div>
-          <button className="dashboard-join-btn" onClick={() => setShowModal(true)}>
-            + Join Course
+        </div>
+
+        {/* --- STATS BOXES --- */}
+        <div className="dashboard-stats-row">
+          <div className={`stat-card ${activeTab === 'joined' ? 'active' : ''}`} onClick={() => setActiveTab('joined')}>
+            <div className="stat-icon-wrapper blue-bg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </div>
+            <div>
+              <span className="stat-number">{joinedIds.length}</span>
+              <span className="stat-label">Courses Joined</span>
+            </div>
+          </div>
+          <div className={`stat-card ${activeTab === 'requests' ? 'active' : ''}`} onClick={() => setActiveTab('requests')}>
+            <div className="stat-icon-wrapper green-bg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            </div>
+            <div>
+              <span className="stat-number">4</span> 
+              <span className="stat-label">Course Requests</span>
+            </div>
+          </div>
+        </div>
+
+        {/* --- CAPSULE TABS --- */}
+        <div className="dashboard-tabs-container">
+          <button className={`tab-btn ${activeTab === 'joined' ? 'active' : ''}`} onClick={() => setActiveTab('joined')}>
+            Courses Joined
+          </button>
+          <button className={`tab-btn ${activeTab === 'requests' ? 'active' : ''}`} onClick={() => setActiveTab('requests')}>
+            Course Requests
           </button>
         </div>
 
+        {/* --- ACTION BUTTONS --- */}
+        {activeTab === "joined" && (
+          <div className="dashboard-action-bar" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '20px' }}>
+            <button className="dashboard-create-btn" onClick={() => setPage("create")}>+ Create Course</button>
+            <button className="dashboard-join-btn" onClick={() => setShowModal(true)}>+ Join New Course</button>
+          </div>
+        )}
+
+        {/* --- MAIN SECTION --- */}
         <section className="dashboard-section">
-          <h2 className="dashboard-section-title">MY COURSES</h2>
+          <h2 className="dashboard-section-title">
+            {activeTab === "joined" ? "MY COURSES" : "PENDING REQUESTS"}
+          </h2>
 
-          {loadingCourses ? (
-            <p className="dashboard-empty">Loading your courses...</p>
-          ) : joinedCourses.length === 0 ? (
-            <div className="dashboard-empty-state">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c0ccd8" strokeWidth="1.5">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-              </svg>
-              <p>You haven't joined any courses yet.</p>
-              <button className="dashboard-join-btn" onClick={() => setShowModal(true)}>
-                Browse &amp; Join Courses
-              </button>
-            </div>
-          ) : (
-            <div className="dashboard-courses-grid">
-              {joinedCourses.map((course) => {
-                const status = getStatus(course.duration);
-                const term = formatTerm(course.duration);
-                return (
-                  <div
-                    key={course._id}
-                    className="dc-card"
-                    onClick={() => handleCourseClick(course._id)}
-                  >
-                    <div className="dc-card-inner">
-                      <div className="dc-top">
-                        <div className="dc-info">
-                          <h3 className="dc-title">{course.title}</h3>
-                          {term && <p className="dc-term">{term}</p>}
-                          <div className="dc-tags">
-                            {course.type && <span className="dc-tag dc-tag--filled">{course.type}</span>}
-                            {course.field && <span className="dc-tag dc-tag--filled">{course.field}</span>}
-                          </div>
-                          {course.tags?.length > 0 && (
+          {activeTab === "joined" ? (
+            loadingCourses ? (
+              <p className="dashboard-empty">Loading...</p>
+            ) : joinedCourses.length === 0 ? (
+              <div className="dashboard-empty-state">
+                <p>You haven't joined any courses yet.</p>
+              </div>
+            ) : (
+              <div className="dashboard-courses-grid">
+                {joinedCourses.map((course) => {
+                  const status = getStatus(course.duration);
+                  const term = formatTerm(course.duration);
+                  return (
+                    <div key={course._id} className="dc-card" onClick={() => handleCourseClick(course._id)}>
+                      <div className="dc-card-inner">
+                        <div className="dc-top">
+                          <div className="dc-info">
+                            <h3 className="dc-title">{course.title}</h3>
+                            {term && <p className="dc-term">{term}</p>}
+                            
+                            {/* Detailed Tags from Serena's design */}
                             <div className="dc-tags">
-                              {course.tags.map((tag) => (
-                                <span key={tag} className="dc-tag dc-tag--outline">{tag}</span>
-                              ))}
+                              {course.type && <span className="dc-tag dc-tag--filled">{course.type}</span>}
+                              {course.field && <span className="dc-tag dc-tag--filled">{course.field}</span>}
                             </div>
-                          )}
-                        </div>
-                        <span className={`dc-status dc-status--${status === "Ongoing" ? "ongoing" : "done"}`}>
-                          <span className="dc-status-dot" /> {status}
-                        </span>
-                      </div>
-
-                      <div className="dc-stats">
-                        <span>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                          {course.memberCount ?? 0} Members
-                        </span>
-                        {course.location && (
-                          <span>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                            {course.location}
+                            {course.tags?.length > 0 && (
+                              <div className="dc-tags">
+                                {course.tags.map((tag) => (
+                                  <span key={tag} className="dc-tag dc-tag--outline">{tag}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <span className={`dc-status dc-status--${status === "ongoing" ? "ongoing" : "done"}`}>
+                            <span className="dc-status-dot" /> {status}
                           </span>
-                        )}
-                      </div>
+                        </div>
 
-                      <div className="dc-actions">
-                        <button
-                          className="dc-view-btn"
-                          onClick={() => handleCourseClick(course._id)}
-                        >
-                          View Course
-                        </button>
-                        <button
-                          className="dc-leave-btn"
-                          onClick={(e) => { e.stopPropagation(); handleLeave(course._id); }}
-                        >
-                          Leave
-                        </button>
+                        {/* Stats Row from Serena's design */}
+                        <div className="dc-stats">
+                          <span>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            0 Discussions
+                          </span>
+                          <span>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                            {course.memberCount ?? 0} Members
+                          </span>
+                        </div>
+
+                        <div className="dc-actions">
+                          <button className="dc-view-btn" onClick={() => handleCourseClick(course._id)}>View Course</button>
+                          <button className="dc-leave-btn" onClick={(e) => { e.stopPropagation(); handleLeave(course._id); }}>Leave</button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+            )
+          ) : (
+            <div className="dashboard-empty-state">
+              <p>You have no pending course requests right now.</p>
             </div>
           )}
         </section>

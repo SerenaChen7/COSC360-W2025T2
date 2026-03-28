@@ -1,15 +1,18 @@
+/* --- MAIN PAGE CONTAINER --- */
 .dashboard-page {
   padding: 40px 60px;
   font-family: "Public Sans", sans-serif;
   min-height: calc(100vh - 120px);
+  max-width: 1200px; /* Limits width for better readability */
+  margin: 0 auto;    /* Centers the page content */
 }
 
-/* Page header */
+/* --- HEADER SECTION --- */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 36px;
+  margin-bottom: 24px;
 }
 
 .dashboard-heading {
@@ -25,10 +28,89 @@
   margin: 0;
 }
 
-.dashboard-join-btn {
+/* --- TOP STATS CARDS --- */
+.dashboard-stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px 24px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 16px;
+  min-width: 200px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.stat-card.active {
+  border-color: #93c5fd;
+  box-shadow: 0 2px 8px rgba(0, 29, 64, 0.05);
+}
+
+.stat-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blue-bg { background-color: #e0f2fe; color: #0369a1; }
+.green-bg { background-color: #dcfce7; color: #15803d; }
+
+.stat-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: #001D40;
+  display: block;
+}
+
+/* --- CAPSULE TAB SWITCHER --- */
+.dashboard-tabs-container {
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+  display: flex;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: white;
+  color: #001D40;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* --- ACTION BUTTONS (Top Right) --- */
+.dashboard-action-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.dashboard-create-btn, .dashboard-join-btn {
   background: #001D40;
   color: #fff;
   border: none;
@@ -37,198 +119,144 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
-}
-.dashboard-join-btn:hover { background: #003070; }
-
-/* Section */
-.dashboard-section { }
-
-.dashboard-section-title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #6b7280;
-  margin: 0 0 18px;
-  text-transform: uppercase;
 }
 
-/* Empty state */
-.dashboard-empty {
-  color: #9ca3af;
-  font-size: 14px;
-}
-
-.dashboard-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 60px 0;
-  color: #9ca3af;
-  font-size: 15px;
-}
-
-.dashboard-empty-state .dashboard-join-btn {
-  margin-top: 4px;
-}
-
-/* Courses grid */
+/* --- COURSE LIST (The Wide Layout) --- */
 .dashboard-courses-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 18px;
+  display: flex;           /* Use flex instead of grid for full width */
+  flex-direction: column;  /* Stack cards vertically */
+  gap: 20px;               /* Space between cards */
+  width: 100%;
 }
 
-/* Dashboard course card */
+/* --- INDIVIDUAL COURSE CARD --- */
 .dc-card {
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
   cursor: pointer;
-  transition: box-shadow 0.15s, border-color 0.15s;
-  overflow: hidden;
+  transition: 0.2s;
+  width: 100%;
 }
+
 .dc-card:hover {
   border-color: #93c5fd;
-  box-shadow: 0 4px 16px rgba(0, 29, 64, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 29, 64, 0.06);
 }
 
 .dc-card-inner {
-  padding: 18px 20px;
+  padding: 24px 30px; /* Generous padding for a clean look */
 }
 
+/* --- CARD CONTENT ALIGNMENT --- */
 .dc-top {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Pushes Title to Left, Status to Right */
   align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.dc-info { flex: 1; }
-
 .dc-title {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   color: #001D40;
-  margin: 0 0 3px;
 }
 
 .dc-term {
-  font-size: 12px;
+  font-size: 13px;
   color: #6b7280;
-  margin: 0 0 8px;
+  margin-top: 4px;
 }
 
-/* Tags */
+/* --- TAGS & STATUS --- */
 .dc-tags {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 5px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .dc-tag {
   font-size: 11px;
-  padding: 2px 9px;
+  padding: 4px 10px;
   border-radius: 20px;
-  font-weight: 500;
 }
 
-.dc-tag--filled {
-  background: #1e4d8c;
-  color: #fff;
-}
+.dc-tag--filled { background: #1e4d8c; color: #fff; }
+.dc-tag--outline { border: 1px solid #9ca3af; color: #374151; }
 
-.dc-tag--outline {
-  border: 1px solid #9ca3af;
-  color: #374151;
-  background: transparent;
-}
-
-/* Status badge */
 .dc-status {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 11px;
+  gap: 6px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 3px 9px;
+  padding: 6px 14px;
   border-radius: 20px;
-  border: 1px solid;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
-.dc-status--ongoing {
-  border-color: #d1fae5;
-  background: #ecfdf5;
-  color: #065f46;
-}
-
-.dc-status--done {
-  border-color: #e5e7eb;
-  background: #f9fafb;
-  color: #6b7280;
-}
+.dc-status--ongoing { background: #ecfdf5; color: #065f46; }
+.dc-status--done { background: #f9fafb; color: #6b7280; }
 
 .dc-status-dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: currentColor;
 }
 
-/* Stats */
+/* --- STATS BAR (Members / Discussions) --- */
 .dc-stats {
   display: flex;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 24px;
+  margin-bottom: 20px;
 }
 
 .dc-stats span {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 13px;
   color: #6b7280;
 }
 
-/* Card actions */
+/* --- BOTTOM ACTIONS (Buttons) --- */
 .dc-actions {
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  border-top: 1px solid #f3f4f6;
-  padding-top: 12px;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 12px;
+  border-top: 1px solid #f3f4f6; /* Subtle top border line */
+  padding-top: 16px;
 }
 
 .dc-view-btn {
   background: #001D40;
   color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 7px 16px;
-  font-size: 13px;
+  border-radius: 8px;
+  padding: 10px 24px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
 }
-.dc-view-btn:hover { background: #003070; }
 
 .dc-leave-btn {
   background: none;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 7px 14px;
-  font-size: 13px;
+  border-radius: 8px;
+  padding: 10px 20px;
   color: #6b7280;
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
 }
+
 .dc-leave-btn:hover {
-  border-color: #ef4444;
   color: #ef4444;
+  border-color: #ef4444;
+}
+
+/* --- EMPTY STATE --- */
+.dashboard-empty-state {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+  color: #9ca3af;
+  font-size: 16px;
 }
