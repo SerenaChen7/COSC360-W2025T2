@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./CreateCourse.css";
 import SearchableDropdown from "../components/SearchableDropdown";
 
@@ -19,48 +19,32 @@ export default function CreateCourse({ setPage, setSelectedCourseId }) {
 
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [courseTypeOptions, setCourseTypeOptions] = useState([]);
+  const [courseFieldOptions, setCourseFieldOptions] = useState([]);
+  const [tagOptions, setTagOptions] = useState([]);
 
-  const courseTypeOptions = [
-    "Bootcamp",
-    "Lab",
-    "Lecture",
-    "Seminar",
-    "Tutorial",
-    "Workshop",
-  ];
+  useEffect(() => {
+    const fetchCourseOptions = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/courses/options");
 
-  const courseFieldOptions = [
-    "Arts",
-    "Biology",
-    "Business",
-    "Chemistry",
-    "Computer Science",
-    "Data Science",
-    "Economics",
-    "Engineering",
-    "Mathematics",
-    "Physics",
-    "Psychology",
-    "Statistics",
-  ];
+        if (!res.ok) {
+          throw new Error("Failed to fetch course options");
+        }
 
-  const tagOptions = [
-    "Beginner",
-    "Intermediate",
-    "Advanced",
-    "Programming",
-    "Web Development",
-    "React",
-    "JavaScript",
-    "Database",
-    "Design",
-    "Frontend",
-    "Backend",
-    "AI",
-    "Machine Learning",
-    "Math",
-    "Science",
-  ];
+        const data = await res.json();
+
+        setCourseTypeOptions(data.types || []);
+        setCourseFieldOptions(data.fields || []);
+        setTagOptions(data.tags || []);
+      } catch (error) {
+        console.error("Failed to load course options:", error);
+        alert("Failed to load course options.");
+      }
+    };
+
+    fetchCourseOptions();
+  }, []);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -177,11 +161,11 @@ export default function CreateCourse({ setPage, setSelectedCourseId }) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to create course.");
-      }
-
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to create course.");
+      }
 
       alert("Course submitted successfully!");
 
@@ -192,9 +176,10 @@ export default function CreateCourse({ setPage, setSelectedCourseId }) {
       setPage("course");
     } catch (err) {
       console.error(err);
-      alert("Failed to submit course.");
+      alert(err.message || "Failed to submit course.");
     }
   };
+
   return (
     <div className="create-course-overlay">
       <div className="create-course-modal">
@@ -222,7 +207,11 @@ export default function CreateCourse({ setPage, setSelectedCourseId }) {
 
             <div className="upload-box" onClick={handleUploadClick}>
               {preview ? (
-                <img src={preview} alt="Course preview" className="preview-img" />
+                <img
+                  src={preview}
+                  alt="Course preview"
+                  className="preview-img"
+                />
               ) : (
                 <span>Click Here To Upload</span>
               )}

@@ -1,4 +1,5 @@
 import Course from "../models/Course.js";
+import CourseOptions from "../models/CourseOptions.js";
 
 export const getAllCourses = async (req, res) => {
   try {
@@ -91,6 +92,67 @@ export const searchCourses = async (req, res) => {
   }
 };
 
+export const getCourseOptions = async (req, res) => {
+  try {
+    let options = await CourseOptions.findOne();
+
+    if (!options) {
+      options = await CourseOptions.create({
+        types: [
+          "Bootcamp",
+          "Lab",
+          "Lecture",
+          "Seminar",
+          "Tutorial",
+          "Workshop"
+        ],
+        fields: [
+          "Arts",
+          "Biology",
+          "Business",
+          "Chemistry",
+          "Computer Science",
+          "Data Science",
+          "Economics",
+          "Engineering",
+          "Mathematics",
+          "Physics",
+          "Psychology",
+          "Statistics"
+        ],
+        tags: [
+          "Beginner",
+          "Intermediate",
+          "Advanced",
+          "Programming",
+          "Web Development",
+          "React",
+          "JavaScript",
+          "Database",
+          "Design",
+          "Frontend",
+          "Backend",
+          "AI",
+          "Machine Learning",
+          "Math",
+          "Science"
+        ]
+      });
+    }
+
+    res.status(200).json({
+      types: options.types,
+      fields: options.fields,
+      tags: options.tags
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch course options",
+      error: error.message
+    });
+  }
+};
+
 export async function createCourse(req, res) {
   try {
     const {
@@ -110,15 +172,43 @@ export async function createCourse(req, res) {
       });
     }
 
+    const options = await CourseOptions.findOne();
+
+    if (!options) {
+      return res.status(400).json({
+        message: "Course options not set up yet"
+      });
+    }
+
+    if (!options.types.includes(type)) {
+      return res.status(400).json({
+        message: "Invalid course type"
+      });
+    }
+
+    if (!options.fields.includes(field)) {
+      return res.status(400).json({
+        message: "Invalid course field"
+      });
+    }
+
+    const submittedTags = Array.isArray(tags) ? tags : [];
+
+    const hasInvalidTag = submittedTags.some((tag) => !options.tags.includes(tag));
+
+    if (hasInvalidTag) {
+      return res.status(400).json({
+        message: "One or more tags are invalid"
+      });
+    }
+
     const newCourse = new Course({
       title,
       type,
       field,
       description,
-      startDate,
-      endDate,
       location: location || "",
-      tags: tags || [],
+      tags: submittedTags,
       duration: {
         startDate: startDate || null,
         endDate: endDate || null
