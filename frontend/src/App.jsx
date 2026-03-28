@@ -120,18 +120,18 @@ export default function App() {
           courseId={selectedCourseId}
         />
       )}
-      {page === "create" && (
-        <>
-          <Home
-            setPage={setPage}
-            setSelectedCourseId={setSelectedCourseId}
-          />
-          <CreateCourse
-            setPage={setPage}
-            setSelectedCourseId={setSelectedCourseId}
-          />
-        </>
-      )}
+        {page === "create" && (
+          <>
+            <Dashboard
+              setPage={setPage}
+              setSelectedCourseId={setSelectedCourseId}
+            />
+            <CreateCourse
+              setPage={setPage}
+              setSelectedCourseId={setSelectedCourseId}
+            />
+          </>
+        )}
       {page === "dashboard" && (
         <Dashboard
           setPage={setPage}
