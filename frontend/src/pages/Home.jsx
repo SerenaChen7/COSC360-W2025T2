@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import HeroBanner from "../components/HeroBanner";
 import ProjectTabs from "../components/ProjectTabs";
 import SearchBar from "../components/SearchBar";
@@ -24,7 +24,7 @@ const SORT_OPTIONS = [
   { value: "least", label: "Least Members" },
 ];
 
-export default function Home() {
+export default function Home({ setPage, setSelectedCourseId }) {
   const [allCourses, setAllCourses] = useState([]);
   const [searchResults, setSearchResults] = useState(null);
   const [courseFilter, setCourseFilter] = useState([]);
@@ -89,7 +89,7 @@ export default function Home() {
   return (
     <>
       <Header />
-      <Navbar />
+      <Navbar setPage={setPage} />
       <HeroBanner />
 
       <SpotlightSection favorites={favorites} onToggleFavorite={toggleFavorite} />
@@ -133,6 +133,10 @@ export default function Home() {
                 id={course._id}
                 isFavorite={isFavorite(course._id)}
                 onToggleFavorite={toggleFavorite}
+                onViewDetails={() => {
+                  setSelectedCourseId(course._id);
+                  setPage("course");
+                }}
               />
             ))
           ) : (
