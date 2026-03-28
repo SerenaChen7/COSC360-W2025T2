@@ -40,12 +40,13 @@ export default function Home({ setPage, setSelectedCourseId }) {
   }, []);
 
   const handleSearchUpdate = async (value) => {
+    // Basic validation: ignore empty search terms
     if (!value.trim()) {
       setSearchResults(null);
       return;
     }
     try {
-      const response = await fetch(`http://localhost:3000/api/courses/search?q=${value}`);
+      const response = await fetch(`http://localhost:3000/api/courses/search?q=${value}`); //Fetch GET request using query parameters (?q=)
       const data = await response.json();
       setSearchResults(data);
     } catch (error) {
@@ -147,7 +148,6 @@ export default function Home({ setPage, setSelectedCourseId }) {
         </div>
       </div>
 
-      <ProjectTabs />
     </>
   );
 }
