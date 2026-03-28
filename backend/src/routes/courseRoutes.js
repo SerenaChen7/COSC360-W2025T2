@@ -3,20 +3,24 @@ import {
   getAllCourses,
   getCourseById,
   searchCourses,
-  createCourse
+  createCourse,
+  getCourseOptions,
   joinCourse
 } from "../controllers/courseController.js";
 
 const router = express.Router();
 
+// GET /api/courses/options
+router.get("/options", getCourseOptions);
+
 // POST /api/courses
 router.post("/", createCourse);
 
-// GET /api/courses
-router.get("/", getAllCourses);
-
 // GET /api/courses/search?q=...
 router.get("/search", searchCourses);
+
+// GET /api/courses
+router.get("/", getAllCourses);
 
 // GET /api/courses/:id
 router.get("/:id", getCourseById);
