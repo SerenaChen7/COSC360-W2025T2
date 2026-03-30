@@ -67,13 +67,26 @@ export const joinCourse = async (req, res) => {
 
 export const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const courseId = req.params.id;
+
+    const course = await Course.findById(courseId);
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    res.status(200).json(course);
+    // to count posts related to this course
+    const discussionCount = await Post.countDocuments({
+      course: courseId
+    });
+
+    // add discussionCount to the course object before sending response
+    const result = {
+      ...course.toObject(),
+      discussionCount
+    };
+
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch course",
@@ -286,6 +299,28 @@ export const createPost = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Failed to create post",
+      error: error.message
+    });
+  }
+};
+
+export const deletePost = async (req, res) => {
+  try {
+    const { courseId, postId } = req.params;
+
+    const deletedPost = await Post.findOneAndDelete({
+      _id: postId,
+      course: courseId
+    });
+
+    if (!deletedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to delete post",
       error: error.message
     });
   }

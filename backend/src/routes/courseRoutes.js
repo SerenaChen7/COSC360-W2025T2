@@ -5,9 +5,11 @@ import {
   searchCourses,
   createCourse,
   getCourseOptions,
-  joinCourse
+  joinCourse,
+  getCoursePosts,
+  createPost,
+  deletePost
 } from "../controllers/courseController.js";
-import { getCoursePosts, createPost } from "../controllers/courseController.js";
 
 const router = express.Router();
 
@@ -34,5 +36,8 @@ router.get("/:id/posts", getCoursePosts);
 
 // POST /api/courses/:id/posts
 router.post("/:id/posts", createPost);
+
+// DELETE /api/courses/:courseId/posts/:postId
+router.delete("/:courseId/posts/:postId", deletePost);
 
 export default router;

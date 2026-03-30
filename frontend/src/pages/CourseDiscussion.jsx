@@ -14,6 +14,47 @@ function CourseDiscussion({ setPage, role, courseId }) {
   const [newText, setNewText] = useState("");
   const effectiveCourseId = courseId || course?._id;
   
+  // Format time like "just now", "5 min ago", "2 hr ago", or date string for older posts
+  const formatTime = (dateString) => {
+    if (!dateString) return "";
+
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const diff = (now - date) / 1000; // seconds
+
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+
+    return date.toLocaleDateString();
+  };
+
+  // Admin function to delete a post
+  const handleDeletePost = async (postId) => {
+    if (!effectiveCourseId) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data);
+        return;
+      }
+
+      setPosts((prev) => prev.filter((post) => post._id !== postId));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     if (courseId) {
       fetch(`http://localhost:3000/api/courses/${courseId}`)
@@ -87,12 +128,39 @@ function CourseDiscussion({ setPage, role, courseId }) {
             </p>
 
             <div className="discussion-input-row">
-              <input
-                type="text"
-                placeholder="Add your comment..."
+              <textarea
+                placeholder="Add your comment... (Enter to send, Shift+Enter for new line)"
                 className="discussion-input"
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
+                rows={1}
+                // Expand textarea as user types
+                onKeyDown={async (e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+
+                    if (!newText.trim()) return;
+                    if (!effectiveCourseId) return;
+
+                    const res = await fetch(
+                      `http://localhost:3000/api/courses/${effectiveCourseId}/posts`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ text: newText })
+                      }
+                    );
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                      setPosts((prev) => [data, ...prev]);
+                      setNewText("");
+                    }
+                  }
+                }}
               />
 
               <label className="file-upload-button">
@@ -155,12 +223,20 @@ function CourseDiscussion({ setPage, role, courseId }) {
                       U
                     </div>
                     <div className="discussion-post-info">
-                      <p className="discussion-author">User</p>
-                      <p className="discussion-meta">{post.meta}</p>
+                      <p className="discussion-author">
+                        User <span style={{ color: "#7b879b" }}>· {formatTime(post.createdAt)}</span>
+                      </p>
                     </div>
 
                     {role === "admin" && (
-                      <button className="remove-icon-button" title="Remove comment">
+                      <button
+                        className="remove-icon-button"
+                        title="Remove comment"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePost(post._id);
+                        }}
+                      >
                         <img src={removeIcon} alt="Remove" />
                       </button>
                     )}
