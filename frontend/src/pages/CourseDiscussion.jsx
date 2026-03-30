@@ -10,6 +10,50 @@ import removeIcon from "../assets/remove.png";
 function CourseDiscussion({ setPage, role, courseId }) {
   const [fileName, setFileName] = useState("");
   const [course, setCourse] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [newText, setNewText] = useState("");
+  const effectiveCourseId = courseId || course?._id;
+  
+  // Format time like "just now", "5 min ago", "2 hr ago", or date string for older posts
+  const formatTime = (dateString) => {
+    if (!dateString) return "";
+
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const diff = (now - date) / 1000; // seconds
+
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+
+    return date.toLocaleDateString();
+  };
+
+  // Admin function to delete a post
+  const handleDeletePost = async (postId) => {
+    if (!effectiveCourseId) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data);
+        return;
+      }
+
+      setPosts((prev) => prev.filter((post) => post._id !== postId));
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     if (courseId) {
@@ -25,6 +69,15 @@ function CourseDiscussion({ setPage, role, courseId }) {
       .then((data) => setCourse(data[0]))
       .catch((err) => console.error(err));
   }, [courseId]);
+
+  useEffect(() => {
+    if (!effectiveCourseId) return;
+
+    fetch(`http://localhost:3000/api/courses/${effectiveCourseId}/posts`)
+      .then(res => res.json())
+      .then(data => setPosts(data))
+      .catch(err => console.error(err));
+  }, [effectiveCourseId]);
 
   const discussions = [
     {
@@ -75,10 +128,39 @@ function CourseDiscussion({ setPage, role, courseId }) {
             </p>
 
             <div className="discussion-input-row">
-              <input
-                type="text"
-                placeholder="Add your comment..."
+              <textarea
+                placeholder="Add your comment... (Enter to send, Shift+Enter for new line)"
                 className="discussion-input"
+                value={newText}
+                onChange={(e) => setNewText(e.target.value)}
+                rows={1}
+                // Expand textarea as user types
+                onKeyDown={async (e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+
+                    if (!newText.trim()) return;
+                    if (!effectiveCourseId) return;
+
+                    const res = await fetch(
+                      `http://localhost:3000/api/courses/${effectiveCourseId}/posts`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ text: newText })
+                      }
+                    );
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                      setPosts((prev) => [data, ...prev]);
+                      setNewText("");
+                    }
+                  }
+                }}
               />
 
               <label className="file-upload-button">
@@ -89,7 +171,35 @@ function CourseDiscussion({ setPage, role, courseId }) {
                   hidden
                 />
               </label>
-              <button className="discussion-send-button">Send</button>
+              <button
+                className="discussion-send-button"
+                onClick={async () => {
+                  if (!newText.trim()) return;
+                  if (!effectiveCourseId) return;
+
+                  const res = await fetch(
+                    `http://localhost:3000/api/courses/${effectiveCourseId}/posts`,
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({ text: newText })
+                    }
+                  );
+
+                  const data = await res.json();
+
+                  if (res.ok) {
+                    setPosts((prev) => [data, ...prev]);
+                    setNewText("");
+                  } else {
+                    console.error(data);
+                  }
+                }}
+              >
+                Send
+              </button>
             </div>
 
             {fileName && (
@@ -106,27 +216,35 @@ function CourseDiscussion({ setPage, role, courseId }) {
             )}
 
             <div className="discussion-list">
-              {discussions.map((post) => (
-                <div className="discussion-post" key={post.id}>
+              {posts.map((post) => (
+                <div className="discussion-post" key={post._id}>
                   <div className="discussion-post-header">
                     <div className="discussion-avatar">
-                      {post.author.charAt(0)}
+                      U
                     </div>
                     <div className="discussion-post-info">
-                      <p className="discussion-author">{post.author}</p>
-                      <p className="discussion-meta">{post.meta}</p>
+                      <p className="discussion-author">
+                        User <span style={{ color: "#7b879b" }}>· {formatTime(post.createdAt)}</span>
+                      </p>
                     </div>
 
                     {role === "admin" && (
-                      <button className="remove-icon-button" title="Remove comment">
+                      <button
+                        className="remove-icon-button"
+                        title="Remove comment"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePost(post._id);
+                        }}
+                      >
                         <img src={removeIcon} alt="Remove" />
                       </button>
                     )}
                   </div>
 
-                  <p className="discussion-content">{post.content}</p>
+                  <p className="discussion-content">{post.text}</p>
 
-                  {post.replies.length > 0 && (
+                  {post.replies?.length > 0 && (
                     <div className="discussion-replies">
                       {post.replies.map((reply) => (
                         <div className="discussion-reply" key={reply.id}>

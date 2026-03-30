@@ -141,10 +141,19 @@
 }
 
 .discussion-content {
-  margin: 8px 0 0 44px;
+  margin: -15px 0 0 44px;
   font-size: 13px;
   line-height: 1.6;
   color: #37455c;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.discussion-input {
+  resize: none;
+  min-height: 36px;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .discussion-replies {

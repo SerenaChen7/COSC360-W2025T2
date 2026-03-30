@@ -1,5 +1,6 @@
 import Course from "../models/Course.js";
 import CourseOptions from "../models/CourseOptions.js";
+import Post from "../models/Post.js";
 
 export const getAllCourses = async (req, res) => {
   try {
@@ -66,13 +67,26 @@ export const joinCourse = async (req, res) => {
 
 export const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const courseId = req.params.id;
+
+    const course = await Course.findById(courseId);
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    res.status(200).json(course);
+    // to count posts related to this course
+    const discussionCount = await Post.countDocuments({
+      course: courseId
+    });
+
+    // add discussionCount to the course object before sending response
+    const result = {
+      ...course.toObject(),
+      discussionCount
+    };
+
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch course",
@@ -225,6 +239,7 @@ export async function createCourse(req, res) {
       description,
       location: location || "",
       tags: submittedTags,
+      memberCount: 0,
       duration: {
         startDate: startDate || null,
         endDate: endDate || null
@@ -242,3 +257,71 @@ export async function createCourse(req, res) {
     });
   }
 }
+
+// GET /api/courses/:id/posts
+export const getCoursePosts = async (req, res) => {
+  try {
+    const posts = await Post.find({ course: req.params.id })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch posts",
+      error: error.message
+    });
+  }
+};
+
+// POST /api/courses/:id/posts
+export const createPost = async (req, res) => {
+  try {
+    const { text } = req.body;
+    const courseId = req.params.id;
+
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: "Text is required" });
+    }
+
+    if (!courseId) {
+      return res.status(400).json({ message: "Course id is required" });
+    }
+
+    const newPost = new Post({
+      text: text.trim(),
+      course: courseId,
+      author: "000000000000000000000000"
+    });
+
+    const savedPost = await newPost.save();
+
+    res.status(201).json(savedPost);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to create post",
+      error: error.message
+    });
+  }
+};
+
+export const deletePost = async (req, res) => {
+  try {
+    const { courseId, postId } = req.params;
+
+    const deletedPost = await Post.findOneAndDelete({
+      _id: postId,
+      course: courseId
+    });
+
+    if (!deletedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to delete post",
+      error: error.message
+    });
+  }
+};
