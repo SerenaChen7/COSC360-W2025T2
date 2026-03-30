@@ -10,7 +10,10 @@ import removeIcon from "../assets/remove.png";
 function CourseDiscussion({ setPage, role, courseId }) {
   const [fileName, setFileName] = useState("");
   const [course, setCourse] = useState(null);
-
+  const [posts, setPosts] = useState([]);
+  const [newText, setNewText] = useState("");
+  const effectiveCourseId = courseId || course?._id;
+  
   useEffect(() => {
     if (courseId) {
       fetch(`http://localhost:3000/api/courses/${courseId}`)
@@ -25,6 +28,15 @@ function CourseDiscussion({ setPage, role, courseId }) {
       .then((data) => setCourse(data[0]))
       .catch((err) => console.error(err));
   }, [courseId]);
+
+  useEffect(() => {
+    if (!effectiveCourseId) return;
+
+    fetch(`http://localhost:3000/api/courses/${effectiveCourseId}/posts`)
+      .then(res => res.json())
+      .then(data => setPosts(data))
+      .catch(err => console.error(err));
+  }, [effectiveCourseId]);
 
   const discussions = [
     {
@@ -79,6 +91,8 @@ function CourseDiscussion({ setPage, role, courseId }) {
                 type="text"
                 placeholder="Add your comment..."
                 className="discussion-input"
+                value={newText}
+                onChange={(e) => setNewText(e.target.value)}
               />
 
               <label className="file-upload-button">
@@ -89,7 +103,35 @@ function CourseDiscussion({ setPage, role, courseId }) {
                   hidden
                 />
               </label>
-              <button className="discussion-send-button">Send</button>
+              <button
+                className="discussion-send-button"
+                onClick={async () => {
+                  if (!newText.trim()) return;
+                  if (!effectiveCourseId) return;
+
+                  const res = await fetch(
+                    `http://localhost:3000/api/courses/${effectiveCourseId}/posts`,
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({ text: newText })
+                    }
+                  );
+
+                  const data = await res.json();
+
+                  if (res.ok) {
+                    setPosts((prev) => [data, ...prev]);
+                    setNewText("");
+                  } else {
+                    console.error(data);
+                  }
+                }}
+              >
+                Send
+              </button>
             </div>
 
             {fileName && (
@@ -106,14 +148,14 @@ function CourseDiscussion({ setPage, role, courseId }) {
             )}
 
             <div className="discussion-list">
-              {discussions.map((post) => (
-                <div className="discussion-post" key={post.id}>
+              {posts.map((post) => (
+                <div className="discussion-post" key={post._id}>
                   <div className="discussion-post-header">
                     <div className="discussion-avatar">
-                      {post.author.charAt(0)}
+                      U
                     </div>
                     <div className="discussion-post-info">
-                      <p className="discussion-author">{post.author}</p>
+                      <p className="discussion-author">User</p>
                       <p className="discussion-meta">{post.meta}</p>
                     </div>
 
@@ -124,9 +166,9 @@ function CourseDiscussion({ setPage, role, courseId }) {
                     )}
                   </div>
 
-                  <p className="discussion-content">{post.content}</p>
+                  <p className="discussion-content">{post.text}</p>
 
-                  {post.replies.length > 0 && (
+                  {post.replies?.length > 0 && (
                     <div className="discussion-replies">
                       {post.replies.map((reply) => (
                         <div className="discussion-reply" key={reply.id}>

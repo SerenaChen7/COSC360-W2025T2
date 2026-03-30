@@ -22,16 +22,33 @@ function CourseOverview({ setPage, role, courseId }) {
   const handleJoin = async () => {
     if (!courseId) return;
     setJoining(true);
+
     try {
       const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
         method: "POST",
       });
-      if (!res.ok) throw new Error("Failed to join");
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to join");
+      }
+
       const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
       if (!ids.includes(courseId)) {
         localStorage.setItem("joinedCourseIds", JSON.stringify([...ids, courseId]));
       }
+
       setIsJoined(true);
+
+      setCourse((prev) =>
+        prev
+          ? {
+              ...prev,
+              memberCount: data.memberCount
+            }
+          : prev
+      );
     } catch (err) {
       console.error(err);
     } finally {
@@ -54,39 +71,6 @@ function CourseOverview({ setPage, role, courseId }) {
       .catch(err => console.error(err));
   }, [courseId]);
 
-  const guidelines = [
-    "Be respectful and constructive.",
-    "Do not share solutions that violate academic integrity policies.",
-    "No spam or unrelated advertising."
-  ];
-
-  const schedule = [
-    "Assignment 2 Q&A – Oct 15, 7:00 PM (Zoom)",
-    "Zoom link: https://app.zoom.us/wc/79072424895/start",
-    "Midterm Review – Oct 22, 6:00 PM (Room SCI 234)",
-    "Project Demo Practice – Nov 5, 5:30 PM (TBA)"
-  ];
-
-  const activities = [
-    "12 new discussions this week",
-    "48 replies in last 7 days",
-    "Last post: 2 hours ago"
-  ];
-
-  const resources = [
-    {
-      title: "Week 4 Slides",
-      meta: "week4slideswithclicker.pptx (1 attachment)"
-    },
-    {
-      title: "Assignment 1 Guide",
-      meta: "file.doc (2 attachments)"
-    },
-    {
-      title: "JavaScript Review Sheet",
-      meta: "review.pdf (1 attachment)"
-    }
-  ];
 
   return (
     <div className="course-overview-page">
@@ -104,62 +88,95 @@ function CourseOverview({ setPage, role, courseId }) {
       <main className="course-overview-content">
         <section className="course-overview-main">
           <div className="overview-card">
-            <h3>Community Guidelines</h3>
+            <h3>About This Course</h3>
+            <p>{course?.description || "No description available."}</p>
+          </div>
+
+          <div className="overview-card">
+            <h3>Course Info</h3>
             <ul>
-              {guidelines.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
+              <li>
+                Start Date:{" "}
+                {course?.duration?.startDate
+                  ? new Date(course.duration.startDate).toLocaleDateString()
+                  : "TBA"}
+              </li>
+              <li>
+                End Date:{" "}
+                {course?.duration?.endDate
+                  ? new Date(course.duration.endDate).toLocaleDateString()
+                  : "TBA"}
+              </li>
+              <li>Location: {course?.location || "TBA"}</li>
+              <li>Field: {course?.field || "TBA"}</li>
+              <li>Type: {course?.type || "TBA"}</li>
             </ul>
           </div>
 
           <div className="overview-card">
-            <h3>Upcoming Schedule</h3>
+            <h3>Course Stats</h3>
             <ul>
-              {schedule.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
+              <li>Members: {course?.memberCount ?? 0}</li>
+              <li>Discussions: {course?.discussionCount || 0}</li>
+              <li>Status: Open to Join</li>
             </ul>
           </div>
 
           <div className="overview-card">
-            <h3>Recent Activity</h3>
-            <ul>
-              {activities.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="overview-card">
-            <h3>Popular Resources</h3>
-            <div className="resource-list">
-              {resources.map((resource, index) => (
-                <div className="resource-item" key={index}>
-                  <p className="resource-title">{resource.title}</p>
-                  <p className="resource-meta">{resource.meta}</p>
-                </div>
-              ))}
+            <h3>Course Tags</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[course?.field, course?.type, ...(course?.tags || [])]
+                .filter(Boolean)
+                .map((tag, index) => (
+                  <span
+                    key={index}
+                    style={{
+                      padding: "6px 12px",
+                      background: "#1f2a44",
+                      borderRadius: "12px",
+                      fontSize: "12px"
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
             </div>
           </div>
         </section>
 
         <aside className="course-overview-sidebar">
-          {!isJoined && (
-            <div className="join-card">
-              <h3>Join This Hub</h3>
-              <p className="join-subtitle">Ready to join?</p>
-              <p>
-                Become part of the community to participate in discussions,
-                access shared resources, and stay updated on course discussions.
-              </p>
-              {role === "guest" && <button className="join-button">➤ Login to Join</button>}
-              {role === "user" && (
+          <div className="join-card">
+            <h3>Join This Hub</h3>
+            <p className="join-subtitle">
+              {isJoined ? "You are already a member" : "Ready to join?"}
+            </p>
+            <p>
+              Become part of the community to participate in discussions,
+              access shared resources, and stay updated on course discussions.
+            </p>
+
+            {role === "guest" && (
+              <button className="join-button">➤ Login to Join</button>
+            )}
+
+            {role === "user" &&
+              (isJoined ? (
+                <button className="join-button" disabled>
+                  ✓ Joined
+                </button>
+              ) : (
                 <button className="join-button" onClick={handleJoin} disabled={joining}>
                   ➤ {joining ? "Joining..." : "Join Course"}
                 </button>
-              )}
-            </div>
-          )}
+              ))}
+
+            {role === "admin" && (
+              <button className="join-button" disabled>
+                Admin View
+              </button>
+            )}
+          </div>
+
           {role === "admin" && <AdminActions />}
         </aside>
       </main>
