@@ -28,3 +28,6 @@ dist-ssr
 
 # Demo code
 cosc360-demo-code/
+
+# Uploaded files
+backend/uploads/
