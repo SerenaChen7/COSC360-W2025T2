@@ -4,6 +4,7 @@ import {
   getCourseById,
   searchCourses,
   createCourse,
+  updateCourse,
   getCourseOptions,
   joinCourse,
   getCoursePosts,
@@ -34,6 +35,9 @@ router.get("/", getAllCourses);
 
 // GET /api/courses/:id
 router.get("/:id", getCourseById);
+
+// PATCH /api/courses/:id
+router.patch("/:id", updateCourse);
 
 // POST /api/courses/:id/join
 router.post("/:id/join", joinCourse);

@@ -1,9 +1,10 @@
+import { useState } from "react";
 import "./AdminActions.css";
+import EditCourseModal from "./EditCourseModal";
 
-// 1. Pass the courseId so the database knows which record to remove
-function AdminActions({ courseId }) {
-
-  // 2. This is the logic for Task 5: Delete (Remove Data)
+function AdminActions({ courseId, course, onCourseUpdated }) {
+  const [showEdit, setShowEdit] = useState(false);
+  
   const handleDelete = async () => {
     // A simple check so we don't delete by accident
     const confirmDelete = window.confirm("Are you sure you want to delete this Hub forever?");
@@ -27,21 +28,32 @@ function AdminActions({ courseId }) {
       }
     }
   };
+return (
+    <>
+      <div className="admin-actions-card">
+        <h3>ACTIONS</h3>
+        <button className="admin-action-button" onClick={() => setShowEdit(true)}>
+          Edit Hub
+        </button>
+        
+        <button className="admin-action-button">Manage Members</button>
 
-  return (
-    <div className="admin-actions-card">
-      <h3>ACTIONS</h3>
-      <button className="admin-action-button">Edit Hub</button>
-      <button className="admin-action-button">Manage Members</button>
-      
-      {/* 3. Using the existing 'danger' class for our Delete button */}
-      <button 
-        className="admin-action-button danger" 
-        onClick={handleDelete}
-      >
-        Delete Hub 🗑️
-      </button>
-    </div>
+        <button className="admin-action-button danger" onClick={handleDelete}>
+          Delete Hub 🗑️
+        </button>
+      </div>
+
+      {showEdit && course && (
+        <EditCourseModal
+          course={course}
+          onClose={() => setShowEdit(false)}
+          onUpdated={(updated) => {
+            onCourseUpdated?.(updated);
+            setShowEdit(false);
+          }}
+        />
+      )}
+    </>
   );
 }
 

@@ -394,6 +394,57 @@ export const deleteCourse = async (req, res) => {
     res.status(500).json({ 
       message: "Failed to delete the course", 
       error: error.message 
+export const updateCourse = async (req, res) => {
+  try {
+    const { title, description, type, field, tags, location, startDate, endDate } = req.body;
+
+    const options = await CourseOptions.findOne();
+    if (!options) {
+      return res.status(400).json({ message: "Course options not set up yet" });
+    }
+
+    if (type && !options.types.includes(type)) {
+      return res.status(400).json({ message: "Invalid course type" });
+    }
+
+    if (field && !options.fields.includes(field)) {
+      return res.status(400).json({ message: "Invalid course field" });
+    }
+
+    if (tags) {
+      const submittedTags = Array.isArray(tags) ? tags : [];
+      const hasInvalidTag = submittedTags.some((tag) => !options.tags.includes(tag));
+      if (hasInvalidTag) {
+        return res.status(400).json({ message: "One or more tags are invalid" });
+      }
+    }
+
+    const updateFields = {};
+    if (title !== undefined) updateFields.title = title;
+    if (description !== undefined) updateFields.description = description;
+    if (type !== undefined) updateFields.type = type;
+    if (field !== undefined) updateFields.field = field;
+    if (tags !== undefined) updateFields.tags = Array.isArray(tags) ? tags : [];
+    if (location !== undefined) updateFields.location = location;
+    if (startDate !== undefined) updateFields["duration.startDate"] = startDate || null;
+    if (endDate !== undefined) updateFields["duration.endDate"] = endDate || null;
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedCourse) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.status(200).json(updatedCourse);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update course", error: error.message });
+  }
+};
+
 export const downloadAttachment = async (req, res) => {
   try {
     const { postId, attachmentId } = req.params;
