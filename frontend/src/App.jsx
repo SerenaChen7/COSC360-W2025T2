@@ -12,6 +12,9 @@ import Dashboard from "./pages/Dashboard";
 export default function App() {
   const [page, setPage] = useState("login");
   const [role, setRole] = useState("user");
+  const [currentUser, setCurrentUser] = useState(
+  JSON.parse(localStorage.getItem("user")) || null
+);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   return (
     <>
@@ -87,13 +90,15 @@ export default function App() {
         <Home
           setPage={setPage}
           setSelectedCourseId={setSelectedCourseId}
+          currentUser={currentUser}
         />
       )}
 
-      {page === "login" && (
+            {page === "login" && (
         <Login
           setPage={setPage}
           setRole={setRole}
+          setCurrentUser={setCurrentUser}
         />
       )}
 
@@ -120,18 +125,21 @@ export default function App() {
           courseId={selectedCourseId}
         />
       )}
-        {page === "create" && (
-          <>
-            <Dashboard
-              setPage={setPage}
-              setSelectedCourseId={setSelectedCourseId}
-            />
-            <CreateCourse
-              setPage={setPage}
-              setSelectedCourseId={setSelectedCourseId}
-            />
-          </>
-        )}
+      {page === "create" && (
+        <>
+          <Home
+            setPage={setPage}
+            setSelectedCourseId={setSelectedCourseId}
+            currentUser={currentUser}
+
+          />
+          <CreateCourse
+            setPage={setPage}
+            setSelectedCourseId={setSelectedCourseId}
+
+          />
+        </>
+      )}
       {page === "dashboard" && (
         <Dashboard
           setPage={setPage}
