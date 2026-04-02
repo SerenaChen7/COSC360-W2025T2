@@ -8,7 +8,8 @@ import {
   joinCourse,
   getCoursePosts,
   createPost,
-  deletePost
+  deletePost,
+  deleteCourse
 } from "../controllers/courseController.js";
 
 const router = express.Router();
@@ -39,5 +40,8 @@ router.post("/:id/posts", createPost);
 
 // DELETE /api/courses/:courseId/posts/:postId
 router.delete("/:courseId/posts/:postId", deletePost);
+
+// DELETE /api/courses/:id
+router.delete("/:id", deleteCourse);
 
 export default router;

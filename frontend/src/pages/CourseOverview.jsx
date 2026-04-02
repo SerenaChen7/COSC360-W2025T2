@@ -177,7 +177,7 @@ function CourseOverview({ setPage, role, courseId }) {
             )}
           </div>
 
-          {role === "admin" && <AdminActions />}
+          {role === "admin" && <AdminActions courseId={courseId} />}
         </aside>
       </main>
     </div>

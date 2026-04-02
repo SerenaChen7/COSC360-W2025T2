@@ -325,3 +325,27 @@ export const deletePost = async (req, res) => {
     });
   }
 };
+
+// DELETE /api/courses/:id
+export const deleteCourse = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+
+    // Find the course and delete it
+    const deletedCourse = await Course.findByIdAndDelete(courseId);
+
+    if (!deletedCourse) {
+      return res.status(404).json({ message: "Oops! This course doesn't exist anymore." });
+    }
+
+    // Also delete all posts associated with this course
+    await Post.deleteMany({ course: courseId });
+
+    res.status(200).json({ message: "Course and its posts were removed successfully!" });
+  } catch (error) {
+    res.status(500).json({ 
+      message: "Failed to delete the course", 
+      error: error.message 
+    });
+  }
+};
