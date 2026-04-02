@@ -9,8 +9,9 @@ import {
   joinCourse,
   getCoursePosts,
   createPost,
-  createReply,
   deletePost,
+  deleteCourse
+  createReply,
   downloadAttachment
 } from "../controllers/courseController.js";
 import multer from "multer";
@@ -47,6 +48,8 @@ router.get("/:id/posts", getCoursePosts);
 // DELETE /api/courses/:courseId/posts/:postId
 router.delete("/:courseId/posts/:postId", deletePost);
 
+// DELETE /api/courses/:id
+router.delete("/:id", deleteCourse);
 // POST /api/courses/:id/posts with files upload
 router.post("/:id/posts", upload.array("files", 5), createPost);
 
