@@ -4,8 +4,8 @@ const postSchema = new mongoose.Schema({
   // Required text content for the post
   text: { 
     type: String, 
-    required: true,
-    trim: true 
+    trim: true,
+    default: ""
   },
   // Array of attachment objects to support multiple files
   attachments: [{
@@ -35,7 +35,23 @@ const postSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User', 
     required: true 
-  }
+  },
+  replies: [{
+    text: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 }, { 
   // Automatically creates createdAt and updatedAt fields
   timestamps: true 

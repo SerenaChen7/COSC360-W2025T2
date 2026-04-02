@@ -1,6 +1,7 @@
 import Course from "../models/Course.js";
 import CourseOptions from "../models/CourseOptions.js";
 import Post from "../models/Post.js";
+import path from "path";
 
 export const getAllCourses = async (req, res) => {
   try {
@@ -277,28 +278,75 @@ export const getCoursePosts = async (req, res) => {
 export const createPost = async (req, res) => {
   try {
     const { text } = req.body;
+    const files = req.files || [];
     const courseId = req.params.id;
 
-    if (!text || !text.trim()) {
-      return res.status(400).json({ message: "Text is required" });
+    if ((!text || !text.trim()) && files.length === 0) {
+      return res.status(400).json({ message: "Text or file is required" });
     }
 
     if (!courseId) {
       return res.status(400).json({ message: "Course id is required" });
     }
 
+    const attachments = files.map((file) => ({
+      fileName: file.originalname,
+      fileUrl: `/uploads/${file.filename}`,
+      fileType: file.mimetype,
+      uploadedBy: "000000000000000000000000"
+    }));
+
     const newPost = new Post({
-      text: text.trim(),
+      text: text?.trim() || "",
       course: courseId,
+      attachments,
       author: "000000000000000000000000"
     });
 
     const savedPost = await newPost.save();
-
     res.status(201).json(savedPost);
   } catch (error) {
+    console.error("createPost error:", error);
     res.status(500).json({
       message: "Failed to create post",
+      error: error.message
+    });
+  }
+};
+
+// POST /api/courses/:courseId/posts/:postId/replies
+export const createReply = async (req, res) => {
+  try {
+    const { text } = req.body;
+    const { courseId, postId } = req.params;
+
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: "Reply text is required" });
+    }
+
+    const post = await Post.findOne({
+      _id: postId,
+      course: courseId
+    });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const newReply = {
+      text: text.trim(),
+      author: "000000000000000000000000",
+      createdAt: new Date()
+    };
+
+    post.replies.push(newReply);
+    await post.save();
+
+    res.status(201).json(post);
+  } catch (error) {
+    console.error("createReply error:", error);
+    res.status(500).json({
+      message: "Failed to create reply",
       error: error.message
     });
   }
@@ -346,6 +394,28 @@ export const deleteCourse = async (req, res) => {
     res.status(500).json({ 
       message: "Failed to delete the course", 
       error: error.message 
+export const downloadAttachment = async (req, res) => {
+  try {
+    const { postId, attachmentId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const attachment = post.attachments.id(attachmentId);
+    if (!attachment) {
+      return res.status(404).json({ message: "Attachment not found" });
+    }
+
+    const relativePath = attachment.fileUrl.replace(/^\/+/, "");
+    const absolutePath = path.resolve(relativePath);
+
+    return res.download(absolutePath, attachment.fileName);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to download attachment",
+      error: error.message
     });
   }
 };

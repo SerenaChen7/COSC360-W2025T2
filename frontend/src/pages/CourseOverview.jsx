@@ -132,9 +132,11 @@ function CourseOverview({ setPage, role, courseId }) {
                     key={index}
                     style={{
                       padding: "6px 12px",
-                      background: "#1f2a44",
-                      borderRadius: "12px",
-                      fontSize: "12px"
+                      background: "#0b2d5c",
+                      color: "#ffffff",
+                      borderRadius: "999px",
+                      fontSize: "12px",
+                      fontWeight: "500"
                     }}
                   >
                     {tag}

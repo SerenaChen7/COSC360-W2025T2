@@ -10,9 +10,15 @@ import {
   createPost,
   deletePost,
   deleteCourse
+  createReply,
+  downloadAttachment
 } from "../controllers/courseController.js";
+import multer from "multer";
 
 const router = express.Router();
+
+// Set up multer for file uploads
+const upload = multer({ dest: "uploads/" });
 
 // GET /api/courses/options
 router.get("/options", getCourseOptions);
@@ -35,13 +41,18 @@ router.post("/:id/join", joinCourse);
 // GET /api/courses/:id/posts
 router.get("/:id/posts", getCoursePosts);
 
-// POST /api/courses/:id/posts
-router.post("/:id/posts", createPost);
-
 // DELETE /api/courses/:courseId/posts/:postId
 router.delete("/:courseId/posts/:postId", deletePost);
 
 // DELETE /api/courses/:id
 router.delete("/:id", deleteCourse);
+// POST /api/courses/:id/posts with files upload
+router.post("/:id/posts", upload.array("files", 5), createPost);
+
+// POST /api/courses/:courseId/posts/:postId/replies
+router.post("/:courseId/posts/:postId/replies", createReply);
+
+// GET /api/courses/:courseId/posts/:postId/attachments/:attachmentId/download
+router.get("/posts/:postId/attachments/:attachmentId/download", downloadAttachment);
 
 export default router;
