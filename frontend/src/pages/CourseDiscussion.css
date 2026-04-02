@@ -32,7 +32,7 @@
 
 .discussion-card {
   background: #ffffff;
-  border: 1px solid #d8dee8;
+  border: 1px solid #cfd8ea;
   border-radius: 6px;
   padding: 16px 18px;
 }
@@ -42,6 +42,18 @@
   font-size: 16px;
   font-weight: 700;
   color: #17305c;
+}
+
+.discussion-file-link {
+  display: inline-block;
+  font-size: 13px;
+  color: #0b2d5c;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.discussion-file-link:hover {
+  text-decoration: underline;
 }
 
 .discussion-subtitle {
@@ -85,14 +97,23 @@
   background: #123d79;
 }
 
+.discussion-post {
+  padding: 14px 12px;
+  border: 1px solid #cfd8ea;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
 .discussion-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.discussion-post {
-  padding-top: 4px;
+.discussion-post-actions {
+  margin: 8px 0 0 44px;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .discussion-post-header {
@@ -274,6 +295,39 @@
   transform: scale(1.05);
 }
 
+.reply-toggle-button {
+  border: none;
+  background: transparent;
+  color: #0b2d5c;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reply-toggle-button:hover {
+  text-decoration: underline;
+}
+.reply-input-wrapper {
+  margin: 10px 0 0 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.discussion-reply-send-button {
+  align-self: flex-end;
+}
+
+.discussion-reply-send-button:hover {
+  background: #123d79;
+}
+
+.discussion-reply-send-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .join-card {
   background: #ffffff;
   border: 1px solid #d8dee8;
@@ -331,3 +385,49 @@
     height: 40px;
   }
 }
+
+.pending-files-wrapper {
+  margin: 10px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  background: #f7f9fc;
+}
+
+.pending-files-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #56657f;
+}
+
+.pending-files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pending-file-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #e1e7f0;
+}
+
+.pending-file-name {
+  font-size: 13px;
+  color: #17305c;
+  word-break: break-word;
+}
+
+.discussion-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 0 44px;
+}
+
