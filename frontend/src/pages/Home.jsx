@@ -24,7 +24,7 @@ const SORT_OPTIONS = [
   { value: "least", label: "Least Members" },
 ];
 
-export default function Home({ setPage, setSelectedCourseId }) {
+export default function Home({ setPage, setSelectedCourseId, currentUser }) {
   const [allCourses, setAllCourses] = useState([]);
   const [searchResults, setSearchResults] = useState(null);
   const [courseFilter, setCourseFilter] = useState([]);
@@ -92,6 +92,19 @@ export default function Home({ setPage, setSelectedCourseId }) {
       <Header />
       <Navbar setPage={setPage} />
       <HeroBanner />
+      <div style={{ padding: "20px 60px 0 60px" }}>
+  <h2
+    style={{
+      fontFamily: '"Public Sans", sans-serif',
+      fontSize: "26px",
+      fontWeight: 700,
+      color: "#001D40",
+      margin: 0
+    }}
+  >
+    Hi {currentUser?.username || "Guest"},
+  </h2>
+</div>
 
       <SpotlightSection favorites={favorites} onToggleFavorite={toggleFavorite} />
 

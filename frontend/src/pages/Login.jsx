@@ -8,7 +8,7 @@ import facebookIcon from "../assets/facebook-icon.png";
 
 import "./Login.css";
 
-export default function Login({ setPage, setRole }) {
+export default function Login({ setPage, setRole, setCurrentUser }) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,6 +48,7 @@ export default function Login({ setPage, setRole }) {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      setCurrentUser(data.user);
 
       if (data.user?.role) {
         setRole(data.user.role);
