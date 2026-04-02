@@ -394,6 +394,9 @@ export const deleteCourse = async (req, res) => {
     res.status(500).json({ 
       message: "Failed to delete the course", 
       error: error.message 
+    });
+  }
+};
 export const updateCourse = async (req, res) => {
   try {
     const { title, description, type, field, tags, location, startDate, endDate } = req.body;

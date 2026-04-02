@@ -10,7 +10,7 @@ import {
   getCoursePosts,
   createPost,
   deletePost,
-  deleteCourse
+  deleteCourse,
   createReply,
   downloadAttachment
 } from "../controllers/courseController.js";
