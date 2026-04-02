@@ -179,7 +179,12 @@ function CourseOverview({ setPage, role, courseId }) {
             )}
           </div>
 
-          {role === "admin" && <AdminActions />}
+          {role === "admin" && (
+            <AdminActions
+              course={course}
+              onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
+            />
+          )}
         </aside>
       </main>
     </div>
