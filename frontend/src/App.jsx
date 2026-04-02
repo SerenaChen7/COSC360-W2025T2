@@ -94,7 +94,7 @@ export default function App() {
         />
       )}
 
-            {page === "login" && (
+      {page === "login" && (
         <Login
           setPage={setPage}
           setRole={setRole}
@@ -127,7 +127,7 @@ export default function App() {
       )}
       {page === "create" && (
         <>
-          <Home
+          <Dashboard
             setPage={setPage}
             setSelectedCourseId={setSelectedCourseId}
             currentUser={currentUser}
