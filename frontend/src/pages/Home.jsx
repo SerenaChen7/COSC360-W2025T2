@@ -27,6 +27,7 @@ const SORT_OPTIONS = [
 export default function Home({ setPage, setSelectedCourseId, currentUser }) {
   const [allCourses, setAllCourses] = useState([]);
   const [searchResults, setSearchResults] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [courseFilter, setCourseFilter] = useState([]);
   const [levelFilter, setLevelFilter] = useState([]);
   const [sortFilter, setSortFilter] = useState([]);
@@ -39,20 +40,41 @@ export default function Home({ setPage, setSelectedCourseId, currentUser }) {
       .catch((err) => console.error("Failed to fetch courses:", err));
   }, []);
 
-  const handleSearchUpdate = async (value) => {
-    // Basic validation: ignore empty search terms
-    if (!value.trim()) {
-      setSearchResults(null);
-      return;
-    }
-    try {
-      const response = await fetch(`http://localhost:3000/api/courses/search?q=${value}`); //Fetch GET request using query parameters (?q=)
-      const data = await response.json();
-      setSearchResults(data);
-    } catch (error) {
-      console.error("Search failed:", error);
-    }
-  };
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (!searchTerm.trim()) {
+        setSearchResults(null);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/courses/search?q=${searchTerm}`
+        );
+        const data = await response.json();
+        setSearchResults(data);
+      } catch (error) {
+        console.error("Search failed:", error);
+      }
+    }, 300); // debounce 300ms
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // const handleSearchUpdate = async (value) => {
+  //   // Basic validation: ignore empty search terms
+  //   if (!value.trim()) {
+  //     setSearchResults(null);
+  //     return;
+  //   }
+  //   try {
+  //     const response = await fetch(`http://localhost:3000/api/courses/search?q=${value}`); //Fetch GET request using query parameters (?q=)
+  //     const data = await response.json();
+  //     setSearchResults(data);
+  //   } catch (error) {
+  //     console.error("Search failed:", error);
+  //   }
+  // };
 
   // Derive course type options (COSC, MATH, STAT, etc.) from loaded courses
   const courseTypeOptions = useMemo(() => {
@@ -135,7 +157,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser }) {
               singleSelect
             />
           </div>
-          <SearchBar onSearchSubmit={handleSearchUpdate} />
+          <SearchBar onSearchChange={setSearchTerm} />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>

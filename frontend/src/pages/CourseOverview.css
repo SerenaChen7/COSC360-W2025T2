@@ -57,6 +57,37 @@
   line-height: 1.55;
 }
 
+.overview-recent-item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.overview-recent-item:last-child {
+  border-bottom: none;
+}
+
+.overview-recent-author {
+  font-size: 13px;
+  color: #9fb3c8;
+  margin-bottom: 6px;
+}
+
+.overview-recent-text {
+  font-size: 14px;
+  color: #ffffff;
+  line-height: 1.4;
+}
+
+.overview-link-button {
+  margin-top: 12px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  background: #0b2d5c;
+  color: white;
+  cursor: pointer;
+}
+
 .course-overview-sidebar {
   position: static;
 }

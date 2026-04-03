@@ -6,8 +6,25 @@ import "./CourseOverview.css";
 import AdminActions from "../components/AdminActions";
 import { useEffect, useState } from "react";
 
-function CourseOverview({ setPage, role, courseId }) {
+function CourseOverview({ setPage, role, courseId, currentUser }) {
   const [course, setCourse] = useState(null);
+  const [recentPosts, setRecentPosts] = useState([]);
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (!courseId) return;
+
+    fetch(`http://localhost:3000/api/courses/${courseId}/posts`)
+      .then((res) => res.json())
+      .then((data) => setRecentPosts(data.slice(0, 3)))
+      .catch((err) => console.error(err));
+  }, [courseId]);
+
+  const formatTime = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
 
   const [isJoined, setIsJoined] = useState(() => {
     try {
@@ -26,6 +43,9 @@ function CourseOverview({ setPage, role, courseId }) {
     try {
       const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       const data = await res.json();
@@ -118,7 +138,7 @@ function CourseOverview({ setPage, role, courseId }) {
             <ul>
               <li>Members: {course?.memberCount ?? 0}</li>
               <li>Discussions: {course?.discussionCount || 0}</li>
-              <li>Status: Open to Join</li>
+              <li>Status: {isJoined ? "Joined" : "Open to Join"}</li>
             </ul>
           </div>
 
@@ -144,6 +164,32 @@ function CourseOverview({ setPage, role, courseId }) {
                 ))}
             </div>
           </div>
+
+          <div className="overview-card">
+            <h3>Recent Discussions</h3>
+            {recentPosts.length === 0 ? (
+              <p className="overview-empty">No discussion yet.</p>
+            ) : (
+              <div className="overview-recent-list">
+                {recentPosts.map((post) => (
+                  <div key={post._id} className="overview-recent-item">
+                    <p className="overview-recent-author">
+                      {post.author?.username || "User"} · {formatTime(post.createdAt)}
+                    </p>
+                    <p className="overview-recent-text">
+                      {post.text || "Shared attachments"}
+                    </p>
+                  </div>
+                ))}
+                <button
+                  className="overview-link-button"
+                  onClick={() => setPage("course-discussion")}
+                >
+                  View all discussions
+                </button>
+              </div>
+            )}
+          </div>
         </section>
 
         <aside className="course-overview-sidebar">
@@ -158,7 +204,9 @@ function CourseOverview({ setPage, role, courseId }) {
             </p>
 
             {role === "guest" && (
-              <button className="join-button">➤ Login to Join</button>
+              <button className="join-button" onClick={() => setPage("login")}>
+                ➤ Login to Join
+              </button>
             )}
 
             {role === "user" &&
