@@ -6,7 +6,7 @@ import "./CourseOverview.css";
 import AdminActions from "../components/AdminActions";
 import { useEffect, useState } from "react";
 
-function CourseOverview({ setPage, role, courseId, currentUser }) {
+function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
   const [course, setCourse] = useState(null);
   const [recentPosts, setRecentPosts] = useState([]);
   const token = localStorage.getItem("token");
@@ -95,7 +95,12 @@ function CourseOverview({ setPage, role, courseId, currentUser }) {
   return (
     <div className="course-overview-page">
       <Header />
-      <Navbar />
+      <Navbar
+        setPage={setPage}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        setRole={setRole}
+      />
 
       <div className="course-overview-hero">
         <CourseBanner course={course} />
