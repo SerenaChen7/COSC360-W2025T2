@@ -7,7 +7,7 @@ import "./CourseDiscussion.css";
 import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 
-function CourseDiscussion({ setPage, role, courseId }) {
+function CourseDiscussion({ setPage, role, courseId, currentUser }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [course, setCourse] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -21,6 +21,7 @@ function CourseDiscussion({ setPage, role, courseId }) {
   const [isReplySending, setIsReplySending] = useState(false);
 
   const effectiveCourseId = courseId || course?._id;
+  const token = localStorage.getItem("token");
 
   const formatTime = (dateString) => {
     if (!dateString) return "";
@@ -36,6 +37,11 @@ function CourseDiscussion({ setPage, role, courseId }) {
     return date.toLocaleDateString();
   };
 
+  const getInitial = (name) => {
+    if (!name) return "U";
+    return name.charAt(0).toUpperCase();
+  };
+
   const handleDeletePost = async (postId) => {
     if (!effectiveCourseId) return;
 
@@ -46,7 +52,10 @@ function CourseDiscussion({ setPage, role, courseId }) {
       const res = await fetch(
         `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}`,
         {
-          method: "DELETE"
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 
@@ -58,6 +67,38 @@ function CourseDiscussion({ setPage, role, courseId }) {
       }
 
       setPosts((prev) => prev.filter((post) => post._id !== postId));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteReply = async (postId, replyId) => {
+    if (!effectiveCourseId) return;
+
+    const confirmed = window.confirm("Are you sure you want to delete this reply?");
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}/replies/${replyId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data);
+        return;
+      }
+
+      setPosts((prev) =>
+        prev.map((post) => (post._id === postId ? data : post))
+      );
     } catch (error) {
       console.error(error);
     }
@@ -118,6 +159,9 @@ function CourseDiscussion({ setPage, role, courseId }) {
           `http://localhost:3000/api/courses/${effectiveCourseId}/posts`,
           {
             method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
             body: formData
           }
         );
@@ -152,7 +196,8 @@ function CourseDiscussion({ setPage, role, courseId }) {
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({ text: replyText })
         }
@@ -225,7 +270,11 @@ function CourseDiscussion({ setPage, role, courseId }) {
 
             <div className="discussion-input-row">
               <textarea
-                placeholder="Add your comment... (Enter to send, Shift+Enter for new line)"
+                placeholder={
+                  currentUser
+                    ? "Add your comment... (Enter to send, Shift+Enter for new line)"
+                    : "Log in to join the discussion"
+                }
                 className="discussion-input"
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
@@ -236,7 +285,7 @@ function CourseDiscussion({ setPage, role, courseId }) {
                     await handleSendPost();
                   }
                 }}
-                disabled={isSending}
+                disabled={isSending || !currentUser}
               />
 
               <label className="file-upload-button" title="Attach files">
@@ -247,14 +296,14 @@ function CourseDiscussion({ setPage, role, courseId }) {
                   multiple
                   onChange={handleFileChange}
                   hidden
-                  disabled={isSending}
+                  disabled={isSending || !currentUser}
                 />
               </label>
 
               <button
                 className="discussion-send-button"
                 onClick={handleSendPost}
-                disabled={isSending}
+                disabled={isSending || !currentUser}
               >
                 {isSending ? "Sending..." : "Send"}
               </button>
@@ -285,24 +334,31 @@ function CourseDiscussion({ setPage, role, courseId }) {
             )}
 
             <div className="discussion-list">
-              {posts.map((post) => (
-                <div className="discussion-post" key={post._id}>
+              {posts.map((post) => {
+                const canDeletePost =
+                  currentUser &&
+                  (currentUser.role === "admin" ||
+                    post.author?._id === currentUser.id);
+
+                return (
+                  <div className="discussion-post" key={post._id}>
                   <div className="discussion-post-header">
-                    <div className="discussion-avatar">U</div>
+                    <div className="discussion-avatar">
+                      {getInitial(post.author?.username || post.authorName)}
+                    </div>
 
                     <div className="discussion-post-info">
                       <p className="discussion-author">
-                        User{" "}
+                        {post.author?.username || post.authorName || "User"}{" "}
                         <span style={{ color: "#7b879b" }}>
                           · {formatTime(post.createdAt)}
                         </span>
                       </p>
                     </div>
 
-                    {role === "admin" && (
+                    {canDeletePost && (
                       <button
                         className="remove-icon-button"
-                        title="Remove comment"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeletePost(post._id);
@@ -312,6 +368,7 @@ function CourseDiscussion({ setPage, role, courseId }) {
                       </button>
                     )}
                   </div>
+
 
                   {post.text && (
                     <p className="discussion-content">{post.text}</p>
@@ -363,14 +420,14 @@ function CourseDiscussion({ setPage, role, courseId }) {
                             await handleSendReply(post._id);
                           }
                         }}
-                        disabled={isReplySending}
+                        disabled={isReplySending || !currentUser}
                       />
 
                       <button
                         type="button"
                         className="discussion-reply-send-button"
                         onClick={() => handleSendReply(post._id)}
-                        disabled={isReplySending}
+                        disabled={isReplySending || !currentUser}
                       >
                         {isReplySending ? "Sending..." : "Send Reply"}
                       </button>
@@ -379,27 +436,39 @@ function CourseDiscussion({ setPage, role, courseId }) {
 
                   {post.replies?.length > 0 && (
                     <div className="discussion-replies">
-                      {post.replies.map((reply, index) => (
-                        <div className="discussion-reply" key={reply._id || index}>
+                      {post.replies.map((reply, index) => {
+                        const canDeleteReply =
+                          currentUser &&
+                          (currentUser.role === "admin" ||
+                            reply.author?._id === currentUser.id);
+
+                        return (
+                          <div className="discussion-reply" key={reply._id || index}>
                           <div className="discussion-reply-arrow">↪</div>
 
                           <div className="discussion-reply-body">
                             <div className="discussion-post-header">
-                              <div className="discussion-avatar small">U</div>
+                              <div className="discussion-avatar small">
+                                {getInitial(reply.author?.username || reply.authorName)}
+                              </div>
 
                               <div className="discussion-post-info">
                                 <p className="discussion-author">
-                                  User{" "}
+                                  {reply.author?.username || reply.authorName || "User"}{" "}
                                   <span style={{ color: "#7b879b" }}>
                                     · {formatTime(reply.createdAt)}
                                   </span>
                                 </p>
                               </div>
 
-                              {role === "admin" && (
+                              {canDeleteReply && (
                                 <button
                                   className="remove-icon-button"
-                                  title="Remove comment"
+                                  title="Delete reply"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteReply(post._id, reply._id);
+                                  }}
                                 >
                                   <img src={removeIcon} alt="Remove" />
                                 </button>
@@ -409,11 +478,13 @@ function CourseDiscussion({ setPage, role, courseId }) {
                             <p className="discussion-content">{reply.text}</p>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

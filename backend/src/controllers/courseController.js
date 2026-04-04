@@ -54,15 +54,31 @@ export const getAllCourses = async (req, res) => {
 
 export const joinCourse = async (req, res) => {
   try {
+    const currentUserId = req.user.userId;
+
+    if (!currentUserId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     const course = await Course.findByIdAndUpdate(
       req.params.id,
       { $inc: { memberCount: 1 } },
       { new: true }
     );
-    if (!course) return res.status(404).json({ message: "Course not found" });
-    res.status(200).json({ message: "Joined successfully", memberCount: course.memberCount });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.status(200).json({
+      message: "Joined successfully",
+      memberCount: course.memberCount
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to join course", error: error.message });
+    res.status(500).json({
+      message: "Failed to join course",
+      error: error.message
+    });
   }
 };
 
@@ -245,7 +261,7 @@ export async function createCourse(req, res) {
         startDate: startDate || null,
         endDate: endDate || null
       },
-      createdBy: null
+      createdBy: req.user?.userId || null
     });
 
     const savedCourse = await newCourse.save();
@@ -263,6 +279,8 @@ export async function createCourse(req, res) {
 export const getCoursePosts = async (req, res) => {
   try {
     const posts = await Post.find({ course: req.params.id })
+      .populate("author", "username email role")
+      .populate("replies.author", "username email role")
       .sort({ createdAt: -1 });
 
     res.status(200).json(posts);
@@ -280,6 +298,7 @@ export const createPost = async (req, res) => {
     const { text } = req.body;
     const files = req.files || [];
     const courseId = req.params.id;
+    const currentUserId = req.user.userId;
 
     if ((!text || !text.trim()) && files.length === 0) {
       return res.status(400).json({ message: "Text or file is required" });
@@ -289,22 +308,31 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ message: "Course id is required" });
     }
 
+    if (!currentUserId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     const attachments = files.map((file) => ({
       fileName: file.originalname,
       fileUrl: `/uploads/${file.filename}`,
       fileType: file.mimetype,
-      uploadedBy: "000000000000000000000000"
+      uploadedBy: currentUserId
     }));
 
     const newPost = new Post({
       text: text?.trim() || "",
       course: courseId,
       attachments,
-      author: "000000000000000000000000"
+      author: currentUserId
     });
 
     const savedPost = await newPost.save();
-    res.status(201).json(savedPost);
+
+    const populatedPost = await Post.findById(savedPost._id)
+      .populate("author", "username email role")
+      .populate("replies.author", "username email role");
+
+    res.status(201).json(populatedPost);
   } catch (error) {
     console.error("createPost error:", error);
     res.status(500).json({
@@ -319,9 +347,14 @@ export const createReply = async (req, res) => {
   try {
     const { text } = req.body;
     const { courseId, postId } = req.params;
+    const currentUserId = req.user.userId;
 
     if (!text || !text.trim()) {
       return res.status(400).json({ message: "Reply text is required" });
+    }
+
+    if (!currentUserId) {
+      return res.status(401).json({ message: "Authentication required" });
     }
 
     const post = await Post.findOne({
@@ -335,14 +368,18 @@ export const createReply = async (req, res) => {
 
     const newReply = {
       text: text.trim(),
-      author: "000000000000000000000000",
+      author: currentUserId,
       createdAt: new Date()
     };
 
     post.replies.push(newReply);
     await post.save();
 
-    res.status(201).json(post);
+    const populatedPost = await Post.findById(post._id)
+      .populate("author", "username email role")
+      .populate("replies.author", "username email role");
+
+    res.status(201).json(populatedPost);
   } catch (error) {
     console.error("createReply error:", error);
     res.status(500).json({
@@ -352,27 +389,35 @@ export const createReply = async (req, res) => {
   }
 };
 
-export const deletePost = async (req, res) => {
+export async function deletePost(req, res) {
   try {
     const { courseId, postId } = req.params;
+    const currentUserId = req.user.userId;
+    const currentUserRole = req.user.role;
 
-    const deletedPost = await Post.findOneAndDelete({
-      _id: postId,
-      course: courseId
-    });
+    const post = await Post.findOne({ _id: postId, course: courseId });
 
-    if (!deletedPost) {
+    if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    res.status(200).json({ message: "Post deleted successfully" });
+    const isOwner = String(post.author) === String(currentUserId);
+    const isAdmin = currentUserRole === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "You can only delete your own post" });
+    }
+
+    await Post.findByIdAndDelete(postId);
+
+    return res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to delete post",
       error: error.message
     });
   }
-};
+}
 
 // DELETE /api/courses/:id
 export const deleteCourse = async (req, res) => {
@@ -473,3 +518,44 @@ export const downloadAttachment = async (req, res) => {
     });
   }
 };
+
+export async function deleteReply(req, res) {
+  try {
+    const { courseId, postId, replyId } = req.params;
+    const currentUserId = req.user.userId;
+    const currentUserRole = req.user.role;
+
+    const post = await Post.findOne({ _id: postId, course: courseId });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const reply = post.replies.id(replyId);
+
+    if (!reply) {
+      return res.status(404).json({ message: "Reply not found" });
+    }
+
+    const isOwner = String(reply.author) === String(currentUserId);
+    const isAdmin = currentUserRole === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "You can only delete your own reply" });
+    }
+
+    reply.deleteOne();
+    await post.save();
+
+    const populatedPost = await Post.findById(post._id)
+      .populate("author", "username email role")
+      .populate("replies.author", "username email role");
+
+    return res.status(200).json(populatedPost);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to delete reply",
+      error: error.message
+    });
+  }
+}

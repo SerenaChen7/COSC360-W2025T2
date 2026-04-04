@@ -108,13 +108,7 @@ export default function App() {
           setPage={setPage}
           role={role}
           courseId={selectedCourseId}
-        />
-      )}
-      {page === "course-team" && (
-        <CourseTeam
-          setPage={setPage}
-          role={role}
-          courseId={selectedCourseId}
+          currentUser={currentUser}
         />
       )}
 
@@ -123,8 +117,10 @@ export default function App() {
           setPage={setPage}
           role={role}
           courseId={selectedCourseId}
+          currentUser={currentUser}
         />
       )}
+      
       {page === "create" && (
         <>
           <Dashboard
