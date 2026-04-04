@@ -4,11 +4,16 @@ import studyGroup from "../assets/study-group.jpg";
 import "./CoverPage.css";
 import { CheckCircle, ArrowRight } from "lucide-react";
 
-function CoverPage() {
+function CoverPage({ setPage, currentUser, setCurrentUser, setRole }) {
   return (
     <div className="cover-page">
       <Header />
-      <Navbar />
+      <Navbar
+        setPage={setPage}
+        currentUser={null}
+        setCurrentUser={setCurrentUser}
+        setRole={setRole}
+      />
 
       <section className="cover-hero">
         <div className="cover-hero-left">
@@ -36,7 +41,10 @@ function CoverPage() {
             </ul>
           </div>
 
-          <button className="cover-btn">
+          <button
+            className="cover-btn"
+            onClick={() => setPage("home")}
+          >
             <span>Get Started!</span>
             <ArrowRight size={18} />
           </button>

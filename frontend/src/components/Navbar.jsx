@@ -3,7 +3,20 @@ import notificationsIcon from "../assets/notifications-icon.png";
 import dashboardIcon from "../assets/darhboard-icon.png";
 import "./Navbar.css";
 
-export default function Navbar({ setPage }) {
+export default function Navbar({ setPage, currentUser, setCurrentUser, setRole }) {
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    if (setCurrentUser) setCurrentUser(null);
+    if (setRole) setRole("guest");
+    if (setPage) setPage("home");
+
+    setTimeout(() => {
+      window.alert("Logout successfully");
+    }, 50);
+  };
+
   return (
     <nav className="navbar">
       <div className="navRight">
@@ -18,9 +31,16 @@ export default function Navbar({ setPage }) {
         <button className="navIconBtn" onClick={() => setPage ? setPage("dashboard") : (window.location.href = "/dashboard")}>
           <img src={dashboardIcon} alt="Dashboard" />
         </button>
-        {/*Will have to add condition whether it is logged in or not.
-        If logged in, will have to remove log in button*/}
-        <button className="navLoginBtn">LOGIN</button>
+
+        {currentUser ? (
+          <button className="navLoginBtn" onClick={handleLogout}>
+            LOGOUT
+          </button>
+        ) : (
+          <button className="navLoginBtn" onClick={() => setPage("login")}>
+            LOGIN
+          </button>
+        )}
       </div>
     </nav>
   );

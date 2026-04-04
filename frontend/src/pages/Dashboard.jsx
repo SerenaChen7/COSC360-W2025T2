@@ -35,7 +35,7 @@ function formatTerm(duration) {
   return end ? `${fmt(start)} – ${fmt(end)}` : `From ${fmt(start)}`;
 }
 
-export default function Dashboard({ setPage, setSelectedCourseId }) {
+export default function Dashboard({ setPage, setSelectedCourseId, currentUser, setCurrentUser, setRole }) {
   const [joinedIds, setJoinedIds] = useState(getJoinedIds);
   const [joinedCourses, setJoinedCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
@@ -88,7 +88,12 @@ export default function Dashboard({ setPage, setSelectedCourseId }) {
   return (
     <>
       <Header />
-      <Navbar setPage={setPage} />
+      <Navbar
+        setPage={setPage}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        setRole={setRole}
+      />
 
       <div className="dashboard-page">
         {/* --- HEADER --- */}

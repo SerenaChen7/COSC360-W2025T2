@@ -7,7 +7,7 @@ import "./CourseDiscussion.css";
 import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 
-function CourseDiscussion({ setPage, role, courseId, currentUser }) {
+function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [course, setCourse] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -250,7 +250,12 @@ function CourseDiscussion({ setPage, role, courseId, currentUser }) {
   return (
     <div className="course-discussion-page">
       <Header />
-      <Navbar />
+      <Navbar
+        setPage={setPage}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        setRole={setRole}
+      />
 
       <div className="course-discussion-hero">
         <CourseBanner course={course} />

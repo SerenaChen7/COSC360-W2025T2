@@ -7,7 +7,7 @@ import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 import { useEffect, useState } from "react";
 
-function CourseTeam({ setPage , role, courseId }) {
+function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
   const [course, setCourse] = useState(null);
 
   useEffect(() => {
@@ -59,7 +59,12 @@ function CourseTeam({ setPage , role, courseId }) {
   return (
     <div className="course-team-page">
       <Header />
-      <Navbar />
+      <Navbar
+        setPage={setPage}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        setRole={setRole}
+      />
 
       <div className="course-team-hero">
         <CourseBanner course={course} />
@@ -127,7 +132,9 @@ function CourseTeam({ setPage , role, courseId }) {
               access shared resources, and stay updated on course discussions.
             </p>
             {role === "guest" && (
-              <button className="join-button">➤ Log in to Join</button>
+              <button className="join-button" onClick={() => setPage("login")}>
+                ➤ Log in to Join
+              </button>
             )}
             {role === "user" && (
               <button className="join-button">➤ Join Course</button>

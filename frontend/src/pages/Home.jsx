@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import HeroBanner from "../components/HeroBanner";
-import ProjectTabs from "../components/ProjectTabs";
 import SearchBar from "../components/SearchBar";
 import Filter from "../components/Filter";
 import HomeCourse from "../components/HomeCourse";
@@ -24,7 +23,8 @@ const SORT_OPTIONS = [
   { value: "least", label: "Least Members" },
 ];
 
-export default function Home({ setPage, setSelectedCourseId, currentUser }) {
+export default function Home({ setPage, setSelectedCourseId, currentUser, setCurrentUser, setRole }) {
+  const spotlightRef = useRef(null);
   const [allCourses, setAllCourses] = useState([]);
   const [searchResults, setSearchResults] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,21 +61,6 @@ export default function Home({ setPage, setSelectedCourseId, currentUser }) {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // const handleSearchUpdate = async (value) => {
-  //   // Basic validation: ignore empty search terms
-  //   if (!value.trim()) {
-  //     setSearchResults(null);
-  //     return;
-  //   }
-  //   try {
-  //     const response = await fetch(`http://localhost:3000/api/courses/search?q=${value}`); //Fetch GET request using query parameters (?q=)
-  //     const data = await response.json();
-  //     setSearchResults(data);
-  //   } catch (error) {
-  //     console.error("Search failed:", error);
-  //   }
-  // };
-
   // Derive course type options (COSC, MATH, STAT, etc.) from loaded courses
   const courseTypeOptions = useMemo(() => {
     const types = [...new Set(allCourses.map((c) => c.title.split(" ")[0]))].sort();
@@ -109,10 +94,35 @@ export default function Home({ setPage, setSelectedCourseId, currentUser }) {
     return courses;
   }, [allCourses, searchResults, courseFilter, levelFilter, sortFilter]);
 
+  const spotlightCourses = useMemo(() => {
+    return allCourses.filter((course) => favorites.has(course._id));
+  }, [allCourses, favorites]);
+
+  const handleToggleFavorite = (courseId) => {
+    const wasFavorite = isFavorite(courseId);
+
+    toggleFavorite(courseId);
+
+    // only scroll into view when adding to favorites, not when removing
+    if (!wasFavorite) {
+      setTimeout(() => {
+        spotlightRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }, 50);
+    }
+  };
+
   return (
     <>
       <Header />
-      <Navbar setPage={setPage} />
+      <Navbar
+        setPage={setPage}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        setRole={setRole}
+      />
       <HeroBanner />
       <div style={{ padding: "20px 60px 0 60px" }}>
   <h2
@@ -128,7 +138,16 @@ export default function Home({ setPage, setSelectedCourseId, currentUser }) {
   </h2>
 </div>
 
-      <SpotlightSection favorites={favorites} onToggleFavorite={toggleFavorite} />
+      <div ref={spotlightRef}>
+        <SpotlightSection
+          spotlightCourses={spotlightCourses}
+          onToggleFavorite={handleToggleFavorite}
+          onViewDetails={(courseId) => {
+            setSelectedCourseId(courseId);
+            setPage("course");
+          }}
+        />
+      </div>
 
       <div style={{ padding: "40px 60px" }}>
         <h2 style={{ fontFamily: '"Public Sans", sans-serif', fontSize: "22px", fontWeight: 600, color: "#001D40", marginBottom: "24px" }}>
@@ -157,7 +176,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser }) {
               singleSelect
             />
           </div>
-          <SearchBar onSearchChange={setSearchTerm} />
+          <SearchBar onSearchSubmit={setSearchTerm} />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
@@ -168,7 +187,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser }) {
                 {...course}
                 id={course._id}
                 isFavorite={isFavorite(course._id)}
-                onToggleFavorite={toggleFavorite}
+                onToggleFavorite={handleToggleFavorite}
                 onViewDetails={() => {
                   setSelectedCourseId(course._id);
                   setPage("course");

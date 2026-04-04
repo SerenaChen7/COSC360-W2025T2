@@ -67,7 +67,12 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
   return (
     <div className="loginPage">
       <Header />
-      <Navbar />
+      <Navbar
+        setPage={setPage}
+        currentUser={null}
+        setCurrentUser={setCurrentUser}
+        setRole={setRole}
+      />
 
       <main className="loginMain">
         <button

@@ -2,7 +2,6 @@ import { useState } from "react";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import CoverPage from "./pages/CoverPage";
-import Submit from "./pages/Submit";
 import CourseOverview from "./pages/CourseOverview";
 import CourseTeam from "./pages/CourseTeam";
 import CourseDiscussion from "./pages/CourseDiscussion";
@@ -10,11 +9,10 @@ import CreateCourse from "./pages/CreateCourse";
 import Dashboard from "./pages/Dashboard";
 
 export default function App() {
-  const [page, setPage] = useState("login");
-  const [role, setRole] = useState("user");
-  const [currentUser, setCurrentUser] = useState(
-  JSON.parse(localStorage.getItem("user")) || null
-);
+  const savedUser = JSON.parse(localStorage.getItem("user"));
+  const [page, setPage] = useState("cover");
+  const [role, setRole] = useState(savedUser?.role || "guest");
+  const [currentUser, setCurrentUser] = useState(savedUser || null);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   return (
     <>
@@ -31,10 +29,6 @@ export default function App() {
 
           <button onClick={() => setPage("home")} style={{ marginLeft: 8 }}>
             Home
-          </button>
-
-          <button onClick={() => setPage("submit")} style={{ marginLeft: 8 }}>
-            Submit
           </button>
 
           <button onClick={() => setPage("course")} style={{ marginLeft: 8 }}>
@@ -85,12 +79,17 @@ export default function App() {
         </div>
       </div>
 
-      {page === "cover" && <CoverPage />}
+      {page === "cover" && (
+        <CoverPage setPage={setPage} />
+      )}
+
       {page === "home" && (
         <Home
           setPage={setPage}
           setSelectedCourseId={setSelectedCourseId}
           currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
+          setRole={setRole}
         />
       )}
 
@@ -102,9 +101,17 @@ export default function App() {
         />
       )}
 
-      {page === "submit" && <Submit />}
       {page === "course" && (
         <CourseOverview
+          setPage={setPage}
+          role={role}
+          courseId={selectedCourseId}
+          currentUser={currentUser}
+        />
+      )}
+
+      {page === "course-team" && (
+        <CourseTeam
           setPage={setPage}
           role={role}
           courseId={selectedCourseId}
