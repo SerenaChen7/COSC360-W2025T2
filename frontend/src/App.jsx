@@ -116,6 +116,8 @@ export default function App() {
           role={role}
           courseId={selectedCourseId}
           currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
+          setRole={setRole}
         />
       )}
 

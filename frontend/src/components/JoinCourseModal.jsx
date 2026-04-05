@@ -85,9 +85,11 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
   const handleJoin = async (e, courseId) => {
     e.stopPropagation();
     setJoiningId(courseId);
+    const token = localStorage.getItem("token");
     try {
       const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Failed to join");
       const data = await res.json();
