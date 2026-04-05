@@ -44,6 +44,22 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
     fetchMembers(courseId);
   }, [courseId]);
 
+  const handleRemoveMember = async (userId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/members/${userId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to remove member");
+      setCourse((prev) => prev ? { ...prev, memberCount: Math.max(0, prev.memberCount - 1) } : prev);
+      fetchMembers(courseId);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleLeave = async () => {
     if (!courseId) return;
     setJoining(true);
@@ -160,7 +176,11 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
                       <p className="member-detail">{m.userId?.email}</p>
                     </div>
                     {role === "admin" && (
-                      <button className="remove-icon-button" title="Remove member">
+                      <button
+                        className="remove-icon-button"
+                        title="Remove member"
+                        onClick={() => handleRemoveMember(m.userId?._id)}
+                      >
                         <img src={removeIcon} alt="Remove" />
                       </button>
                     )}

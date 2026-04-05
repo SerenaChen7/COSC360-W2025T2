@@ -160,18 +160,22 @@ export const getCourseMembers = async (req, res) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
+    const creatorId = course.createdBy?._id?.toString();
+
     const members = await CourseMember.find({ courseId })
       .populate("userId", "username email role")
       .sort({ createdAt: 1 });
 
     res.status(200).json({
       creator: course.createdBy,
-      members: members.map((m) => ({
-        _id: m._id,
-        userId: m.userId,
-        roleInCourse: m.roleInCourse,
-        joinedAt: m.createdAt
-      }))
+      members: members
+        .filter((m) => m.userId?._id?.toString() !== creatorId)
+        .map((m) => ({
+          _id: m._id,
+          userId: m.userId,
+          roleInCourse: m.roleInCourse,
+          joinedAt: m.createdAt
+        }))
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch members", error: error.message });
