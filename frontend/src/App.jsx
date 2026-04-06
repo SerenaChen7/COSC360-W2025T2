@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 export default function App() {
   const savedUser = JSON.parse(localStorage.getItem("user"));
   const [page, setPage] = useState("cover");
+  // here allows the login status to stay consistent across pages.
   const [role, setRole] = useState(savedUser?.role || "guest");
   const [currentUser, setCurrentUser] = useState(savedUser || null);
   const [selectedCourseId, setSelectedCourseId] = useState(null);

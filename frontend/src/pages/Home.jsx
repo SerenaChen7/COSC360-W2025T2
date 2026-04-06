@@ -94,6 +94,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
     return courses;
   }, [allCourses, searchResults, courseFilter, levelFilter, sortFilter]);
 
+  //Asychronously fetches the list of courses from the backend API 
   const spotlightCourses = useMemo(() => {
     return allCourses.filter((course) => favorites.has(course._id));
   }, [allCourses, favorites]);

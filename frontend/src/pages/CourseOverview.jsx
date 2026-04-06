@@ -36,6 +36,8 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
   });
   const [joining, setJoining] = useState(false);
 
+  // The handleJoin function is responsible for sending a request to the backend to join the course. 
+  // It uses the JWT token for authentication and updates the local state and localStorage upon success.
   const handleJoin = async () => {
     if (!courseId) return;
     setJoining(true);
