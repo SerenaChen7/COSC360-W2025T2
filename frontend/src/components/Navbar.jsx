@@ -4,6 +4,7 @@ import dashboardIcon from "../assets/darhboard-icon.png";
 import "./Navbar.css";
 
 export default function Navbar({ setPage, currentUser, setCurrentUser, setRole }) {
+  // The handleLogout function clears the user's authentication token and information from localStorage
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -32,6 +33,7 @@ export default function Navbar({ setPage, currentUser, setCurrentUser, setRole }
           <img src={dashboardIcon} alt="Dashboard" />
         </button>
 
+        //If a user is logged in, it shows Logout; otherwise, it shows Login.
         {currentUser ? (
           <button className="navLoginBtn" onClick={handleLogout}>
             LOGOUT

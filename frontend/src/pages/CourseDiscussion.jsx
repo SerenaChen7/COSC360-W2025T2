@@ -42,6 +42,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
     return name.charAt(0).toUpperCase();
   };
 
+  //All protected requests, such as creating posts, replying, and deleting content, send the JWT token in the Authorization header.
   const handleDeletePost = async (postId) => {
     if (!effectiveCourseId) return;
 
@@ -54,6 +55,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         {
           method: "DELETE",
           headers: {
+            // We include the Authorization header with the token to authenticate the request
             Authorization: `Bearer ${token}`
           }
         }
@@ -72,6 +74,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
     }
   };
 
+  //The same applies to deleting replies, where the token is sent in the Authorization header to ensure that only authorized users can delete their own replies or, in the case of admins, any reply.
   const handleDeleteReply = async (postId, replyId) => {
     if (!effectiveCourseId) return;
 

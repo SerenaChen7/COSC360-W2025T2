@@ -28,6 +28,7 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
       setLoading(true);
       setMessage("");
 
+      //connected the frontend to the backend login API.
       const response = await fetch("http://localhost:3000/api/auth/login", {
         method: "POST",
         headers: {
@@ -46,6 +47,7 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
         return;
       }
 
+      // After a successful login, we store the token and user information in localStorage, then update the global currentUser and role state.
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       setCurrentUser(data.user);
@@ -55,6 +57,7 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
       } else {
         setRole("user");
       }
+      // Redirect to home page after login
         setPage("home");
      
     } catch (error) {
