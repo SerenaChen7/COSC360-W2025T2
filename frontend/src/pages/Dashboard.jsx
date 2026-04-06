@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar";
 import JoinCourseModal from "../components/JoinCourseModal";
 import "./Dashboard.css";
 
-// Helper keys and functions for local storage
 const JOINED_KEY = "joinedCourseIds";
 
 function getJoinedIds() {
@@ -42,42 +41,49 @@ export default function Dashboard({ setPage, setSelectedCourseId, currentUser, s
   const [showModal, setShowModal] = useState(false);
 
   // Tab state: "joined" or "requests"
-  const [activeTab, setActiveTab] = useState("joined"); 
+  const [activeTab, setActiveTab] = useState("joined");
 
-  // Get data from the server
-  useEffect(() => {
-    if (joinedIds.length === 0) {
-      setJoinedCourses([]);
-      return;
-    }
+  const fetchJoinedCourses = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
     setLoadingCourses(true);
-    Promise.all(
-      joinedIds.map((id) =>
-        fetch(`http://localhost:3000/api/courses/${id}`)
-          .then((r) => (r.ok ? r.json() : null))
-          .catch(() => null)
-      )
-    )
-      .then((results) => setJoinedCourses(results.filter(Boolean)))
+    fetch("http://localhost:3000/api/courses/joined", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((r) => r.json())
+      .then((courses) => {
+        setJoinedCourses(courses);
+        const ids = courses.map((c) => c._id);
+        setJoinedIds(ids);
+        saveJoinedIds(ids);
+      })
+      .catch((err) => console.error(err))
       .finally(() => setLoadingCourses(false));
-  }, [joinedIds]);
-
-  const handleJoined = (courseId) => {
-    setJoinedIds((prev) => {
-      if (prev.includes(courseId)) return prev;
-      const next = [...prev, courseId];
-      saveJoinedIds(next);
-      return next;
-    });
   };
 
-  const handleLeave = (courseId) => {
-    setJoinedIds((prev) => {
-      const next = prev.filter((id) => id !== courseId);
-      saveJoinedIds(next);
-      return next;
-    });
-    setJoinedCourses((prev) => prev.filter((c) => c._id !== courseId));
+  useEffect(() => {
+    fetchJoinedCourses();
+  }, []);
+
+  const handleJoined = () => {
+    fetchJoinedCourses();
+  };
+
+  const handleLeave = async (courseId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/leave`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to leave");
+      }
+      fetchJoinedCourses();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCourseClick = (courseId) => {

@@ -44,6 +44,22 @@
   color: #17305c;
 }
 
+.member-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #17305c;
+  outline: none;
+}
+
+.member-search:focus {
+  border-color: #0b2d5c;
+}
+
 .member-list {
   display: flex;
   flex-direction: column;
@@ -176,6 +192,14 @@
 
 .join-button:hover {
   background: #123d79;
+}
+
+.leave-button {
+  background: #7f1d1d;
+}
+
+.leave-button:hover {
+  background: #991b1b;
 }
 
 @media (max-width: 900px) {

@@ -1,5 +1,6 @@
 import Course from "../models/Course.js";
 import CourseOptions from "../models/CourseOptions.js";
+import CourseMember from "../models/CourseMember.js";
 import Post from "../models/Post.js";
 import path from "path";
 
@@ -60,6 +61,13 @@ export const joinCourse = async (req, res) => {
       return res.status(401).json({ message: "Authentication required" });
     }
 
+    const existing = await CourseMember.findOne({ courseId: req.params.id, userId: currentUserId });
+    if (existing) {
+      return res.status(400).json({ message: "Already a member" });
+    }
+
+    await CourseMember.create({ courseId: req.params.id, userId: currentUserId, roleInCourse: "Member" });
+
     const course = await Course.findByIdAndUpdate(
       req.params.id,
       { $inc: { memberCount: 1 } },
@@ -79,6 +87,94 @@ export const joinCourse = async (req, res) => {
       message: "Failed to join course",
       error: error.message
     });
+  }
+};
+
+export const leaveCourse = async (req, res) => {
+  try {
+    const currentUserId = req.user.userId;
+    if (!currentUserId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const deleted = await CourseMember.findOneAndDelete({ courseId: req.params.id, userId: currentUserId });
+    if (!deleted) {
+      return res.status(400).json({ message: "You are not a member of this course" });
+    }
+
+    const course = await Course.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { memberCount: -1 } },
+      { new: true }
+    );
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.status(200).json({ message: "Left successfully", memberCount: course.memberCount });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to leave course", error: error.message });
+  }
+};
+
+export const removeMember = async (req, res) => {
+  try {
+    const { id: courseId, userId } = req.params;
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    const deleted = await CourseMember.findOneAndDelete({ courseId, userId });
+    if (!deleted) {
+      return res.status(404).json({ message: "Member not found in this course" });
+    }
+
+    await Course.findByIdAndUpdate(courseId, { $inc: { memberCount: -1 } });
+
+    res.status(200).json({ message: "Member removed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to remove member", error: error.message });
+  }
+};
+
+export const getJoinedCourses = async (req, res) => {
+  try {
+    const currentUserId = req.user.userId;
+    const memberships = await CourseMember.find({ userId: currentUserId }).populate("courseId");
+    const courses = memberships.map((m) => m.courseId).filter(Boolean);
+    res.status(200).json(courses);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch joined courses", error: error.message });
+  }
+};
+
+export const getCourseMembers = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+
+    const course = await Course.findById(courseId).populate("createdBy", "username email role");
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    const members = await CourseMember.find({ courseId })
+      .populate("userId", "username email role")
+      .sort({ createdAt: 1 });
+
+    res.status(200).json({
+      creator: course.createdBy,
+      members: members.map((m) => ({
+        _id: m._id,
+        userId: m.userId,
+        roleInCourse: m.roleInCourse,
+        joinedAt: m.createdAt
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch members", error: error.message });
   }
 };
 
@@ -265,6 +361,15 @@ export async function createCourse(req, res) {
     });
 
     const savedCourse = await newCourse.save();
+
+    if (req.user?.userId) {
+      await CourseMember.create({
+        courseId: savedCourse._id,
+        userId: req.user.userId,
+        roleInCourse: "Admin"
+      });
+      await Course.findByIdAndUpdate(savedCourse._id, { $inc: { memberCount: 1 } });
+    }
 
     res.status(201).json(savedCourse);
   } catch (error) {

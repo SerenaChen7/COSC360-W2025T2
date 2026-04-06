@@ -7,6 +7,10 @@ import {
   updateCourse,
   getCourseOptions,
   joinCourse,
+  leaveCourse,
+  getJoinedCourses,
+  getCourseMembers,
+  removeMember,
   getCoursePosts,
   createPost,
   deletePost,
@@ -32,6 +36,9 @@ router.post("/", requireAuth, createCourse);
 // GET /api/courses/search?q=...
 router.get("/search", searchCourses);
 
+// GET /api/courses/joined
+router.get("/joined", requireAuth, getJoinedCourses);
+
 // GET /api/courses
 router.get("/", getAllCourses);
 
@@ -43,6 +50,15 @@ router.patch("/:id", updateCourse);
 
 // POST /api/courses/:id/join
 router.post("/:id/join", requireAuth, joinCourse);
+
+// GET /api/courses/:id/members
+router.get("/:id/members", getCourseMembers);
+
+// DELETE /api/courses/:id/members/:userId
+router.delete("/:id/members/:userId", requireAuth, removeMember);
+
+// DELETE /api/courses/:id/leave
+router.delete("/:id/leave", requireAuth, leaveCourse);
 
 // GET /api/courses/:id/posts
 router.get("/:id/posts", getCoursePosts);

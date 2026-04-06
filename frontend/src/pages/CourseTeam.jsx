@@ -9,52 +9,108 @@ import { useEffect, useState } from "react";
 
 function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
   const [course, setCourse] = useState(null);
+  const [creator, setCreator] = useState(null);
+  const [members, setMembers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [isJoined, setIsJoined] = useState(() => {
+    try {
+      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
+      return ids.includes(courseId);
+    } catch {
+      return false;
+    }
+  });
+  const [joining, setJoining] = useState(false);
+
+  const fetchMembers = (id) => {
+    if (!id) return;
+    fetch(`http://localhost:3000/api/courses/${id}/members`)
+      .then((res) => res.json())
+      .then((data) => {
+        setCreator(data.creator || null);
+        setMembers(data.members || []);
+      })
+      .catch((err) => console.error(err));
+  };
 
   useEffect(() => {
-    if (courseId) {
-      fetch(`http://localhost:3000/api/courses/${courseId}`)
-        .then((res) => res.json())
-        .then((data) => setCourse(data))
-        .catch((err) => console.error(err));
-      return;
-    }
+    if (!courseId) return;
 
-    fetch("http://localhost:3000/api/courses")
+    fetch(`http://localhost:3000/api/courses/${courseId}`)
       .then((res) => res.json())
-      .then((data) => setCourse(data[0]))
+      .then((data) => setCourse(data))
       .catch((err) => console.error(err));
+
+    fetchMembers(courseId);
   }, [courseId]);
 
-  const instructors = [
-    {
-      name: "Jacob Liu",
-      role: "Instructor",
-      detail: "Course coordinator • Web development"
+  const handleRemoveMember = async (userId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/members/${userId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to remove member");
+      setCourse((prev) => prev ? { ...prev, memberCount: Math.max(0, prev.memberCount - 1) } : prev);
+      fetchMembers(courseId);
+    } catch (err) {
+      console.error(err);
     }
-  ];
+  };
 
-  const teamMembers = [
-    {
-      name: "Sarah Chen",
-      role: "Student",
-      detail: "Frontend and UI collaboration"
-    },
-    {
-      name: "Daniel Kim",
-      role: "Student",
-      detail: "Backend API integration"
-    },
-    {
-      name: "Emily Wong",
-      role: "Student",
-      detail: "Testing and documentation"
-    },
-    {
-      name: "Michael Lee",
-      role: "Student",
-      detail: "Discussion moderation support"
+  const handleLeave = async () => {
+    if (!courseId) return;
+    setJoining(true);
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/leave`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to leave");
+      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
+      localStorage.setItem("joinedCourseIds", JSON.stringify(ids.filter((id) => id !== courseId)));
+      setIsJoined(false);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+      fetchMembers(courseId);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setJoining(false);
     }
-  ];
+  };
+
+  const handleJoin = async () => {
+    if (!courseId) return;
+    setJoining(true);
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to join");
+      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
+      if (!ids.includes(courseId)) {
+        localStorage.setItem("joinedCourseIds", JSON.stringify([...ids, courseId]));
+      }
+      setIsJoined(true);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+      fetchMembers(courseId);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const filteredMembers = members.filter((m) =>
+    m.userId?.username?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="course-team-page">
@@ -79,46 +135,58 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
           <div className="team-card">
             <h3>Hub Creator</h3>
             <div className="member-list">
-              {instructors.map((member, index) => (
-                <div className="member-row" key={index}>
-                    <div className="member-avatar">{member.name.charAt(0)}</div>
-
-                    <div className="member-info">
-                        <p className="member-name">{member.name}</p>
-                        <p className="member-role">{member.role}</p>
-                        <p className="member-detail">{member.detail}</p>
-                    </div>
-
-                    {role === "admin" && (
-                        <button className="remove-icon-button" title="Remove member">
-                        <img src={removeIcon} alt="Remove" />
-                        </button>
-                    )}
+              {creator ? (
+                <div className="member-row">
+                  <div className="member-avatar">
+                    {creator.username?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="member-info">
+                    <p className="member-name">{creator.username}</p>
+                    <p className="member-role">Creator</p>
+                    <p className="member-detail">{creator.email}</p>
+                  </div>
                 </div>
-              ))}
+              ) : (
+                <p className="member-detail">No creator info available.</p>
+              )}
             </div>
           </div>
 
           <div className="team-card">
-            <h3>Current Members</h3>
+            <h3>Current Members ({members.length})</h3>
+            <input
+              className="member-search"
+              type="text"
+              placeholder="Search members..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
             <div className="member-list">
-              {teamMembers.map((member, index) => (
-                <div className="member-row" key={index}>
-                  <div className="member-avatar">
-                    {member.name.charAt(0)}
-                  </div>
-                  <div className="member-info">
-                    <p className="member-name">{member.name}</p>
-                    <p className="member-role">{member.role}</p>
-                    <p className="member-detail">{member.detail}</p>
-                  </div>
-                  {role === "admin" && (
-                        <button className="remove-icon-button" title="Remove member">
+              {filteredMembers.length === 0 ? (
+                <p className="member-detail">No members found.</p>
+              ) : (
+                filteredMembers.map((m) => (
+                  <div className="member-row" key={m._id}>
+                    <div className="member-avatar">
+                      {m.userId?.username?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="member-info">
+                      <p className="member-name">{m.userId?.username}</p>
+                      <p className="member-role">{m.roleInCourse}</p>
+                      <p className="member-detail">{m.userId?.email}</p>
+                    </div>
+                    {role === "admin" && (
+                      <button
+                        className="remove-icon-button"
+                        title="Remove member"
+                        onClick={() => handleRemoveMember(m.userId?._id)}
+                      >
                         <img src={removeIcon} alt="Remove" />
-                        </button>
+                      </button>
                     )}
-                </div>
-              ))}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -137,7 +205,15 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
               </button>
             )}
             {role === "user" && (
-              <button className="join-button">➤ Join Course</button>
+              isJoined ? (
+                <button className="join-button leave-button" onClick={handleLeave} disabled={joining}>
+                  {joining ? "Leaving..." : "✕ Leave Course"}
+                </button>
+              ) : (
+                <button className="join-button" onClick={handleJoin} disabled={joining}>
+                  ➤ {joining ? "Joining..." : "Join Course"}
+                </button>
+              )
             )}
           </div>
           {role === "admin" && <AdminActions />}
