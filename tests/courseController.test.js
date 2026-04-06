@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMockRes } from "./helpers/mockResponse.js";
 
+const validUserId = "507f1f77bcf86cd799439011";
+const validCourseId = "507f1f77bcf86cd799439012";
+
 const {
   MockCourse,
   mockAggregate,
@@ -8,16 +11,23 @@ const {
   mockFindByIdAndUpdate,
   mockCourseOptionsFindOne,
   mockCourseOptionsCreate,
-  mockPostCountDocuments
+  mockPostCountDocuments,
+  mockCourseMemberFindOne,
+  mockCourseMemberCreate
 } = vi.hoisted(() => {
   const mockAggregate = vi.fn();
   const mockFindById = vi.fn();
   const mockFindByIdAndUpdate = vi.fn();
+  const mockCourseOptionsFindOne = vi.fn();
+  const mockCourseOptionsCreate = vi.fn();
+  const mockPostCountDocuments = vi.fn();
+  const mockCourseMemberFindOne = vi.fn();
+  const mockCourseMemberCreate = vi.fn();
 
   function MockCourse(data) {
     Object.assign(this, data);
     this.save = vi.fn().mockResolvedValue({
-      _id: "new-course-id",
+      _id: validCourseId,
       ...data
     });
   }
@@ -26,10 +36,6 @@ const {
   MockCourse.findById = mockFindById;
   MockCourse.findByIdAndUpdate = mockFindByIdAndUpdate;
 
-  const mockCourseOptionsFindOne = vi.fn();
-  const mockCourseOptionsCreate = vi.fn();
-  const mockPostCountDocuments = vi.fn();
-
   return {
     MockCourse,
     mockAggregate,
@@ -37,9 +43,18 @@ const {
     mockFindByIdAndUpdate,
     mockCourseOptionsFindOne,
     mockCourseOptionsCreate,
-    mockPostCountDocuments
+    mockPostCountDocuments,
+    mockCourseMemberFindOne,
+    mockCourseMemberCreate
   };
 });
+
+vi.mock("../backend/src/models/CourseMember.js", () => ({
+  default: {
+    findOne: mockCourseMemberFindOne,
+    create: mockCourseMemberCreate
+  }
+}));
 
 vi.mock("../backend/src/models/Course.js", () => ({
   default: MockCourse
@@ -72,6 +87,7 @@ import {
 describe("courseController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCourseMemberCreate.mockResolvedValue({});
   });
 
   describe("getAllCourses", () => {
@@ -128,7 +144,7 @@ describe("courseController", () => {
     it("should return 404 if course is not found", async () => {
       Course.findById.mockResolvedValue(null);
 
-      const req = { params: { id: "course1" } };
+      const req = { params: { id: validCourseId } };
       const res = createMockRes();
 
       await getCourseById(req, res);
@@ -151,12 +167,12 @@ describe("courseController", () => {
 
       Post.countDocuments.mockResolvedValue(3);
 
-      const req = { params: { id: "course1" } };
+      const req = { params: { id: validCourseId } };
       const res = createMockRes();
 
       await getCourseById(req, res);
 
-      expect(Post.countDocuments).toHaveBeenCalledWith({ course: "course1" });
+      expect(Post.countDocuments).toHaveBeenCalledWith({ course: validCourseId });
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual({
         _id: "course1",
@@ -172,7 +188,7 @@ describe("courseController", () => {
         body: {
           title: "COSC 360"
         },
-        user: { userId: "u1" }
+        user: { userId: validUserId }
       };
       const res = createMockRes();
 
@@ -194,7 +210,7 @@ describe("courseController", () => {
           field: "Computer Science",
           description: "Web programming"
         },
-        user: { userId: "u1" }
+        user: { userId: validUserId }
       };
       const res = createMockRes();
 
@@ -220,7 +236,7 @@ describe("courseController", () => {
           field: "Computer Science",
           description: "Web programming"
         },
-        user: { userId: "u1" }
+        user: { userId: validUserId }
       };
       const res = createMockRes();
 
@@ -247,7 +263,7 @@ describe("courseController", () => {
           description: "Web programming",
           tags: ["AI"]
         },
-        user: { userId: "u1" }
+        user: { userId: validUserId }
       };
       const res = createMockRes();
 
@@ -275,7 +291,7 @@ describe("courseController", () => {
           location: "EME 2181",
           tags: ["React"]
         },
-        user: { userId: "u1" }
+        user: { userId: validUserId }
       };
       const res = createMockRes();
 
@@ -283,18 +299,20 @@ describe("courseController", () => {
 
       expect(res.statusCode).toBe(201);
       expect(res.body.title).toBe("COSC 360");
-      expect(res.body.createdBy).toBe("u1");
+      expect(res.body.createdBy).toBe(validUserId);
       expect(res.body.memberCount).toBe(0);
+      expect(res.body._id).toBe(validCourseId);
     });
   });
 
   describe("joinCourse", () => {
     it("should return 404 if course is not found", async () => {
+      mockCourseMemberFindOne.mockResolvedValue(null);
       Course.findByIdAndUpdate.mockResolvedValue(null);
 
       const req = {
-        params: { id: "missing-course" },
-        user: { userId: "u1" }
+        params: { id: validCourseId },
+        user: { userId: validUserId }
       };
       const res = createMockRes();
 
@@ -305,21 +323,22 @@ describe("courseController", () => {
     });
 
     it("should increase memberCount and return success", async () => {
+      mockCourseMemberFindOne.mockResolvedValue(null);
       Course.findByIdAndUpdate.mockResolvedValue({
-        _id: "course1",
+        _id: validCourseId,
         memberCount: 5
       });
 
       const req = {
-        params: { id: "course1" },
-        user: { userId: "u1" }
+        params: { id: validCourseId },
+        user: { userId: validUserId }
       };
       const res = createMockRes();
 
       await joinCourse(req, res);
 
       expect(Course.findByIdAndUpdate).toHaveBeenCalledWith(
-        "course1",
+        validCourseId,
         { $inc: { memberCount: 1 } },
         { new: true }
       );
@@ -332,11 +351,12 @@ describe("courseController", () => {
     });
 
     it("should return 500 when database throws error", async () => {
+      mockCourseMemberFindOne.mockResolvedValue(null);
       Course.findByIdAndUpdate.mockRejectedValue(new Error("db failed"));
 
       const req = {
-        params: { id: "course1" },
-        user: { userId: "u1" }
+        params: { id: validCourseId },
+        user: { userId: validUserId }
       };
       const res = createMockRes();
 

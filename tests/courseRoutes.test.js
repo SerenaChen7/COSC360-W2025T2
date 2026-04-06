@@ -17,6 +17,8 @@ vi.mock("../backend/src/controllers/courseController.js", () => ({
   searchCourses: (req, res) => res.status(200).json([]),
   createCourse: (req, res) => res.status(201).json({ message: "Course created" }),
   updateCourse: (req, res) => res.status(200).json({ message: "Course updated" }),
+  removeMember: (req, res) => res.status(200).json({ message: "Removed" }),
+  leaveCourse: (req, res) => res.status(200).json({ message: "Left course" }),
   getCourseOptions: (req, res) =>
     res.status(200).json({
       types: ["Lecture"],
@@ -28,6 +30,8 @@ vi.mock("../backend/src/controllers/courseController.js", () => ({
       message: "Joined successfully",
       memberCount: 5
     }),
+  getJoinedCourses: (req, res) => res.status(200).json([]),
+  getCourseMembers: (req, res) => res.status(200).json([]),
   getCoursePosts: (req, res) => res.status(200).json([]),
   createPost: (req, res) => res.status(201).json({ message: "Post created" }),
   deletePost: (req, res) => res.status(200).json({ message: "Post deleted" }),
