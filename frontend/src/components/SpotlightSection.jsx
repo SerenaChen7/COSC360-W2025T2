@@ -12,8 +12,6 @@ export default function SpotlightSection({ spotlightCourses = [], onToggleFavori
           </p>
         ) : (
           <div className="spotlight-section__grid">
-            // We map over the spotlightCourses array to render a HomeCourse component for each course. 
-            // Each HomeCourse receives props including the course data, whether it's a favorite, and handlers for toggling favorites and viewing details.
             {spotlightCourses.map((course) => (
               <HomeCourse
                 key={course._id}

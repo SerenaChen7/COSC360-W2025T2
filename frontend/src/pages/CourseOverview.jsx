@@ -125,13 +125,13 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
               <li>
                 Start Date:{" "}
                 {course?.duration?.startDate
-                  ? new Date(course.duration.startDate).toLocaleDateString()
+                  ? course.duration.startDate.split("T")[0]
                   : "TBA"}
               </li>
               <li>
                 End Date:{" "}
                 {course?.duration?.endDate
-                  ? new Date(course.duration.endDate).toLocaleDateString()
+                  ? course.duration.endDate.split("T")[0]
                   : "TBA"}
               </li>
               <li>Location: {course?.location || "TBA"}</li>

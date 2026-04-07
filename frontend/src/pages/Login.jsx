@@ -72,7 +72,6 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
       <Header />
       <Navbar
         setPage={setPage}
-        currentUser={null}
         setCurrentUser={setCurrentUser}
         setRole={setRole}
       />

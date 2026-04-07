@@ -15,131 +15,149 @@ async function makeUser(username, email, password, role = "user") {
     username,
     email: email.toLowerCase().trim(),
     passwordHash,
-    role
+    role,
   };
 }
 
-async function seed() {
+const DEFAULT_IMAGE = "https://via.placeholder.com/300x200?text=Course+Image";
+
+export async function seed() {
   try {
-    await mongoose.connect(MONGO_URI);
-    console.log("Connected to MongoDB");
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(MONGO_URI);
+      console.log("Connected to MongoDB for seeding");
+    }
 
-    // clear old data
-    await Course.deleteMany({});
-    await User.deleteMany({});
+    let adminUser = await User.findOne({ email: "admin@test.com" });
+    if (!adminUser) {
+      const adminData = await makeUser("admin", "admin@test.com", "admin123", "admin");
+      adminUser = await User.create(adminData);
+      console.log("Created admin user");
+    }
 
-    // create users
-    const users = await User.insertMany([
-      await makeUser("admin", "admin@test.com", "admin123", "admin"),
-      await makeUser("serena", "user@test.com", "user123", "user")
-    ]);
+    let normalUser = await User.findOne({ email: "user@test.com" });
+    if (!normalUser) {
+      const userData = await makeUser("serena", "user@test.com", "user123", "user");
+      normalUser = await User.create(userData);
+      console.log("Created demo user");
+    }
 
-    const adminUser = users.find(u => u.role === "admin");
-    const normalUser = users.find(u => u.role === "user");
+    const courseCount = await Course.countDocuments();
 
-    // create courses (mixed ownership)
-    await Course.insertMany([
-      {
-        title: "COSC 360 - Web Programming",
-        description: "Learn web dev",
-        location: "UBCO",
-        field: "Computer Science",
-        type: "300 Level",
-        tags: ["COSC 360", "Web", "Frontend", "Backend"],
-        createdBy: adminUser._id
-      },
-      {
-        title: "MATH 200 - Multivariable Calculus",
-        description: "Vectors and partial derivatives",
-        location: "UBCO",
-        field: "Mathematics",
-        type: "200 Level",
-        tags: ["MATH 200", "Calculus", "Math"],
-        createdBy: normalUser._id
-      },
-      {
-        title: "COSC 400 - Interview Prep",
-        description: "LeetCode and mock interviews",
-        location: "Remote",
-        field: "Computer Science",
-        type: "400 Level",
-        tags: ["COSC 400", "Career", "Coding"],
-        createdBy: adminUser._id
-      },
-      {
-        title: "PHYS 101 - Energy and Waves",
-        description: "Basic physics concepts",
-        location: "UBCO",
-        field: "Physics",
-        type: "100 Level",
-        tags: ["PHYS 101", "Science", "Physics"],
-        createdBy: normalUser._id
-      },
-      {
-        title: "COSC 221 - Discrete Structures",
-        description: "Logic and proofs",
-        location: "UBCO",
-        field: "Computer Science",
-        type: "200 Level",
-        tags: ["COSC 221", "Math", "Theory"],
-        createdBy: adminUser._id
-      },
-      {
-        title: "ECON 101 - Microeconomics",
-        description: "Supply and demand",
-        location: "Remote",
-        field: "Economics",
-        type: "100 Level",
-        tags: ["ECON 101", "Business", "Econ"],
-        createdBy: normalUser._id
-      },
-      {
-        title: "STAT 200 - Statistics",
-        description: "Data analysis with R",
-        location: "UBCO",
-        field: "Statistics",
-        type: "200 Level",
-        tags: ["STAT 200", "Data", "Stats"],
-        createdBy: adminUser._id
-      },
-      {
-        title: "ENGL 301 - Technical Writing",
-        description: "Professional communication",
-        location: "Remote",
-        field: "English",
-        type: "300 Level",
-        tags: ["ENGL 301", "Writing", "Arts"],
-        createdBy: normalUser._id
-      },
-      {
-        title: "BIOL 112 - Cell Biology",
-        description: "Study of cells",
-        location: "UBCO",
-        field: "Biology",
-        type: "100 Level",
-        tags: ["BIOL 112", "Science", "Bio"],
-        createdBy: adminUser._id
-      },
-      {
-        title: "COSC 315 - Operating Systems",
-        description: "Kernel and memory management",
-        location: "UBCO",
-        field: "Computer Science",
-        type: "300 Level",
-        tags: ["COSC 315", "OS", "Systems"],
-        createdBy: normalUser._id
-      }
-    ]);
+    if (courseCount === 0) {
+      await Course.insertMany([
+        {
+          title: "COSC 360 - Web Programming",
+          description: "Full stack web development",
+          location: "UBCO",
+          field: "Computer Science",
+          type: "Lecture",
+          tags: ["Web Development", "Frontend", "Backend"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: adminUser._id,
+        },
+        {
+          title: "MATH 200 - Multivariable Calculus",
+          description: "Vectors and partial derivatives",
+          location: "UBCO",
+          field: "Mathematics",
+          type: "Tutorial",
+          tags: ["Math", "Calculus"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: normalUser._id,
+        },
+        {
+          title: "COSC 400 - Interview Prep",
+          description: "Algorithms and coding practice",
+          location: "Remote",
+          field: "Computer Science",
+          type: "Workshop",
+          tags: ["Programming", "Career"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: adminUser._id,
+        },
+        {
+          title: "PHYS 101 - Energy and Waves",
+          description: "Basic physics concepts",
+          location: "UBCO",
+          field: "Physics",
+          type: "Lab",
+          tags: ["Science"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: normalUser._id,
+        },
+        {
+          title: "COSC 221 - Discrete Structures",
+          description: "Logic and proofs",
+          location: "UBCO",
+          field: "Computer Science",
+          type: "Lecture",
+          tags: ["Math", "Theory"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: adminUser._id,
+        },
+        {
+          title: "ECON 101 - Microeconomics",
+          description: "Supply and demand",
+          location: "Remote",
+          field: "Economics",
+          type: "Seminar",
+          tags: ["Business"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: normalUser._id,
+        },
+        {
+          title: "STAT 200 - Statistics",
+          description: "Data analysis",
+          location: "UBCO",
+          field: "Statistics",
+          type: "Bootcamp",
+          tags: ["Data", "Stats"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: adminUser._id,
+        },
+        {
+          title: "PSYC 101 - Psychology",
+          description: "Human behavior",
+          location: "Remote",
+          field: "Psychology",
+          type: "Lecture",
+          tags: ["Arts"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: normalUser._id,
+        },
+        {
+          title: "BIOL 112 - Cell Biology",
+          description: "Study of cells",
+          location: "UBCO",
+          field: "Biology",
+          type: "Lab",
+          tags: ["Science"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: adminUser._id,
+        },
+        {
+          title: "DATA 101 - Data Science",
+          description: "Intro to AI and ML",
+          location: "Remote",
+          field: "Data Science",
+          type: "Workshop",
+          tags: ["AI", "Machine Learning"],
+          imageUrl: DEFAULT_IMAGE,
+          createdBy: normalUser._id,
+        },
+      ]);
 
-    console.log("Seeded successfully");
-    console.log("Admin login: admin@test.com / admin123");
-    console.log("User login: user@test.com / user123");
+      console.log("Default courses inserted");
+    }
 
-    process.exit(0);
+    console.log("Seeding completed successfully");
   } catch (err) {
     console.error("Seed failed:", err);
-    process.exit(1);
+    throw err;
   }
 }
 
-seed();
+if (process.argv[1] && process.argv[1].includes("seed.js")) {
+  seed().then(() => process.exit(0)).catch(() => process.exit(1));
+}

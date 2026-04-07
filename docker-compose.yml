@@ -34,7 +34,7 @@ services:
     container_name: cosc360-frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "4000:5173"
     depends_on:
       - backend
     volumes:

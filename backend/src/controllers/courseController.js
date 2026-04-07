@@ -4,11 +4,67 @@ import CourseMember from "../models/CourseMember.js";
 import Post from "../models/Post.js";
 import path from "path";
 
+const DEFAULT_COURSE_OPTIONS = {
+  types: [
+    "Bootcamp",
+    "Lab",
+    "Lecture",
+    "Seminar",
+    "Tutorial",
+    "Workshop"
+  ],
+  fields: [
+    "Arts",
+    "Biology",
+    "Business",
+    "Chemistry",
+    "Computer Science",
+    "Data Science",
+    "Economics",
+    "Engineering",
+    "Mathematics",
+    "Physics",
+    "Psychology",
+    "Statistics"
+  ],
+  tags: [
+    "Beginner",
+    "Intermediate",
+    "Advanced",
+    "Programming",
+    "Web Development",
+    "React",
+    "JavaScript",
+    "Database",
+    "Design",
+    "Frontend",
+    "Backend",
+    "AI",
+    "Machine Learning",
+    "Math",
+    "Science"
+  ]
+};
+
+async function ensureCourseOptions() {
+  const options = await CourseOptions.findOneAndUpdate(
+    {},
+    { $set: DEFAULT_COURSE_OPTIONS },
+    {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true
+    }
+  );
+
+  return options;
+}
+
 export const getAllCourses = async (req, res) => {
   try {
     const { title, type, sort, q } = req.query;
 
-    let matchStage = {};
+    const matchStage = {};
 
     if (q) {
       matchStage.$or = [
@@ -61,12 +117,20 @@ export const joinCourse = async (req, res) => {
       return res.status(401).json({ message: "Authentication required" });
     }
 
-    const existing = await CourseMember.findOne({ courseId: req.params.id, userId: currentUserId });
+    const existing = await CourseMember.findOne({
+      courseId: req.params.id,
+      userId: currentUserId
+    });
+
     if (existing) {
       return res.status(400).json({ message: "Already a member" });
     }
 
-    await CourseMember.create({ courseId: req.params.id, userId: currentUserId, roleInCourse: "Member" });
+    await CourseMember.create({
+      courseId: req.params.id,
+      userId: currentUserId,
+      roleInCourse: "Member"
+    });
 
     const course = await Course.findByIdAndUpdate(
       req.params.id,
@@ -93,13 +157,20 @@ export const joinCourse = async (req, res) => {
 export const leaveCourse = async (req, res) => {
   try {
     const currentUserId = req.user.userId;
+
     if (!currentUserId) {
       return res.status(401).json({ message: "Authentication required" });
     }
 
-    const deleted = await CourseMember.findOneAndDelete({ courseId: req.params.id, userId: currentUserId });
+    const deleted = await CourseMember.findOneAndDelete({
+      courseId: req.params.id,
+      userId: currentUserId
+    });
+
     if (!deleted) {
-      return res.status(400).json({ message: "You are not a member of this course" });
+      return res.status(400).json({
+        message: "You are not a member of this course"
+      });
     }
 
     const course = await Course.findByIdAndUpdate(
@@ -112,9 +183,15 @@ export const leaveCourse = async (req, res) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    res.status(200).json({ message: "Left successfully", memberCount: course.memberCount });
+    res.status(200).json({
+      message: "Left successfully",
+      memberCount: course.memberCount
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to leave course", error: error.message });
+    res.status(500).json({
+      message: "Failed to leave course",
+      error: error.message
+    });
   }
 };
 
@@ -136,7 +213,10 @@ export const removeMember = async (req, res) => {
 
     res.status(200).json({ message: "Member removed successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to remove member", error: error.message });
+    res.status(500).json({
+      message: "Failed to remove member",
+      error: error.message
+    });
   }
 };
 
@@ -147,7 +227,10 @@ export const getJoinedCourses = async (req, res) => {
     const courses = memberships.map((m) => m.courseId).filter(Boolean);
     res.status(200).json(courses);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch joined courses", error: error.message });
+    res.status(500).json({
+      message: "Failed to fetch joined courses",
+      error: error.message
+    });
   }
 };
 
@@ -174,26 +257,24 @@ export const getCourseMembers = async (req, res) => {
       }))
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch members", error: error.message });
+    res.status(500).json({
+      message: "Failed to fetch members",
+      error: error.message
+    });
   }
 };
 
 export const getCourseById = async (req, res) => {
   try {
     const courseId = req.params.id;
-
     const course = await Course.findById(courseId);
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    // to count posts related to this course
-    const discussionCount = await Post.countDocuments({
-      course: courseId
-    });
+    const discussionCount = await Post.countDocuments({ course: courseId });
 
-    // add discussionCount to the course object before sending response
     const result = {
       ...course.toObject(),
       discussionCount
@@ -237,51 +318,7 @@ export const searchCourses = async (req, res) => {
 
 export const getCourseOptions = async (req, res) => {
   try {
-    let options = await CourseOptions.findOne();
-
-    if (!options) {
-      options = await CourseOptions.create({
-        types: [
-          "Bootcamp",
-          "Lab",
-          "Lecture",
-          "Seminar",
-          "Tutorial",
-          "Workshop"
-        ],
-        fields: [
-          "Arts",
-          "Biology",
-          "Business",
-          "Chemistry",
-          "Computer Science",
-          "Data Science",
-          "Economics",
-          "Engineering",
-          "Mathematics",
-          "Physics",
-          "Psychology",
-          "Statistics"
-        ],
-        tags: [
-          "Beginner",
-          "Intermediate",
-          "Advanced",
-          "Programming",
-          "Web Development",
-          "React",
-          "JavaScript",
-          "Database",
-          "Design",
-          "Frontend",
-          "Backend",
-          "AI",
-          "Machine Learning",
-          "Math",
-          "Science"
-        ]
-      });
-    }
+    const options = await ensureCourseOptions();
 
     res.status(200).json({
       types: options.types,
@@ -315,13 +352,7 @@ export async function createCourse(req, res) {
       });
     }
 
-    const options = await CourseOptions.findOne();
-
-    if (!options) {
-      return res.status(400).json({
-        message: "Course options not set up yet"
-      });
-    }
+    const options = await ensureCourseOptions();
 
     if (!options.types.includes(type)) {
       return res.status(400).json({
@@ -336,14 +367,6 @@ export async function createCourse(req, res) {
     }
 
     const submittedTags = Array.isArray(tags) ? tags : [];
-
-    const hasInvalidTag = submittedTags.some((tag) => !options.tags.includes(tag));
-
-    if (hasInvalidTag) {
-      return res.status(400).json({
-        message: "One or more tags are invalid"
-      });
-    }
 
     const newCourse = new Course({
       title,
@@ -368,7 +391,10 @@ export async function createCourse(req, res) {
         userId: req.user.userId,
         roleInCourse: "Admin"
       });
-      await Course.findByIdAndUpdate(savedCourse._id, { $inc: { memberCount: 1 } });
+
+      await Course.findByIdAndUpdate(savedCourse._id, {
+        $inc: { memberCount: 1 }
+      });
     }
 
     res.status(201).json(savedCourse);
@@ -380,7 +406,6 @@ export async function createCourse(req, res) {
   }
 }
 
-// GET /api/courses/:id/posts
 export const getCoursePosts = async (req, res) => {
   try {
     const posts = await Post.find({ course: req.params.id })
@@ -397,7 +422,6 @@ export const getCoursePosts = async (req, res) => {
   }
 };
 
-// POST /api/courses/:id/posts
 export const createPost = async (req, res) => {
   try {
     const { text } = req.body;
@@ -447,7 +471,6 @@ export const createPost = async (req, res) => {
   }
 };
 
-// POST /api/courses/:courseId/posts/:postId/replies
 export const createReply = async (req, res) => {
   try {
     const { text } = req.body;
@@ -510,7 +533,9 @@ export async function deletePost(req, res) {
     const isAdmin = currentUserRole === "admin";
 
     if (!isOwner && !isAdmin) {
-      return res.status(403).json({ message: "You can only delete your own post" });
+      return res.status(403).json({
+        message: "You can only delete your own post"
+      });
     }
 
     await Post.findByIdAndDelete(postId);
@@ -524,55 +549,46 @@ export async function deletePost(req, res) {
   }
 }
 
-// DELETE /api/courses/:id
 export const deleteCourse = async (req, res) => {
   try {
     const courseId = req.params.id;
 
-    // Find the course and delete it
     const deletedCourse = await Course.findByIdAndDelete(courseId);
 
     if (!deletedCourse) {
-      return res.status(404).json({ message: "Oops! This course doesn't exist anymore." });
+      return res.status(404).json({
+        message: "Oops! This course doesn't exist anymore."
+      });
     }
 
-    // Also delete all posts associated with this course
     await Post.deleteMany({ course: courseId });
 
-    res.status(200).json({ message: "Course and its posts were removed successfully!" });
+    res.status(200).json({
+      message: "Course and its posts were removed successfully!"
+    });
   } catch (error) {
-    res.status(500).json({ 
-      message: "Failed to delete the course", 
-      error: error.message 
+    res.status(500).json({
+      message: "Failed to delete the course",
+      error: error.message
     });
   }
 };
+
 export const updateCourse = async (req, res) => {
   try {
-    const { title, description, type, field, tags, location, startDate, endDate } = req.body;
-
-    const options = await CourseOptions.findOne();
-    if (!options) {
-      return res.status(400).json({ message: "Course options not set up yet" });
-    }
-
-    if (type && !options.types.includes(type)) {
-      return res.status(400).json({ message: "Invalid course type" });
-    }
-
-    if (field && !options.fields.includes(field)) {
-      return res.status(400).json({ message: "Invalid course field" });
-    }
-
-    if (tags) {
-      const submittedTags = Array.isArray(tags) ? tags : [];
-      const hasInvalidTag = submittedTags.some((tag) => !options.tags.includes(tag));
-      if (hasInvalidTag) {
-        return res.status(400).json({ message: "One or more tags are invalid" });
-      }
-    }
+    const {
+      title,
+      description,
+      type,
+      field,
+      tags,
+      location,
+      startDate,
+      endDate
+    } = req.body;
 
     const updateFields = {};
+
     if (title !== undefined) updateFields.title = title;
     if (description !== undefined) updateFields.description = description;
     if (type !== undefined) updateFields.type = type;
@@ -594,7 +610,10 @@ export const updateCourse = async (req, res) => {
 
     res.status(200).json(updatedCourse);
   } catch (error) {
-    res.status(500).json({ message: "Failed to update course", error: error.message });
+    res.status(500).json({
+      message: "Failed to update course",
+      error: error.message
+    });
   }
 };
 
@@ -646,7 +665,9 @@ export async function deleteReply(req, res) {
     const isAdmin = currentUserRole === "admin";
 
     if (!isOwner && !isAdmin) {
-      return res.status(403).json({ message: "You can only delete your own reply" });
+      return res.status(403).json({
+        message: "You can only delete your own reply"
+      });
     }
 
     reply.deleteOne();
