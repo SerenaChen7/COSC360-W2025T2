@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import "../pages/CreateCourse.css";
-import SearchableDropdown from "./SearchableDropdown";
 
 export default function EditCourseModal({ course, onClose, onUpdated }) {
   const fileInputRef = useRef(null);
@@ -18,10 +17,10 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
       : "",
     location: course?.location || "",
     currentTagInput: "",
-    tags: course?.tags || [],
+    tags: course?.tags || []
   });
 
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState(course?.imageUrl || "");
   const [courseTypeOptions, setCourseTypeOptions] = useState([]);
   const [courseFieldOptions, setCourseFieldOptions] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
@@ -39,42 +38,100 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
   }, []);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
+
     if (!file.type.startsWith("image/")) {
       alert("Please upload an image file.");
       return;
     }
+
     setPreview(URL.createObjectURL(file));
   };
 
   const handleAddTag = () => {
     const newTag = formData.currentTagInput.trim();
     if (!newTag) return;
-    if (formData.tags.length >= 5) { alert("You can add at most 5 tags."); return; }
-    if (formData.tags.some((t) => t.toLowerCase() === newTag.toLowerCase())) {
+
+    if (formData.tags.length >= 5) {
+      alert("You can add at most 5 tags.");
+      return;
+    }
+
+    if (formData.tags.some((tag) => tag.toLowerCase() === newTag.toLowerCase())) {
       alert("That tag has already been added.");
       return;
     }
-    setFormData((prev) => ({ ...prev, tags: [...prev.tags, newTag], currentTagInput: "" }));
+
+    setFormData((prev) => ({
+      ...prev,
+      tags: [...prev.tags, newTag],
+      currentTagInput: ""
+    }));
+  };
+
+  const handleQuickAddTag = (tag) => {
+    if (!tag) return;
+
+    if (formData.tags.length >= 5) {
+      alert("You can add at most 5 tags.");
+      return;
+    }
+
+    if (formData.tags.some((t) => t.toLowerCase() === tag.toLowerCase())) {
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      tags: [...prev.tags, tag],
+      currentTagInput: ""
+    }));
   };
 
   const handleRemoveTag = (tagToRemove) => {
-    setFormData((prev) => ({ ...prev, tags: prev.tags.filter((t) => t !== tagToRemove) }));
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((t) => t !== tagToRemove)
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title.trim()) { alert("Course title is required."); return; }
-    if (!formData.type.trim()) { alert("Course type is required."); return; }
-    if (!formData.field.trim()) { alert("Course field is required."); return; }
-    if (!formData.description.trim()) { alert("Course description is required."); return; }
-    if (formData.tags.length === 0) { alert("Please add at least one tag."); return; }
+    if (!formData.title.trim()) {
+      alert("Course title is required.");
+      return;
+    }
+
+    if (!formData.type.trim()) {
+      alert("Course type is required.");
+      return;
+    }
+
+    if (!formData.field.trim()) {
+      alert("Course field is required.");
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      alert("Course description is required.");
+      return;
+    }
+
+    if (formData.tags.length === 0) {
+      alert("Please add at least one tag.");
+      return;
+    }
+
     if (formData.startDate && formData.endDate) {
       if (new Date(formData.startDate) > new Date(formData.endDate)) {
         alert("Start date cannot be after end date.");
@@ -83,6 +140,7 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
     }
 
     setSaving(true);
+
     try {
       const payload = {
         title: formData.title,
@@ -92,17 +150,22 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
         startDate: formData.startDate || null,
         endDate: formData.endDate || null,
         location: formData.location || "",
-        tags: formData.tags,
+        tags: formData.tags
       };
 
       const res = await fetch(`http://localhost:3000/api/courses/${course._id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to update course.");
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to update course.");
+      }
 
       onUpdated(data);
       onClose();
@@ -121,7 +184,9 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
             <h2>Course Management – Edit Course</h2>
             <p>Admin</p>
           </div>
-          <button type="button" className="close-btn" onClick={onClose}>×</button>
+          <button type="button" className="close-btn" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <form className="create-course-form" onSubmit={handleSubmit}>
@@ -135,54 +200,122 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
                 <span>Click Here To Upload</span>
               )}
             </div>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden-file-input" onChange={handleFileChange} />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden-file-input"
+              onChange={handleFileChange}
+            />
           </div>
 
           <div className="form-group">
             <label>Course Title</label>
             <p>What is the title of your Course?</p>
-            <input type="text" name="title" placeholder="Enter title" value={formData.title} onChange={handleChange} />
+            <input
+              type="text"
+              name="title"
+              placeholder="Enter title"
+              value={formData.title}
+              onChange={handleChange}
+            />
           </div>
 
           <div className="two-column">
-            <SearchableDropdown
-              label="Course Type"
-              helperText="What is the type of your Course?"
-              name="type"
-              value={formData.type}
-              options={courseTypeOptions}
-              onChange={handleChange}
-            />
-            <SearchableDropdown
-              label="Course Field"
-              helperText="What are the fields of your Course?"
-              name="field"
-              value={formData.field}
-              options={courseFieldOptions}
-              onChange={handleChange}
-            />
+            <div className="form-group">
+              <label>Course Type</label>
+              <p>What is the type of your Course?</p>
+              <select name="type" value={formData.type} onChange={handleChange}>
+                <option value="">Select course type</option>
+                {courseTypeOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Course Field</label>
+              <p>What are the fields of your Course?</p>
+              <select name="field" value={formData.field} onChange={handleChange}>
+                <option value="">Select course field</option>
+                {courseFieldOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="form-group">
-            <SearchableDropdown
-              label="Tags"
-              helperText="What are the tags to describe your Course? (Max 5)"
-              name="currentTagInput"
-              value={formData.currentTagInput}
-              options={tagOptions}
-              placeholder="Type or choose a tag"
-              onChange={handleChange}
-              disabled={formData.tags.length >= 5}
-              rightButton={
-                <button type="button" className="add-tag-btn" onClick={handleAddTag} disabled={formData.tags.length >= 5}>+</button>
-              }
-            />
-            <div className="tag-count">{formData.tags.length}/5 tags added</div>
+            <label>Tags</label>
+            <p>What are the tags to describe your Course? (Max 5)</p>
+
+            <div style={{ display: "flex", gap: "8px" }}>
+              <input
+                type="text"
+                name="currentTagInput"
+                placeholder="Type a tag or choose one below"
+                value={formData.currentTagInput}
+                onChange={handleChange}
+                disabled={formData.tags.length >= 5}
+              />
+              <button
+                type="button"
+                className="add-tag-btn"
+                onClick={handleAddTag}
+                disabled={formData.tags.length >= 5}
+              >
+                +
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "8px",
+                marginTop: "10px"
+              }}
+            >
+              {tagOptions.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => handleQuickAddTag(tag)}
+                  disabled={formData.tags.length >= 5 || formData.tags.includes(tag)}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: "999px",
+                    border: "1px solid #2b6cb0",
+                    background: "transparent",
+                    color: "#cbd5e1",
+                    cursor: "pointer",
+                    fontSize: "12px"
+                  }}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+
+            <div className="tag-count" style={{ marginTop: "10px" }}>
+              {formData.tags.length}/5 tags added
+            </div>
+
             <div className="selected-tags">
               {formData.tags.map((tag) => (
                 <div key={tag} className="tag-chip">
                   <span>{tag}</span>
-                  <button type="button" className="remove-tag-btn" onClick={() => handleRemoveTag(tag)}>×</button>
+                  <button
+                    type="button"
+                    className="remove-tag-btn"
+                    onClick={() => handleRemoveTag(tag)}
+                  >
+                    ×
+                  </button>
                 </div>
               ))}
             </div>
@@ -191,7 +324,12 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
           <div className="form-group">
             <label>Course Description</label>
             <p>What is the course about?</p>
-            <textarea name="description" placeholder="Enter description..." value={formData.description} onChange={handleChange} />
+            <textarea
+              name="description"
+              placeholder="Enter description..."
+              value={formData.description}
+              onChange={handleChange}
+            />
           </div>
 
           <div className="form-group">
@@ -200,22 +338,40 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
             <div className="two-column">
               <div className="form-group small-gap">
                 <span className="mini-label">Start Date</span>
-                <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} />
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                />
               </div>
               <div className="form-group small-gap">
                 <span className="mini-label">End Date</span>
-                <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} />
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                />
               </div>
             </div>
           </div>
 
           <div className="form-group">
             <label>Course Location (Optional)</label>
-            <input type="text" name="location" placeholder="e.g. Arts 141" value={formData.location} onChange={handleChange} />
+            <input
+              type="text"
+              name="location"
+              placeholder="e.g. Arts 141"
+              value={formData.location}
+              onChange={handleChange}
+            />
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="cancel-btn" onClick={onClose}>Cancel</button>
+            <button type="button" className="cancel-btn" onClick={onClose}>
+              Cancel
+            </button>
             <button type="submit" className="submit-btn" disabled={saving}>
               {saving ? "Saving..." : "Save Changes"}
             </button>
