@@ -2,9 +2,9 @@ import { useState } from "react";
 import "./AdminActions.css";
 import EditCourseModal from "./EditCourseModal";
 
-function AdminActions({ courseId, course, onCourseUpdated }) {
+function AdminActions({ courseId, course, onCourseUpdated, managingMembers, onToggleManage }) {
   const [showEdit, setShowEdit] = useState(false);
-  
+
   const handleDelete = async () => {
     // A simple check so we don't delete by accident
     const confirmDelete = window.confirm("Are you sure you want to delete this Hub forever?");
@@ -36,7 +36,9 @@ return (
           Edit Hub
         </button>
         
-        <button className="admin-action-button">Manage Members</button>
+        <button className="admin-action-button" onClick={onToggleManage}>
+          {managingMembers ? "Done Managing" : "Manage Members"}
+        </button>
 
         <button className="admin-action-button danger" onClick={handleDelete}>
           Delete Hub 🗑️

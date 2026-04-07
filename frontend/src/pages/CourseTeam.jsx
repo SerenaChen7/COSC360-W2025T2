@@ -21,6 +21,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
     }
   });
   const [joining, setJoining] = useState(false);
+  const [managingMembers, setManagingMembers] = useState(false);
 
   const fetchMembers = (id) => {
     if (!id) return;
@@ -175,7 +176,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
                       <p className="member-role">{m.roleInCourse}</p>
                       <p className="member-detail">{m.userId?.email}</p>
                     </div>
-                    {role === "admin" && (
+                    {role === "admin" && managingMembers && (
                       <button
                         className="remove-icon-button"
                         title="Remove member"
@@ -216,7 +217,15 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
               )
             )}
           </div>
-          {role === "admin" && <AdminActions />}
+          {role === "admin" && (
+            <AdminActions
+              courseId={courseId}
+              course={course}
+              onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
+              managingMembers={managingMembers}
+              onToggleManage={() => setManagingMembers((prev) => !prev)}
+            />
+          )}
         </aside>
       </main>
     </div>
