@@ -22,6 +22,59 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
   const effectiveCourseId = courseId || course?._id;
   const token = localStorage.getItem("token");
+  const [isJoined, setIsJoined] = useState(() => {
+    try {
+      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
+      return ids.includes(courseId);
+    } catch {
+      return false;
+    }
+  });
+  const [joining, setJoining] = useState(false);
+
+  const handleJoin = async () => {
+    if (!courseId) return;
+    setJoining(true);
+    try {
+      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to join");
+      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
+      if (!ids.includes(courseId)) {
+        localStorage.setItem("joinedCourseIds", JSON.stringify([...ids, courseId]));
+      }
+      setIsJoined(true);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const handleLeave = async () => {
+    if (!courseId) return;
+    setJoining(true);
+    try {
+      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/leave`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to leave");
+      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
+      localStorage.setItem("joinedCourseIds", JSON.stringify(ids.filter((id) => id !== courseId)));
+      setIsJoined(false);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setJoining(false);
+    }
+  };
 
   const formatTime = (dateString) => {
     if (!dateString) return "";
@@ -500,22 +553,40 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         <aside className="course-discussion-sidebar">
           <div className="join-card">
             <h3>Join This Hub</h3>
-            <p className="join-subtitle">Ready to join?</p>
+            <p className="join-subtitle">
+              {isJoined ? "You are already a member" : "Ready to join?"}
+            </p>
             <p>
               Become part of the community to participate in discussions,
               access shared resources, and stay updated on upcoming sessions.
             </p>
 
             {role === "guest" && (
-              <button className="join-button">➤ Log in to Join</button>
+              <button className="join-button" onClick={() => setPage("login")}>
+                ➤ Log in to Join
+              </button>
             )}
 
-            {role === "user" && (
-              <button className="join-button">➤ Join Course</button>
+            {(role === "user" || role === "admin") && (
+              isJoined ? (
+                <button className="join-button leave-button" onClick={handleLeave} disabled={joining}>
+                  {joining ? "Leaving..." : "✕ Leave Course"}
+                </button>
+              ) : (
+                <button className="join-button" onClick={handleJoin} disabled={joining}>
+                  ➤ {joining ? "Joining..." : "Join Course"}
+                </button>
+              )
             )}
           </div>
 
-          {role === "admin" && <AdminActions />}
+          {role === "admin" && (
+            <AdminActions
+              courseId={effectiveCourseId}
+              course={course}
+              onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
+            />
+          )}
         </aside>
       </main>
     </div>

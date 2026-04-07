@@ -136,6 +136,14 @@
   background: #123d79;
 }
 
+.leave-button {
+  background: #7f1d1d;
+}
+
+.leave-button:hover {
+  background: #991b1b;
+}
+
 .resource-list {
   display: flex;
   flex-direction: column;

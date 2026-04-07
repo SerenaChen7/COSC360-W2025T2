@@ -372,6 +372,14 @@
   background: #123d79;
 }
 
+.leave-button {
+  background: #7f1d1d;
+}
+
+.leave-button:hover {
+  background: #991b1b;
+}
+
 @media (max-width: 900px) {
   .course-discussion-content {
     grid-template-columns: 1fr;

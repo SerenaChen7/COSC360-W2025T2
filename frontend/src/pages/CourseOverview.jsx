@@ -41,36 +41,40 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
   const handleJoin = async () => {
     if (!courseId) return;
     setJoining(true);
-
     try {
       const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to join");
-      }
-
+      if (!res.ok) throw new Error(data.message || "Failed to join");
       const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
       if (!ids.includes(courseId)) {
         localStorage.setItem("joinedCourseIds", JSON.stringify([...ids, courseId]));
       }
-
       setIsJoined(true);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setJoining(false);
+    }
+  };
 
-      setCourse((prev) =>
-        prev
-          ? {
-              ...prev,
-              memberCount: data.memberCount
-            }
-          : prev
-      );
+  const handleLeave = async () => {
+    if (!courseId) return;
+    setJoining(true);
+    try {
+      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/leave`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to leave");
+      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
+      localStorage.setItem("joinedCourseIds", JSON.stringify(ids.filter((id) => id !== courseId)));
+      setIsJoined(false);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
     } catch (err) {
       console.error(err);
     } finally {
@@ -216,21 +220,16 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
               </button>
             )}
 
-            {role === "user" &&
-              (isJoined ? (
-                <button className="join-button" disabled>
-                  ✓ Joined
+            {(role === "user" || role === "admin") && (
+              isJoined ? (
+                <button className="join-button leave-button" onClick={handleLeave} disabled={joining}>
+                  {joining ? "Leaving..." : "✕ Leave Course"}
                 </button>
               ) : (
                 <button className="join-button" onClick={handleJoin} disabled={joining}>
                   ➤ {joining ? "Joining..." : "Join Course"}
                 </button>
-              ))}
-
-            {role === "admin" && (
-              <button className="join-button" disabled>
-                Admin View
-              </button>
+              )
             )}
           </div>
 

@@ -195,7 +195,9 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
         <aside className="course-team-sidebar">
           <div className="join-card">
             <h3>Join This Hub</h3>
-            <p className="join-subtitle">Ready to join?</p>
+            <p className="join-subtitle">
+              {isJoined ? "You are already a member" : "Ready to join?"}
+            </p>
             <p>
               Become part of the community to participate in discussions,
               access shared resources, and stay updated on course discussions.
@@ -205,7 +207,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
                 ➤ Log in to Join
               </button>
             )}
-            {role === "user" && (
+            {(role === "user" || role === "admin") && (
               isJoined ? (
                 <button className="join-button leave-button" onClick={handleLeave} disabled={joining}>
                   {joining ? "Leaving..." : "✕ Leave Course"}
