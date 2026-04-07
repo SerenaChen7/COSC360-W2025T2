@@ -163,9 +163,9 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
         <button
           className="linkText cantLogin"
           type="button"
-          style={{ background: "none", border: "none", cursor: "pointer" }}
+          onClick={() => setPage("signup")}
         >
-          CAN&apos;T LOG IN?
+          DON&apos;T HAVE AN ACCOUNT? SIGN UP
         </button>
       </main>
     </div>

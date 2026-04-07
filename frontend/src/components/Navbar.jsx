@@ -4,8 +4,8 @@ import dashboardIcon from "../assets/darhboard-icon.png";
 import "./Navbar.css";
 
 export default function Navbar({ setPage, setCurrentUser, setRole }) {
-
-  // We check if the user is logged in by looking for a "user" object in localStorage. If it exists, we consider the user to be logged in.
+  
+    // We check if the user is logged in by looking for a "user" object in localStorage. If it exists, we consider the user to be logged in.
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = !!storedUser;
 
@@ -25,7 +25,7 @@ export default function Navbar({ setPage, setCurrentUser, setRole }) {
   return (
     <nav className="navbar">
       <div className="navRight">
-        
+                
         {/* Home */}
         <button
           className="navIconBtn"
@@ -54,7 +54,20 @@ export default function Navbar({ setPage, setCurrentUser, setRole }) {
           <img src={dashboardIcon} alt="Dashboard" />
         </button>
 
-        {/* Login/Logout */}
+                {/* Login/Logout */}
+
+        {isLoggedIn && (
+          <img
+            className="navProfilePic"
+            src={
+              storedUser.profileImage
+                ? `http://localhost:3000${storedUser.profileImage}`
+                : "https://via.placeholder.com/32"
+            }
+            alt="Profile"
+          />
+        )}
+
         {isLoggedIn ? (
           <button className="navLoginBtn" onClick={handleLogout}>
             LOGOUT

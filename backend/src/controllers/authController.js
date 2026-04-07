@@ -2,6 +2,68 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+export async function signupUser(req, res) {
+  try {
+    const { username, email, password, confirmPassword } = req.body;
+
+    if (!username || !email || !password || !confirmPassword) {
+      return res.status(400).json({
+        message: "Username, email, password, and confirm password are required"
+      });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        message: "Passwords do not match"
+      });
+    }
+
+    const cleanedEmail = email.toLowerCase().trim();
+    const cleanedUsername = username.trim();
+
+    const existingEmail = await User.findOne({ email: cleanedEmail });
+    if (existingEmail) {
+      return res.status(400).json({
+        message: "Email already exists"
+      });
+    }
+
+    const existingUsername = await User.findOne({ username: cleanedUsername });
+    if (existingUsername) {
+      return res.status(400).json({
+        message: "Username already exists"
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const profileImage = req.file ? `/uploads/${req.file.filename}` : "";
+
+    const newUser = await User.create({
+      username: cleanedUsername,
+      email: cleanedEmail,
+      passwordHash,
+      role: "user",
+      profileImage
+    });
+
+    return res.status(201).json({
+      message: "Account created successfully",
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role,
+        profileImage: newUser.profileImage
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
+  }
+}
+
 export async function loginUser(req, res) {
   try {
     const { email, password } = req.body;
@@ -45,7 +107,8 @@ export async function loginUser(req, res) {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        profileImage: user.profileImage || ""
       }
     });
   } catch (error) {
