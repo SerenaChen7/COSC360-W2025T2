@@ -36,9 +36,11 @@ return (
           Edit Hub
         </button>
         
-        <button className="admin-action-button" onClick={onToggleManage}>
-          {managingMembers ? "Done Managing" : "Manage Members"}
-        </button>
+        {onToggleManage && (
+          <button className="admin-action-button" onClick={onToggleManage}>
+            {managingMembers ? "Done Managing" : "Manage Members"}
+          </button>
+        )}
 
         <button className="admin-action-button danger" onClick={handleDelete}>
           Delete Hub 🗑️
