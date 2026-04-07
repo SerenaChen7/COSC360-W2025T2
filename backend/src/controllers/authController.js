@@ -68,9 +68,10 @@ export async function socialLogin(req, res) {
 
     let user = await User.findOne({ email: cleanEmail });
 
+    // If they are new, we make a safe account for them
     if (!user) {
       const salt = await bcrypt.genSalt(10);
-      const randomPass = Math.random().toString(36).slice(-8);
+      const randomPass = Math.random().toString(36).slice(-8); // A secret random password
       const hash = await bcrypt.hash(randomPass, salt);
 
       user = await User.create({
@@ -79,12 +80,11 @@ export async function socialLogin(req, res) {
         passwordHash: hash, 
         role: "user"        
       });
-      console.log("New user created in DB via " + platform);
+      console.log(`[DB] Created new user: ${cleanEmail} via ${platform}`);
     }
-
     const token = jwt.sign(
       { userId: user._id, role: user.role },
-      process.env.JWT_SECRET || "my_secret_key",
+      process.env.JWT_SECRET || "dev_secret_key", 
       { expiresIn: "7d" }
     );
 
@@ -100,6 +100,7 @@ export async function socialLogin(req, res) {
     });
 
   } catch (err) {
+    console.error("Database error during social login:", err);
     res.status(500).json({ message: "Social login failed!" });
   }
 }
