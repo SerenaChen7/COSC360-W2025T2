@@ -46,10 +46,12 @@ export default function Signup({ setPage }) {
         formData.append("profileImage", profileImage);
       }
 
-      const response = await fetch("http://localhost:3000/api/auth/signup", {
-        method: "POST",
-        body: formData
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/signup`,
+        {
+            method: "POST",
+            body: formData
+        });
 
       const data = await response.json();
 

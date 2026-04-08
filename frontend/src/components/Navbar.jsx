@@ -4,7 +4,7 @@ import dashboardIcon from "../assets/darhboard-icon.png";
 import "./Navbar.css";
 
 export default function Navbar({ setPage, setCurrentUser, setRole }) {
-  
+
     // We check if the user is logged in by looking for a "user" object in localStorage. If it exists, we consider the user to be logged in.
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = !!storedUser;
@@ -61,7 +61,7 @@ export default function Navbar({ setPage, setCurrentUser, setRole }) {
             className="navProfilePic"
             src={
               storedUser.profileImage
-                ? `http://localhost:3000${storedUser.profileImage}`
+                ? `${import.meta.env.VITE_API_URL}${storedUser.profileImage}`
                 : "https://via.placeholder.com/32"
             }
             alt="Profile"
