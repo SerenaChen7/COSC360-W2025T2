@@ -34,7 +34,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/courses")
+    fetch(`${API_URL}/api/courses`)
       .then((res) => res.json())
       .then((data) => setAllCourses(data))
       .catch((err) => console.error("Failed to fetch courses:", err));
@@ -49,7 +49,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
 
       try {
         const response = await fetch(
-          `http://localhost:3000/api/courses/search?q=${searchTerm}`
+          `${API_URL}/api/courses/search?q=${searchTerm}`
         );
         const data = await response.json();
         setSearchResults(data);
@@ -61,6 +61,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  const API_URL = import.meta.env.VITE_API_URL;
   // Derive course type options (COSC, MATH, STAT, etc.) from loaded courses
   const courseTypeOptions = useMemo(() => {
     const types = [...new Set(allCourses.map((c) => c.title.split(" ")[0]))].sort();

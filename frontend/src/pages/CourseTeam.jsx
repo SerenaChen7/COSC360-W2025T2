@@ -23,9 +23,10 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
   const [joining, setJoining] = useState(false);
   const [managingMembers, setManagingMembers] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
   const fetchMembers = (id) => {
     if (!id) return;
-    fetch(`http://localhost:3000/api/courses/${id}/members`)
+    fetch(`${API_URL}/api/courses/${id}/members`)
       .then((res) => res.json())
       .then((data) => {
         setCreator(data.creator || null);
@@ -37,7 +38,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
   useEffect(() => {
     if (!courseId) return;
 
-    fetch(`http://localhost:3000/api/courses/${courseId}`)
+    fetch(`${API_URL}/api/courses/${courseId}`)
       .then((res) => res.json())
       .then((data) => setCourse(data))
       .catch((err) => console.error(err));
@@ -48,7 +49,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
   const handleRemoveMember = async (userId) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/members/${userId}`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/members/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -66,7 +67,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
     setJoining(true);
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/leave`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/leave`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -89,7 +90,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
     setJoining(true);
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/join`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });

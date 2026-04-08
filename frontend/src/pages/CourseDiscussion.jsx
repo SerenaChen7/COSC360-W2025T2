@@ -32,11 +32,12 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
   });
   const [joining, setJoining] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
   const handleJoin = async () => {
     if (!courseId) return;
     setJoining(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/join`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -59,7 +60,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
     if (!courseId) return;
     setJoining(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/leave`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/leave`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -104,7 +105,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}`,
+        `${API_URL}/api/courses/${effectiveCourseId}/posts/${postId}`,
         {
           method: "DELETE",
           headers: {
@@ -136,7 +137,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}/replies/${replyId}`,
+        `${API_URL}/api/courses/${effectiveCourseId}/posts/${postId}/replies/${replyId}`,
         {
           method: "DELETE",
           headers: {
@@ -212,7 +213,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         });
 
         const res = await fetch(
-          `http://localhost:3000/api/courses/${effectiveCourseId}/posts`,
+          `${API_URL}/api/courses/${effectiveCourseId}/posts`,
           {
             method: "POST",
             headers: {
@@ -248,7 +249,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       setIsReplySending(true);
 
       const res = await fetch(
-        `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}/replies`,
+        `${API_URL}/api/courses/${effectiveCourseId}/posts/${postId}/replies`,
         {
           method: "POST",
           headers: {
@@ -281,14 +282,14 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
   useEffect(() => {
     if (courseId) {
-      fetch(`http://localhost:3000/api/courses/${courseId}`)
+      fetch(`${API_URL}/api/courses/${courseId}`)
         .then((res) => res.json())
         .then((data) => setCourse(data))
         .catch((err) => console.error(err));
       return;
     }
 
-    fetch("http://localhost:3000/api/courses")
+    fetch(`${API_URL}/api/courses`)
       .then((res) => res.json())
       .then((data) => setCourse(data[0]))
       .catch((err) => console.error(err));
@@ -297,7 +298,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
   useEffect(() => {
     if (!effectiveCourseId) return;
 
-    fetch(`http://localhost:3000/api/courses/${effectiveCourseId}/posts`)
+    fetch(`${API_URL}/api/courses/${effectiveCourseId}/posts`)
       .then((res) => res.json())
       .then((data) => setPosts(data))
       .catch((err) => console.error(err));
@@ -440,7 +441,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                       {post.attachments.map((attachment, index) => (
                         <a
                           key={attachment._id || index}
-                          href={`http://localhost:3000/api/courses/posts/${post._id}/attachments/${attachment._id}/download`}
+                          href={`${API_URL}/api/courses/posts/${post._id}/attachments/${attachment._id}/download`}
                           className="discussion-file-link"
                         >
                           📎 {attachment.fileName}

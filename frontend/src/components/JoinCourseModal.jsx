@@ -32,8 +32,9 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
   const [sortFilter, setSortFilter] = useState([]);
   const [joiningId, setJoiningId] = useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
-    fetch("http://localhost:3000/api/courses")
+    fetch(`${API_URL}/api/courses`)
       .then((res) => res.json())
       .then((data) => {
         setAllCourses(data);
@@ -87,7 +88,7 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
     setJoiningId(courseId);
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/join`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });
