@@ -7,6 +7,7 @@ import CourseTeam from "./pages/CourseTeam";
 import CourseDiscussion from "./pages/CourseDiscussion";
 import CreateCourse from "./pages/CreateCourse";
 import Dashboard from "./pages/Dashboard";
+import Signup from "./pages/Signup";
 
 export default function App() {
   const savedUser = JSON.parse(localStorage.getItem("user"));
@@ -99,6 +100,12 @@ export default function App() {
           setPage={setPage}
           setRole={setRole}
           setCurrentUser={setCurrentUser}
+        />
+      )}
+
+      {page === "signup" && (
+        <Signup
+          setPage={setPage}
         />
       )}
 
