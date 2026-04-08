@@ -5,6 +5,38 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("../backend/src/controllers/authController.js", () => ({
   loginUser: (req, res) => {
     return res.status(200).json({ ok: true });
+  },
+  signupUser: (req, res) => {
+    return res.status(201).json({ created: true });
+  },
+  getCurrentUser: (req, res) => {
+    return res.status(200).json({
+      user: {
+        id: "u1",
+        username: "Eric",
+        email: "eric@example.com",
+        role: "user",
+        profileImage: "",
+        isDisabled: false
+      }
+    });
+  }
+}));
+
+vi.mock("../backend/src/middleware/uploadMiddleware.js", () => ({
+  default: {
+    single: () => (req, res, next) => next()
+  }
+}));
+
+vi.mock("../backend/src/middleware/authMiddleware.js", () => ({
+  requireAuth: (req, res, next) => {
+    req.user = {
+      userId: "u1",
+      email: "eric@example.com",
+      role: "user"
+    };
+    next();
   }
 }));
 

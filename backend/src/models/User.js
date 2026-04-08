@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
   profileImage: {
     type: String,
     default: ""
+  },
+  isDisabled: {
+    type: Boolean,
+    default: false
   }
 }, { 
   // Automatically adds createdAt and updatedAt fields (Auto-timestamp)

@@ -22,17 +22,43 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
   const effectiveCourseId = courseId || course?._id;
   const token = localStorage.getItem("token");
-  const [isJoined, setIsJoined] = useState(() => {
-    try {
-      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
-      return ids.includes(courseId);
-    } catch {
-      return false;
-    }
-  });
+  const [isJoined, setIsJoined] = useState(false);
   const [joining, setJoining] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
+  const fetchJoinedStatus = async () => {
+    if (!courseId) return;
+
+    if (role !== "user" && role !== "admin") {
+      setIsJoined(false);
+      return;
+    }
+
+    if (!token) {
+      setIsJoined(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/courses/joined`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch joined courses");
+      }
+
+      const data = await res.json();
+      const joinedIds = (data || []).map((course) => String(course._id));
+      setIsJoined(joinedIds.includes(String(courseId)));
+    } catch (err) {
+      console.error(err);
+      setIsJoined(false);
+    }
+  };
+
   const handleJoin = async () => {
     if (!courseId) return;
     setJoining(true);
@@ -43,10 +69,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to join");
-      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
-      if (!ids.includes(courseId)) {
-        localStorage.setItem("joinedCourseIds", JSON.stringify([...ids, courseId]));
-      }
+
       setIsJoined(true);
       setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
     } catch (err) {
@@ -66,8 +89,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to leave");
-      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
-      localStorage.setItem("joinedCourseIds", JSON.stringify(ids.filter((id) => id !== courseId)));
+
       setIsJoined(false);
       setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
     } catch (err) {
@@ -76,7 +98,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       setJoining(false);
     }
   };
-
+  
   const formatTime = (dateString) => {
     if (!dateString) return "";
 
@@ -286,6 +308,8 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         .then((res) => res.json())
         .then((data) => setCourse(data))
         .catch((err) => console.error(err));
+
+      fetchJoinedStatus();
       return;
     }
 
@@ -293,7 +317,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       .then((res) => res.json())
       .then((data) => setCourse(data[0]))
       .catch((err) => console.error(err));
-  }, [courseId]);
+  }, [courseId, role]);
 
   useEffect(() => {
     if (!effectiveCourseId) return;

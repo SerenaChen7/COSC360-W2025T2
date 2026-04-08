@@ -43,7 +43,8 @@ export async function signupUser(req, res) {
       email: cleanedEmail,
       passwordHash,
       role: "user",
-      profileImage
+      profileImage,
+      isDisabled: false
     });
 
     return res.status(201).json({
@@ -82,6 +83,12 @@ export async function loginUser(req, res) {
       });
     }
 
+    if (user.isDisabled) {
+      return res.status(403).json({
+        message: "This account has been disabled"
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.passwordHash);
 
     if (!isMatch) {
@@ -100,7 +107,7 @@ export async function loginUser(req, res) {
       { expiresIn: "7d" }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
       token,
       user: {
@@ -112,7 +119,43 @@ export async function loginUser(req, res) {
       }
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
+  }
+}
+
+export async function getCurrentUser(req, res) {
+  try {
+    const user = await User.findById(req.user.userId).select(
+      "_id username email role profileImage isDisabled"
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    if (user.isDisabled) {
+      return res.status(403).json({
+        message: "This account has been disabled"
+      });
+    }
+
+    return res.status(200).json({
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage || "",
+        isDisabled: user.isDisabled
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
       message: "Server error",
       error: error.message
     });
