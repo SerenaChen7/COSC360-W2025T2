@@ -12,6 +12,7 @@ export default function Navbar({ setPage, setCurrentUser, setRole }) {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("joinedCourseIds");
 
     if (setCurrentUser) setCurrentUser(null);
     if (setRole) setRole("guest");
