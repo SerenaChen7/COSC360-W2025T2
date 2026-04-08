@@ -12,19 +12,48 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
   const [creator, setCreator] = useState(null);
   const [members, setMembers] = useState([]);
   const [search, setSearch] = useState("");
-  const [isJoined, setIsJoined] = useState(() => {
-    try {
-      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
-      return ids.includes(courseId);
-    } catch {
-      return false;
-    }
-  });
+  const [isJoined, setIsJoined] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [managingMembers, setManagingMembers] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  const fetchJoinedStatus = async () => {
+    if (!courseId) return;
+    if (role !== "user" && role !== "admin") {
+      setIsJoined(false);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsJoined(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/courses/joined`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch joined courses");
+      }
+
+      const data = await res.json();
+      const joinedIds = (data || []).map((course) => String(course._id));
+      setIsJoined(joinedIds.includes(String(courseId)));
+    } catch (err) {
+      console.error(err);
+      setIsJoined(false);
+    }
+  };
 
   const fetchMembers = (id) => {
     if (!id) return;
-    fetch(`http://localhost:3000/api/courses/${id}/members`)
+    fetch(`${API_URL}/api/courses/${id}/members`)
       .then((res) => res.json())
       .then((data) => {
         setCreator(data.creator || null);
@@ -36,18 +65,19 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
   useEffect(() => {
     if (!courseId) return;
 
-    fetch(`http://localhost:3000/api/courses/${courseId}`)
+    fetch(`${API_URL}/api/courses/${courseId}`)
       .then((res) => res.json())
       .then((data) => setCourse(data))
       .catch((err) => console.error(err));
 
     fetchMembers(courseId);
-  }, [courseId]);
+    fetchJoinedStatus();
+  }, [courseId, role]);
 
   const handleRemoveMember = async (userId) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/members/${userId}`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/members/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -64,17 +94,20 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
     if (!courseId) return;
     setJoining(true);
     const token = localStorage.getItem("token");
+
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/leave`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/leave`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to leave");
-      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
-      localStorage.setItem("joinedCourseIds", JSON.stringify(ids.filter((id) => id !== courseId)));
+
       setIsJoined(false);
-      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+      setCourse((prev) =>
+        prev ? { ...prev, memberCount: data.memberCount } : prev
+      );
       fetchMembers(courseId);
     } catch (err) {
       console.error(err);
@@ -87,19 +120,20 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
     if (!courseId) return;
     setJoining(true);
     const token = localStorage.getItem("token");
+
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/join`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to join");
-      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
-      if (!ids.includes(courseId)) {
-        localStorage.setItem("joinedCourseIds", JSON.stringify([...ids, courseId]));
-      }
+
       setIsJoined(true);
-      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+      setCourse((prev) =>
+        prev ? { ...prev, memberCount: data.memberCount } : prev
+      );
       fetchMembers(courseId);
     } catch (err) {
       console.error(err);
@@ -138,7 +172,15 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
               {creator ? (
                 <div className="member-row">
                   <div className="member-avatar">
-                    {creator.username?.charAt(0).toUpperCase()}
+                    {creator.profileImage ? (
+                      <img
+                        src={`${API_URL}${creator.profileImage}`}
+                        alt={creator.username}
+                        className="member-avatar-img"
+                      />
+                    ) : (
+                      creator.username?.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div className="member-info">
                     <p className="member-name">{creator.username}</p>
@@ -168,14 +210,22 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
                 filteredMembers.map((m) => (
                   <div className="member-row" key={m._id}>
                     <div className="member-avatar">
-                      {m.userId?.username?.charAt(0).toUpperCase()}
+                      {m.userId?.profileImage ? (
+                        <img
+                          src={`${API_URL}${m.userId.profileImage}`}
+                          alt={m.userId?.username}
+                          className="member-avatar-img"
+                        />
+                      ) : (
+                        m.userId?.username?.charAt(0).toUpperCase()
+                      )}
                     </div>
                     <div className="member-info">
                       <p className="member-name">{m.userId?.username}</p>
                       <p className="member-role">{m.roleInCourse}</p>
                       <p className="member-detail">{m.userId?.email}</p>
                     </div>
-                    {role === "admin" && (
+                    {role === "admin" && managingMembers && (
                       <button
                         className="remove-icon-button"
                         title="Remove member"
@@ -194,7 +244,9 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
         <aside className="course-team-sidebar">
           <div className="join-card">
             <h3>Join This Hub</h3>
-            <p className="join-subtitle">Ready to join?</p>
+            <p className="join-subtitle">
+              {isJoined ? "You are already a member" : "Ready to join?"}
+            </p>
             <p>
               Become part of the community to participate in discussions,
               access shared resources, and stay updated on course discussions.
@@ -204,7 +256,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
                 ➤ Log in to Join
               </button>
             )}
-            {role === "user" && (
+            {(role === "user" || role === "admin") && (
               isJoined ? (
                 <button className="join-button leave-button" onClick={handleLeave} disabled={joining}>
                   {joining ? "Leaving..." : "✕ Leave Course"}
@@ -216,7 +268,15 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
               )
             )}
           </div>
-          {role === "admin" && <AdminActions />}
+          {role === "admin" && (
+            <AdminActions
+              courseId={courseId}
+              course={course}
+              onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
+              managingMembers={managingMembers}
+              onToggleManage={() => setManagingMembers((prev) => !prev)}
+            />
+          )}
         </aside>
       </main>
     </div>

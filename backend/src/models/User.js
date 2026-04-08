@@ -26,6 +26,14 @@ const userSchema = new mongoose.Schema({
     type: String, 
     enum: ['user', 'admin'], 
     default: 'user' 
+  },
+  profileImage: {
+    type: String,
+    default: ""
+  },
+  isDisabled: {
+    type: Boolean,
+    default: false
   }
 }, { 
   // Automatically adds createdAt and updatedAt fields (Auto-timestamp)

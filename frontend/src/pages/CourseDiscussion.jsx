@@ -22,7 +22,83 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
   const effectiveCourseId = courseId || course?._id;
   const token = localStorage.getItem("token");
+  const [isJoined, setIsJoined] = useState(false);
+  const [joining, setJoining] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+  const fetchJoinedStatus = async () => {
+    if (!courseId) return;
+
+    if (role !== "user" && role !== "admin") {
+      setIsJoined(false);
+      return;
+    }
+
+    if (!token) {
+      setIsJoined(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/courses/joined`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch joined courses");
+      }
+
+      const data = await res.json();
+      const joinedIds = (data || []).map((course) => String(course._id));
+      setIsJoined(joinedIds.includes(String(courseId)));
+    } catch (err) {
+      console.error(err);
+      setIsJoined(false);
+    }
+  };
+
+  const handleJoin = async () => {
+    if (!courseId) return;
+    setJoining(true);
+    try {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/join`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to join");
+
+      setIsJoined(true);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const handleLeave = async () => {
+    if (!courseId) return;
+    setJoining(true);
+    try {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/leave`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to leave");
+
+      setIsJoined(false);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setJoining(false);
+    }
+  };
+  
   const formatTime = (dateString) => {
     if (!dateString) return "";
 
@@ -51,7 +127,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}`,
+        `${API_URL}/api/courses/${effectiveCourseId}/posts/${postId}`,
         {
           method: "DELETE",
           headers: {
@@ -83,7 +159,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}/replies/${replyId}`,
+        `${API_URL}/api/courses/${effectiveCourseId}/posts/${postId}/replies/${replyId}`,
         {
           method: "DELETE",
           headers: {
@@ -159,7 +235,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         });
 
         const res = await fetch(
-          `http://localhost:3000/api/courses/${effectiveCourseId}/posts`,
+          `${API_URL}/api/courses/${effectiveCourseId}/posts`,
           {
             method: "POST",
             headers: {
@@ -195,7 +271,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       setIsReplySending(true);
 
       const res = await fetch(
-        `http://localhost:3000/api/courses/${effectiveCourseId}/posts/${postId}/replies`,
+        `${API_URL}/api/courses/${effectiveCourseId}/posts/${postId}/replies`,
         {
           method: "POST",
           headers: {
@@ -228,23 +304,25 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
   useEffect(() => {
     if (courseId) {
-      fetch(`http://localhost:3000/api/courses/${courseId}`)
+      fetch(`${API_URL}/api/courses/${courseId}`)
         .then((res) => res.json())
         .then((data) => setCourse(data))
         .catch((err) => console.error(err));
+
+      fetchJoinedStatus();
       return;
     }
 
-    fetch("http://localhost:3000/api/courses")
+    fetch(`${API_URL}/api/courses`)
       .then((res) => res.json())
       .then((data) => setCourse(data[0]))
       .catch((err) => console.error(err));
-  }, [courseId]);
+  }, [courseId, role]);
 
   useEffect(() => {
     if (!effectiveCourseId) return;
 
-    fetch(`http://localhost:3000/api/courses/${effectiveCourseId}/posts`)
+    fetch(`${API_URL}/api/courses/${effectiveCourseId}/posts`)
       .then((res) => res.json())
       .then((data) => setPosts(data))
       .catch((err) => console.error(err));
@@ -387,7 +465,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                       {post.attachments.map((attachment, index) => (
                         <a
                           key={attachment._id || index}
-                          href={`http://localhost:3000/api/courses/posts/${post._id}/attachments/${attachment._id}/download`}
+                          href={`${API_URL}/api/courses/posts/${post._id}/attachments/${attachment._id}/download`}
                           className="discussion-file-link"
                         >
                           📎 {attachment.fileName}
@@ -500,22 +578,40 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         <aside className="course-discussion-sidebar">
           <div className="join-card">
             <h3>Join This Hub</h3>
-            <p className="join-subtitle">Ready to join?</p>
+            <p className="join-subtitle">
+              {isJoined ? "You are already a member" : "Ready to join?"}
+            </p>
             <p>
               Become part of the community to participate in discussions,
               access shared resources, and stay updated on upcoming sessions.
             </p>
 
             {role === "guest" && (
-              <button className="join-button">➤ Log in to Join</button>
+              <button className="join-button" onClick={() => setPage("login")}>
+                ➤ Log in to Join
+              </button>
             )}
 
-            {role === "user" && (
-              <button className="join-button">➤ Join Course</button>
+            {(role === "user" || role === "admin") && (
+              isJoined ? (
+                <button className="join-button leave-button" onClick={handleLeave} disabled={joining}>
+                  {joining ? "Leaving..." : "✕ Leave Course"}
+                </button>
+              ) : (
+                <button className="join-button" onClick={handleJoin} disabled={joining}>
+                  ➤ {joining ? "Joining..." : "Join Course"}
+                </button>
+              )
             )}
           </div>
 
-          {role === "admin" && <AdminActions />}
+          {role === "admin" && (
+            <AdminActions
+              courseId={effectiveCourseId}
+              course={course}
+              onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
+            />
+          )}
         </aside>
       </main>
     </div>

@@ -238,13 +238,13 @@ export const getCourseMembers = async (req, res) => {
   try {
     const courseId = req.params.id;
 
-    const course = await Course.findById(courseId).populate("createdBy", "username email role");
+    const course = await Course.findById(courseId).populate("createdBy", "username email role profileImage");
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
 
     const members = await CourseMember.find({ courseId })
-      .populate("userId", "username email role")
+      .populate("userId", "username email role profileImage")
       .sort({ createdAt: 1 });
 
     res.status(200).json({

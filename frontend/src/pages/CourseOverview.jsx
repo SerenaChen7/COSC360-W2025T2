@@ -11,10 +11,45 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
   const [recentPosts, setRecentPosts] = useState([]);
   const token = localStorage.getItem("token");
 
+  const API_URL = import.meta.env.VITE_API_URL;
+  const fetchJoinedStatus = async () => {
+    if (!courseId) return;
+
+    if (role !== "user" && role !== "admin") {
+      setIsJoined(false);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsJoined(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/courses/joined`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch joined courses");
+      }
+
+      const data = await res.json();
+      const joinedIds = (data || []).map((course) => String(course._id));
+      setIsJoined(joinedIds.includes(String(courseId)));
+    } catch (err) {
+      console.error(err);
+      setIsJoined(false);
+    }
+  };
+
   useEffect(() => {
     if (!courseId) return;
 
-    fetch(`http://localhost:3000/api/courses/${courseId}/posts`)
+    fetch(`${API_URL}/api/courses/${courseId}/posts`)
       .then((res) => res.json())
       .then((data) => setRecentPosts(data.slice(0, 3)))
       .catch((err) => console.error(err));
@@ -26,14 +61,7 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
     return date.toLocaleDateString();
   };
 
-  const [isJoined, setIsJoined] = useState(() => {
-    try {
-      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
-      return ids.includes(courseId);
-    } catch {
-      return false;
-    }
-  });
+  const [isJoined, setIsJoined] = useState(false);
   const [joining, setJoining] = useState(false);
 
   // The handleJoin function is responsible for sending a request to the backend to join the course. 
@@ -43,34 +71,36 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
     setJoining(true);
 
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/join`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to join");
-      }
-
-      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
-      if (!ids.includes(courseId)) {
-        localStorage.setItem("joinedCourseIds", JSON.stringify([...ids, courseId]));
-      }
+      if (!res.ok) throw new Error(data.message || "Failed to join");
 
       setIsJoined(true);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setJoining(false);
+    }
+  };
 
-      setCourse((prev) =>
-        prev
-          ? {
-              ...prev,
-              memberCount: data.memberCount
-            }
-          : prev
-      );
+  const handleLeave = async () => {
+    if (!courseId) return;
+    setJoining(true);
+
+    try {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/leave`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to leave");
+
+      setIsJoined(false);
+      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
     } catch (err) {
       console.error(err);
     } finally {
@@ -80,18 +110,20 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
 
   useEffect(() => {
     if (courseId) {
-      fetch(`http://localhost:3000/api/courses/${courseId}`)
+      fetch(`${API_URL}/api/courses/${courseId}`)
         .then(res => res.json())
         .then(data => setCourse(data))
         .catch(err => console.error(err));
+
+      fetchJoinedStatus();
       return;
     }
 
-    fetch("http://localhost:3000/api/courses")
+    fetch(`${API_URL}/api/courses`)
       .then(res => res.json())
       .then(data => setCourse(data[0]))
       .catch(err => console.error(err));
-  }, [courseId]);
+  }, [courseId, role]);
 
 
   return (
@@ -216,21 +248,16 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
               </button>
             )}
 
-            {role === "user" &&
-              (isJoined ? (
-                <button className="join-button" disabled>
-                  ✓ Joined
+            {(role === "user" || role === "admin") && (
+              isJoined ? (
+                <button className="join-button leave-button" onClick={handleLeave} disabled={joining}>
+                  {joining ? "Leaving..." : "✕ Leave Course"}
                 </button>
               ) : (
                 <button className="join-button" onClick={handleJoin} disabled={joining}>
                   ➤ {joining ? "Joining..." : "Join Course"}
                 </button>
-              ))}
-
-            {role === "admin" && (
-              <button className="join-button" disabled>
-                Admin View
-              </button>
+              )
             )}
           </div>
 

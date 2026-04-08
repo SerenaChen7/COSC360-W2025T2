@@ -26,8 +26,9 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
   const [tagOptions, setTagOptions] = useState([]);
   const [saving, setSaving] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
-    fetch("http://localhost:3000/api/courses/options")
+    fetch(`${API_URL}/api/courses/options`)
       .then((res) => res.json())
       .then((data) => {
         setCourseTypeOptions(data.types || []);
@@ -153,7 +154,7 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
         tags: formData.tags
       };
 
-      const res = await fetch(`http://localhost:3000/api/courses/${course._id}`, {
+      const res = await fetch(`${API_URL}/api/courses/${course._id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json"
