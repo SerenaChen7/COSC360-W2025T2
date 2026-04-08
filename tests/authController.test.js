@@ -65,7 +65,9 @@ describe("loginUser controller", () => {
       username: "Eric",
       email: "eric@example.com",
       passwordHash,
-      role: "user"
+      role: "user",
+      profileImage: "",
+      isDisabled: false
     });
 
     const req = {
@@ -92,7 +94,9 @@ describe("loginUser controller", () => {
       username: "Eric",
       email: "eric@example.com",
       passwordHash,
-      role: "user"
+      role: "user",
+      profileImage: "",
+      isDisabled: false
     });
 
     const req = {
@@ -118,7 +122,8 @@ describe("loginUser controller", () => {
       id: "u1",
       username: "Eric",
       email: "eric@example.com",
-      role: "user"
+      role: "user",
+      profileImage: ""
     });
   });
 });

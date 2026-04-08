@@ -185,3 +185,35 @@
   font-size: 12px;
   color: #5f6f86;
 }
+
+.admin-search-user {
+  justify-content: space-between;
+}
+
+.admin-status-button {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.admin-status-button.disable {
+  background: #7f1d1d;
+  color: #fff;
+}
+
+.admin-status-button.disable:hover {
+  background: #991b1b;
+}
+
+.admin-status-button.enable {
+  background: #0b2d5c;
+  color: #fff;
+}
+
+.admin-status-button.enable:hover {
+  background: #123d79;
+}

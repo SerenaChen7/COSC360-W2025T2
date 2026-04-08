@@ -77,6 +77,34 @@ function AdminActions({ courseId, course, onCourseUpdated, managingMembers, onTo
     }
   };
 
+  const handleToggleUserStatus = async (targetUserId) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/api/users/${targetUserId}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to update user status");
+      }
+
+      setResults((prev) =>
+        prev.map((user) =>
+          user._id === targetUserId ? data.user : user
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      setMessage(err.message || "Failed to update user status");
+    }
+  };
+
   return (
     <>
       <div className="admin-actions-card">
@@ -153,8 +181,18 @@ function AdminActions({ courseId, course, onCourseUpdated, managingMembers, onTo
                     <div className="admin-search-user-info">
                       <p className="admin-search-name">{user.username}</p>
                       <p className="admin-search-email">{user.email}</p>
-                      <p className="admin-search-role">{user.role}</p>
+                      <p className="admin-search-role">
+                        {user.role} {user.isDisabled ? "• disabled" : "• active"}
+                      </p>
                     </div>
+
+                    <button
+                      type="button"
+                      className={`admin-status-button ${user.isDisabled ? "enable" : "disable"}`}
+                      onClick={() => handleToggleUserStatus(user._id)}
+                    >
+                      {user.isDisabled ? "Enable" : "Disable"}
+                    </button>
                   </div>
                 ))}
               </div>
