@@ -21,6 +21,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
     }
   });
   const [joining, setJoining] = useState(false);
+  const [managingMembers, setManagingMembers] = useState(false);
 
   const fetchMembers = (id) => {
     if (!id) return;
@@ -175,7 +176,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
                       <p className="member-role">{m.roleInCourse}</p>
                       <p className="member-detail">{m.userId?.email}</p>
                     </div>
-                    {role === "admin" && (
+                    {role === "admin" && managingMembers && (
                       <button
                         className="remove-icon-button"
                         title="Remove member"
@@ -194,7 +195,9 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
         <aside className="course-team-sidebar">
           <div className="join-card">
             <h3>Join This Hub</h3>
-            <p className="join-subtitle">Ready to join?</p>
+            <p className="join-subtitle">
+              {isJoined ? "You are already a member" : "Ready to join?"}
+            </p>
             <p>
               Become part of the community to participate in discussions,
               access shared resources, and stay updated on course discussions.
@@ -204,7 +207,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
                 ➤ Log in to Join
               </button>
             )}
-            {role === "user" && (
+            {(role === "user" || role === "admin") && (
               isJoined ? (
                 <button className="join-button leave-button" onClick={handleLeave} disabled={joining}>
                   {joining ? "Leaving..." : "✕ Leave Course"}
@@ -216,7 +219,15 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
               )
             )}
           </div>
-          {role === "admin" && <AdminActions />}
+          {role === "admin" && (
+            <AdminActions
+              courseId={courseId}
+              course={course}
+              onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
+              managingMembers={managingMembers}
+              onToggleManage={() => setManagingMembers((prev) => !prev)}
+            />
+          )}
         </aside>
       </main>
     </div>

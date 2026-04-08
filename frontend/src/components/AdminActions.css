@@ -33,3 +33,46 @@
 .admin-action-button.danger {
   background: #0b2d5c;
 }
+
+.members-list {
+  margin-bottom: 12px;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.members-empty {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+}
+
+.member-row:last-child {
+  border-bottom: none;
+}
+
+.member-name {
+  color: #17305c;
+  font-weight: 500;
+}
+
+.remove-member-button {
+  background: #c0392b;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
