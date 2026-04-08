@@ -5,6 +5,7 @@ import EditCourseModal from "./EditCourseModal";
 function AdminActions({ courseId, course, onCourseUpdated, managingMembers, onToggleManage }) {
   const [showEdit, setShowEdit] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
   const handleDelete = async () => {
     // A simple check so we don't delete by accident
     const confirmDelete = window.confirm("Are you sure you want to delete this Hub forever?");
@@ -12,7 +13,7 @@ function AdminActions({ courseId, course, onCourseUpdated, managingMembers, onTo
     if (confirmDelete) {
       try {
         // Fetching our backend route: DELETE /api/courses/:id
-        const response = await fetch(`http://localhost:3000/api/courses/${courseId}`, {
+        const response = await fetch(`${API_URL}/api/courses/${courseId}`, {
           method: 'DELETE',
         });
 

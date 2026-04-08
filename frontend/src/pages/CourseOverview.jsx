@@ -11,10 +11,11 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
   const [recentPosts, setRecentPosts] = useState([]);
   const token = localStorage.getItem("token");
 
+  const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
     if (!courseId) return;
 
-    fetch(`http://localhost:3000/api/courses/${courseId}/posts`)
+    fetch(`${API_URL}/api/courses/${courseId}/posts`)
       .then((res) => res.json())
       .then((data) => setRecentPosts(data.slice(0, 3)))
       .catch((err) => console.error(err));
@@ -42,7 +43,7 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
     if (!courseId) return;
     setJoining(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/join`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -65,7 +66,7 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
     if (!courseId) return;
     setJoining(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/leave`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/leave`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -84,14 +85,14 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
 
   useEffect(() => {
     if (courseId) {
-      fetch(`http://localhost:3000/api/courses/${courseId}`)
+      fetch(`${API_URL}/api/courses/${courseId}`)
         .then(res => res.json())
         .then(data => setCourse(data))
         .catch(err => console.error(err));
       return;
     }
 
-    fetch("http://localhost:3000/api/courses")
+    fetch(`${API_URL}/api/courses`)
       .then(res => res.json())
       .then(data => setCourse(data[0]))
       .catch(err => console.error(err));
