@@ -409,8 +409,8 @@ export async function createCourse(req, res) {
 export const getCoursePosts = async (req, res) => {
   try {
     const posts = await Post.find({ course: req.params.id })
-      .populate("author", "username email role")
-      .populate("replies.author", "username email role")
+      .populate("author", "username email role profileImage")
+      .populate("replies.author", "username email role profileImage")
       .sort({ createdAt: -1 });
 
     res.status(200).json(posts);
@@ -458,8 +458,8 @@ export const createPost = async (req, res) => {
     const savedPost = await newPost.save();
 
     const populatedPost = await Post.findById(savedPost._id)
-      .populate("author", "username email role")
-      .populate("replies.author", "username email role");
+      .populate("author", "username email role profileImage")
+      .populate("replies.author", "username email role profileImage");
 
     res.status(201).json(populatedPost);
   } catch (error) {
@@ -504,8 +504,8 @@ export const createReply = async (req, res) => {
     await post.save();
 
     const populatedPost = await Post.findById(post._id)
-      .populate("author", "username email role")
-      .populate("replies.author", "username email role");
+      .populate("author", "username email role profileImage")
+      .populate("replies.author", "username email role profileImage");
 
     res.status(201).json(populatedPost);
   } catch (error) {
@@ -674,8 +674,8 @@ export async function deleteReply(req, res) {
     await post.save();
 
     const populatedPost = await Post.findById(post._id)
-      .populate("author", "username email role")
-      .populate("replies.author", "username email role");
+      .populate("author", "username email role profileImage")
+      .populate("replies.author", "username email role profileImage");
 
     return res.status(200).json(populatedPost);
   } catch (error) {

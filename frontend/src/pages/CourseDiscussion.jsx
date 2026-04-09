@@ -98,7 +98,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       setJoining(false);
     }
   };
-  
+
   const formatTime = (dateString) => {
     if (!dateString) return "";
 
@@ -220,49 +220,49 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
   };
 
   const handleSendPost = async () => {
-      if (!newText.trim() && selectedFiles.length === 0) return;
-      if (!effectiveCourseId) return;
-      if (isSending) return;
+    if (!newText.trim() && selectedFiles.length === 0) return;
+    if (!effectiveCourseId) return;
+    if (isSending) return;
 
-      try {
-        setIsSending(true);
+    try {
+      setIsSending(true);
 
-        const formData = new FormData();
-        formData.append("text", newText);
+      const formData = new FormData();
+      formData.append("text", newText);
 
-        selectedFiles.forEach((file) => {
-          formData.append("files", file);
-        });
+      selectedFiles.forEach((file) => {
+        formData.append("files", file);
+      });
 
-        const res = await fetch(
-          `${API_URL}/api/courses/${effectiveCourseId}/posts`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`
-            },
-            body: formData
-          }
-        );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          console.error(data);
-          return;
+      const res = await fetch(
+        `${API_URL}/api/courses/${effectiveCourseId}/posts`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: formData
         }
+      );
 
-        setPosts((prev) => [data, ...prev]);
-        setNewText("");
-        setSelectedFiles([]);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsSending(false);
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data);
+        return;
       }
-    };
 
-    const handleSendReply = async (postId) => {
+      setPosts((prev) => [data, ...prev]);
+      setNewText("");
+      setSelectedFiles([]);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleSendReply = async (postId) => {
     if (!replyText.trim()) return;
     if (!effectiveCourseId) return;
     if (isReplySending) return;
@@ -428,147 +428,163 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
                 return (
                   <div className="discussion-post" key={post._id}>
-                  <div className="discussion-post-header">
-                    <div className="discussion-avatar">
-                      {getInitial(post.author?.username || post.authorName)}
-                    </div>
+                    <div className="discussion-post-header">
+                      <div className="discussion-avatar">
+                        {post.author?.profileImage ? (
+                          <img
+                            src={`${API_URL}${post.author.profileImage}`}
+                            alt="avatar"
+                            className="discussion-avatar-img"
+                          />
+                        ) : (
+                          getInitial(post.author?.username || post.authorName)
+                        )}
+                      </div>
 
-                    <div className="discussion-post-info">
-                      <p className="discussion-author">
-                        {post.author?.username || post.authorName || "User"}{" "}
-                        <span style={{ color: "#7b879b" }}>
-                          · {formatTime(post.createdAt)}
-                        </span>
-                      </p>
-                    </div>
+                      <div className="discussion-post-info">
+                        <p className="discussion-author">
+                          {post.author?.username || post.authorName || "User"}{" "}
+                          <span style={{ color: "#7b879b" }}>
+                            · {formatTime(post.createdAt)}
+                          </span>
+                        </p>
+                      </div>
 
-                    {canDeletePost && (
-                      <button
-                        className="remove-icon-button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeletePost(post._id);
-                        }}
-                      >
-                        <img src={removeIcon} alt="Remove" />
-                      </button>
-                    )}
-                  </div>
-
-
-                  {post.text && (
-                    <p className="discussion-content">{post.text}</p>
-                  )}
-
-                  {post.attachments?.length > 0 && (
-                    <div className="discussion-attachments">
-                      {post.attachments.map((attachment, index) => (
-                        <a
-                          key={attachment._id || index}
-                          href={`${API_URL}/api/courses/posts/${post._id}/attachments/${attachment._id}/download`}
-                          className="discussion-file-link"
+                      {canDeletePost && (
+                        <button
+                          className="remove-icon-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePost(post._id);
+                          }}
                         >
-                          📎 {attachment.fileName}
-                        </a>
-                      ))}
+                          <img src={removeIcon} alt="Remove" />
+                        </button>
+                      )}
                     </div>
-                  )}
 
-                  <div className="discussion-post-actions">
-                    <button
-                      type="button"
-                      className="reply-toggle-button"
-                      onClick={() => {
-                        if (replyingToPostId === post._id) {
-                          setReplyingToPostId(null);
-                          setReplyText("");
-                        } else {
-                          setReplyingToPostId(post._id);
-                          setReplyText("");
-                        }
-                      }}
-                    >
-                      Reply
-                    </button>
-                  </div>
 
-                  {replyingToPostId === post._id && (
-                    <div className="reply-input-wrapper">
-                      <input
-                        type="text"
-                        placeholder="Write a reply..."
-                        className="discussion-reply-input"
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        onKeyDown={async (e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            await handleSendReply(post._id);
-                          }
-                        }}
-                        disabled={isReplySending || !currentUser}
-                      />
+                    {post.text && (
+                      <p className="discussion-content">{post.text}</p>
+                    )}
 
+                    {post.attachments?.length > 0 && (
+                      <div className="discussion-attachments">
+                        {post.attachments.map((attachment, index) => (
+                          <a
+                            key={attachment._id || index}
+                            href={`${API_URL}/api/courses/posts/${post._id}/attachments/${attachment._id}/download`}
+                            className="discussion-file-link"
+                          >
+                            📎 {attachment.fileName}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="discussion-post-actions">
                       <button
                         type="button"
-                        className="discussion-reply-send-button"
-                        onClick={() => handleSendReply(post._id)}
-                        disabled={isReplySending || !currentUser}
+                        className="reply-toggle-button"
+                        onClick={() => {
+                          if (replyingToPostId === post._id) {
+                            setReplyingToPostId(null);
+                            setReplyText("");
+                          } else {
+                            setReplyingToPostId(post._id);
+                            setReplyText("");
+                          }
+                        }}
                       >
-                        {isReplySending ? "Sending..." : "Send Reply"}
+                        Reply
                       </button>
                     </div>
-                  )}
 
-                  {post.replies?.length > 0 && (
-                    <div className="discussion-replies">
-                      {post.replies.map((reply, index) => {
-                        const canDeleteReply =
-                          currentUser &&
-                          (currentUser.role === "admin" ||
-                            reply.author?._id === currentUser.id);
+                    {replyingToPostId === post._id && (
+                      <div className="reply-input-wrapper">
+                        <input
+                          type="text"
+                          placeholder="Write a reply..."
+                          className="discussion-reply-input"
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          onKeyDown={async (e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              await handleSendReply(post._id);
+                            }
+                          }}
+                          disabled={isReplySending || !currentUser}
+                        />
 
-                        return (
-                          <div className="discussion-reply" key={reply._id || index}>
-                          <div className="discussion-reply-arrow">↪</div>
+                        <button
+                          type="button"
+                          className="discussion-reply-send-button"
+                          onClick={() => handleSendReply(post._id)}
+                          disabled={isReplySending || !currentUser}
+                        >
+                          {isReplySending ? "Sending..." : "Send Reply"}
+                        </button>
+                      </div>
+                    )}
 
-                          <div className="discussion-reply-body">
-                            <div className="discussion-post-header">
-                              <div className="discussion-avatar small">
-                                {getInitial(reply.author?.username || reply.authorName)}
+                    {post.replies?.length > 0 && (
+                      <div className="discussion-replies">
+                        {post.replies.map((reply, index) => {
+                          const canDeleteReply =
+                            currentUser &&
+                            (currentUser.role === "admin" ||
+                              reply.author?._id === currentUser.id);
+
+                          return (
+                            <div className="discussion-reply" key={reply._id || index}>
+                              <div className="discussion-reply-arrow">↪</div>
+
+                              <div className="discussion-reply-body">
+                                <div className="discussion-post-header">
+                                  <div className="discussion-avatar small">
+                                    {reply.author?.profileImage ? (
+                                      <img
+                                        src={`${API_URL}${reply.author.profileImage}`}
+                                        alt="avatar"
+                                        className="discussion-avatar-img"
+                                      />
+                                    ) : (
+                                      getInitial(reply.author?.username || reply.authorName)
+                                    )}
+                                  </div>
+
+                                  <div className="discussion-post-info">
+                                    <p className="discussion-author">
+                                      {reply.author?.username || reply.authorName || "User"}{" "}
+                                      <span style={{ color: "#7b879b" }}>
+                                        · {formatTime(reply.createdAt)}
+                                      </span>
+                                    </p>
+                                  </div>
+
+                                  {canDeleteReply && (
+                                    <button
+                                      className="remove-icon-button"
+                                      title="Delete reply"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteReply(post._id, reply._id);
+                                      }}
+                                    >
+                                      <img src={removeIcon} alt="Remove" />
+                                    </button>
+                                  )}
+                                </div>
+
+                                <p className="discussion-content">{reply.text}</p>
                               </div>
-
-                              <div className="discussion-post-info">
-                                <p className="discussion-author">
-                                  {reply.author?.username || reply.authorName || "User"}{" "}
-                                  <span style={{ color: "#7b879b" }}>
-                                    · {formatTime(reply.createdAt)}
-                                  </span>
-                                </p>
-                              </div>
-
-                              {canDeleteReply && (
-                                <button
-                                  className="remove-icon-button"
-                                  title="Delete reply"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteReply(post._id, reply._id);
-                                  }}
-                                >
-                                  <img src={removeIcon} alt="Remove" />
-                                </button>
-                              )}
                             </div>
-
-                            <p className="discussion-content">{reply.text}</p>
-                          </div>
-                        </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
