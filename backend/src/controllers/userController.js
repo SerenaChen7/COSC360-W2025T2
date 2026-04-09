@@ -1,6 +1,49 @@
 import User from "../models/User.js";
 import Post from "../models/Post.js";
 
+export async function updateMyProfile(req, res) {
+  try {
+    const userId = req.user.userId;
+    const { username, email, bio } = req.body;
+
+    if (!username?.trim()) {
+      return res.status(400).json({ message: "Username is required." });
+    }
+
+    if (!email?.trim()) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+
+    const updatedFields = {
+      username: username.trim(),
+      email: email.trim(),
+      bio: bio || "",
+    };
+
+    if (req.file) {
+      updatedFields.profileImage = `/uploads/${req.file.filename}`;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updatedFields,
+      { new: true }
+    ).select("-passwordHash");
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    return res.json({
+      message: "Profile updated successfully.",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Failed to update profile:", error);
+    return res.status(500).json({ message: "Failed to update profile." });
+  }
+}
+
 export const searchUsers = async (req, res) => {
   try {
     const currentUserRole = req.user?.role;
