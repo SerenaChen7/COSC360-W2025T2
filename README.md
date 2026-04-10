@@ -92,11 +92,15 @@ npm run dev
 
 Admin:
 - Email: admin@test.com  
-- Password: admin123  
+- Password: @Admin12345678 
 
 User:
 - Email: user@test.com  
-- Password: user123  
+- Password: @User12345678  
+
+User2:
+- Email: user2@test.com  
+- Password: @User12345678
 ⚠️ If login fails, make sure the database is seeded properly.
 
 ---
