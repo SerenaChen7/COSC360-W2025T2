@@ -146,6 +146,9 @@ export default function Dashboard({ setPage, setSelectedCourseId, currentUser, s
         {/* --- ACTION BUTTONS --- */}
         {activeTab === "joined" && (
           <div className="dashboard-action-bar" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '20px' }}>
+            {currentUser?.role === "admin" && (
+              <button className="dashboard-create-btn" onClick={() => setPage("admin-users")}>Manage Users</button>
+            )}
             <button className="dashboard-create-btn" onClick={() => setPage("create")}>+ Create Course</button>
             <button className="dashboard-join-btn" onClick={() => setShowModal(true)}>+ Join New Course</button>
           </div>

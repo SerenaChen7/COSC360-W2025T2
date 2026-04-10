@@ -1,18 +1,25 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
-const STORAGE_KEY = "favoriteCourseIds";
+function getStorageKey(userId) {
+  return userId ? `favoriteCourseIds_${userId}` : "favoriteCourseIds_guest";
+}
 
-function loadFavorites() {
+function loadFavorites(userId) {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey(userId));
     return stored ? new Set(JSON.parse(stored)) : new Set();
   } catch {
     return new Set();
   }
 }
 
-export function useFavorites() {
-  const [favorites, setFavorites] = useState(loadFavorites);
+export function useFavorites(userId) {
+  const [favorites, setFavorites] = useState(() => loadFavorites(userId));
+
+  // Reload from localStorage whenever the logged-in user changes
+  useEffect(() => {
+    setFavorites(loadFavorites(userId));
+  }, [userId]);
 
   const toggleFavorite = useCallback((id) => {
     setFavorites((prev) => {
@@ -22,10 +29,10 @@ export function useFavorites() {
       } else {
         next.add(id);
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+      localStorage.setItem(getStorageKey(userId), JSON.stringify([...next]));
       return next;
     });
-  }, []);
+  }, [userId]);
 
   const isFavorite = useCallback((id) => favorites.has(id), [favorites]);
 

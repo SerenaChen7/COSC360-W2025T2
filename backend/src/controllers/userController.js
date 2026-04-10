@@ -65,7 +65,7 @@ export const searchUsers = async (req, res) => {
         { username: { $regex: regex } },
         { email: { $regex: regex } }
       ]
-    }).select("username email role profileImage");
+    }).select("username email role profileImage isDisabled");
 
     // 2) Match post text, then find related authors
     const authorIdsFromPosts = await Post.distinct("author", {
@@ -76,7 +76,7 @@ export const searchUsers = async (req, res) => {
     if (authorIdsFromPosts.length > 0) {
       postMatchedUsers = await User.find({
         _id: { $in: authorIdsFromPosts }
-      }).select("username email role profileImage");
+      }).select("username email role profileImage isDisabled");
     }
 
     // 3) Merge and dedupe

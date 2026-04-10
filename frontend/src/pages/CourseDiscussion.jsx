@@ -7,7 +7,7 @@ import "./CourseDiscussion.css";
 import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 
-function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
+function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [course, setCourse] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -348,7 +348,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       />
 
       <div className="course-discussion-hero">
-        <CourseBanner course={course} />
+        <CourseBanner course={course} isFavorite={isFavorite(courseId)} />
       </div>
 
       <div className="course-discussion-tabs">
@@ -366,9 +366,11 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
             <div className="discussion-input-row">
               <textarea
                 placeholder={
-                  currentUser
-                    ? "Add your comment... (Enter to send, Shift+Enter for new line)"
-                    : "Log in to join the discussion"
+                  !currentUser
+                    ? "Log in to join the discussion"
+                    : !isJoined
+                    ? "Join this hub to participate in discussions"
+                    : "Add your comment... (Enter to send, Shift+Enter for new line)"
                 }
                 className="discussion-input"
                 value={newText}
@@ -380,7 +382,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                     await handleSendPost();
                   }
                 }}
-                disabled={isSending || !currentUser}
+                disabled={isSending || !currentUser || !isJoined}
               />
 
               <label className="file-upload-button" title="Attach files">
@@ -391,14 +393,14 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                   multiple
                   onChange={handleFileChange}
                   hidden
-                  disabled={isSending || !currentUser}
+                  disabled={isSending || !currentUser || !isJoined}
                 />
               </label>
 
               <button
                 className="discussion-send-button"
                 onClick={handleSendPost}
-                disabled={isSending || !currentUser}
+                disabled={isSending || !currentUser || !isJoined}
               >
                 {isSending ? "Sending..." : "Send"}
               </button>
@@ -496,21 +498,23 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                     )}
 
                     <div className="discussion-post-actions">
-                      <button
-                        type="button"
-                        className="reply-toggle-button"
-                        onClick={() => {
-                          if (replyingToPostId === post._id) {
-                            setReplyingToPostId(null);
-                            setReplyText("");
-                          } else {
-                            setReplyingToPostId(post._id);
-                            setReplyText("");
-                          }
-                        }}
-                      >
-                        Reply
-                      </button>
+                      {currentUser && isJoined && (
+                        <button
+                          type="button"
+                          className="reply-toggle-button"
+                          onClick={() => {
+                            if (replyingToPostId === post._id) {
+                              setReplyingToPostId(null);
+                              setReplyText("");
+                            } else {
+                              setReplyingToPostId(post._id);
+                              setReplyText("");
+                            }
+                          }}
+                        >
+                          Reply
+                        </button>
+                      )}
                     </div>
 
                     {replyingToPostId === post._id && (
@@ -527,14 +531,14 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                               await handleSendReply(post._id);
                             }
                           }}
-                          disabled={isReplySending || !currentUser}
+                          disabled={isReplySending || !currentUser || !isJoined}
                         />
 
                         <button
                           type="button"
                           className="discussion-reply-send-button"
                           onClick={() => handleSendReply(post._id)}
-                          disabled={isReplySending || !currentUser}
+                          disabled={isReplySending || !currentUser || !isJoined}
                         >
                           {isReplySending ? "Sending..." : "Send Reply"}
                         </button>
@@ -649,6 +653,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
               onCourseUpdated={(updated) =>
                 setCourse((prev) => ({ ...prev, ...updated }))
               }
+              setPage={setPage}
             />
           )}
         </aside>

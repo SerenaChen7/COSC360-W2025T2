@@ -2,15 +2,21 @@ import backgroundImg from "../assets/Background.png";
 import courseImg from "../assets/Course.png";
 import "./CourseBanner.css";
 
-function CourseBanner({ course }) {
+const API_URL = import.meta.env.VITE_API_URL;
+
+function CourseBanner({ course, isFavorite }) {
   const tags = course
     ? [course.field, course.type, ...(course.tags || [])].filter(Boolean)
     : [];
 
+  const bannerImage = course?.thumbnail
+    ? `${API_URL}${course.thumbnail}`
+    : courseImg;
+
   return (
     <section
       className="course-banner"
-      style={{ backgroundImage: `url(${courseImg})` }}
+      style={{ backgroundImage: `url(${bannerImage})` }}
     >
       <div
         className="course-banner-overlay"
@@ -19,7 +25,7 @@ function CourseBanner({ course }) {
 
       <div className="course-banner-content">
         <div className="course-banner-left">
-          <h1>{course ? `${course.title} ⭐` : "Loading..."}</h1>
+          <h1>{course ? `${course.title}${isFavorite ? " ⭐" : ""}` : "Loading..."}</h1>
 
           <p>{course?.description || "Loading course description..."}</p>
 

@@ -343,8 +343,10 @@ export async function createCourse(req, res) {
       startDate,
       endDate,
       location,
-      tags
     } = req.body;
+
+    // tags may come as "tags[]" from FormData
+    const tags = req.body["tags[]"] ?? req.body.tags;
 
     if (!title || !type || !field || !description) {
       return res.status(400).json({
@@ -366,7 +368,8 @@ export async function createCourse(req, res) {
       });
     }
 
-    const submittedTags = Array.isArray(tags) ? tags : [];
+    const submittedTags = Array.isArray(tags) ? tags : (tags ? [tags] : []);
+    const thumbnail = req.file ? `/uploads/${req.file.filename}` : "";
 
     const newCourse = new Course({
       title,
@@ -375,6 +378,7 @@ export async function createCourse(req, res) {
       description,
       location: location || "",
       tags: submittedTags,
+      thumbnail,
       memberCount: 0,
       duration: {
         startDate: startDate || null,
@@ -441,6 +445,11 @@ export const createPost = async (req, res) => {
       return res.status(401).json({ message: "Authentication required" });
     }
 
+    const membership = await CourseMember.findOne({ courseId, userId: currentUserId });
+    if (!membership) {
+      return res.status(403).json({ message: "You must be a member of this hub to post" });
+    }
+
     const attachments = files.map((file) => ({
       fileName: file.originalname,
       fileUrl: `/uploads/${file.filename}`,
@@ -483,6 +492,11 @@ export const createReply = async (req, res) => {
 
     if (!currentUserId) {
       return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const membership = await CourseMember.findOne({ courseId, userId: currentUserId });
+    if (!membership) {
+      return res.status(403).json({ message: "You must be a member of this hub to reply" });
     }
 
     const post = await Post.findOne({
@@ -581,11 +595,13 @@ export const updateCourse = async (req, res) => {
       description,
       type,
       field,
-      tags,
       location,
       startDate,
       endDate
     } = req.body;
+
+    // tags may come as "tags[]" from FormData
+    const tags = req.body["tags[]"] ?? req.body.tags;
 
     const updateFields = {};
 
@@ -593,10 +609,11 @@ export const updateCourse = async (req, res) => {
     if (description !== undefined) updateFields.description = description;
     if (type !== undefined) updateFields.type = type;
     if (field !== undefined) updateFields.field = field;
-    if (tags !== undefined) updateFields.tags = Array.isArray(tags) ? tags : [];
+    if (tags !== undefined) updateFields.tags = Array.isArray(tags) ? tags : (tags ? [tags] : []);
     if (location !== undefined) updateFields.location = location;
     if (startDate !== undefined) updateFields["duration.startDate"] = startDate || null;
     if (endDate !== undefined) updateFields["duration.endDate"] = endDate || null;
+    if (req.file) updateFields.thumbnail = `/uploads/${req.file.filename}`;
 
     const updatedCourse = await Course.findByIdAndUpdate(
       req.params.id,

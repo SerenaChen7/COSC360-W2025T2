@@ -7,7 +7,7 @@ import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 import { useEffect, useState } from "react";
 
-function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
+function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite }) {
   const [course, setCourse] = useState(null);
   const [creator, setCreator] = useState(null);
   const [members, setMembers] = useState([]);
@@ -157,7 +157,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
       />
 
       <div className="course-team-hero">
-        <CourseBanner course={course} />
+        <CourseBanner course={course} isFavorite={isFavorite(courseId)} />
       </div>
 
       <div className="course-team-tabs">
@@ -275,6 +275,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
               onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
               managingMembers={managingMembers}
               onToggleManage={() => setManagingMembers((prev) => !prev)}
+              setPage={setPage}
             />
           )}
         </aside>

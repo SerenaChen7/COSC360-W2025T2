@@ -8,6 +8,8 @@ import CourseDiscussion from "./pages/CourseDiscussion";
 import CreateCourse from "./pages/CreateCourse";
 import Dashboard from "./pages/Dashboard";
 import Signup from "./pages/Signup";
+import AdminUsers from "./pages/AdminUsers";
+import { useFavorites } from "./hooks/useFavorites";
 
 export default function App() {
   const savedUser = useMemo(() => {
@@ -23,6 +25,7 @@ export default function App() {
   const [role, setRole] = useState(savedUser?.role || "guest");
   const [currentUser, setCurrentUser] = useState(savedUser || null);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const { isFavorite, toggleFavorite } = useFavorites(currentUser?.id || currentUser?._id);
   const isLoggedIn = !!currentUser;
   if ((page === "dashboard" || page === "create") && !isLoggedIn) {
     return (
@@ -44,6 +47,8 @@ export default function App() {
           currentUser={currentUser}
           setCurrentUser={setCurrentUser}
           setRole={setRole}
+          isFavorite={isFavorite}
+          toggleFavorite={toggleFavorite}
         />
       )}
 
@@ -63,6 +68,7 @@ export default function App() {
           role={role}
           courseId={selectedCourseId}
           currentUser={currentUser}
+          isFavorite={isFavorite}
         />
       )}
 
@@ -74,6 +80,7 @@ export default function App() {
           currentUser={currentUser}
           setCurrentUser={setCurrentUser}
           setRole={setRole}
+          isFavorite={isFavorite}
         />
       )}
 
@@ -83,6 +90,7 @@ export default function App() {
           role={role}
           courseId={selectedCourseId}
           currentUser={currentUser}
+          isFavorite={isFavorite}
         />
       )}
 
@@ -106,6 +114,15 @@ export default function App() {
           setPage={setPage}
           setSelectedCourseId={setSelectedCourseId}
           currentUser={currentUser}
+        />
+      )}
+
+      {page === "admin-users" && role === "admin" && (
+        <AdminUsers
+          setPage={setPage}
+          currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
+          setRole={setRole}
         />
       )}
     </>

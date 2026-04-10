@@ -6,7 +6,7 @@ import "./CourseOverview.css";
 import AdminActions from "../components/AdminActions";
 import { useEffect, useState } from "react";
 
-function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
+function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite }) {
   const [course, setCourse] = useState(null);
   const [recentPosts, setRecentPosts] = useState([]);
   const token = localStorage.getItem("token");
@@ -137,7 +137,7 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
       />
 
       <div className="course-overview-hero">
-        <CourseBanner course={course} />
+        <CourseBanner course={course} isFavorite={isFavorite(courseId)} />
       </div>
 
       <div className="course-overview-tabs">
@@ -266,6 +266,7 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
               courseId={courseId}
               course={course}
               onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
+              setPage={setPage}
             />
           )}
 

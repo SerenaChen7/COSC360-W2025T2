@@ -17,6 +17,7 @@ export default function SpotlightSection({ spotlightCourses = [], onToggleFavori
                 key={course._id}
                 {...course}
                 id={course._id}
+                imageUrl={course.thumbnail}
                 isFavorite={true}
                 onToggleFavorite={onToggleFavorite}
                 onViewDetails={() => onViewDetails(course._id)}
