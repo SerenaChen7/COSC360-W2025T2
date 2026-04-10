@@ -26,7 +26,7 @@ export default function CreateCourse({ setPage, setSelectedCourseId }) {
   useEffect(() => {
     const fetchCourseOptions = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/courses/options");
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/courses/options`);
 
         if (!res.ok) {
           throw new Error("Failed to fetch course options");
@@ -153,7 +153,7 @@ export default function CreateCourse({ setPage, setSelectedCourseId }) {
         tags: formData.tags,
       };
 
-      const res = await fetch("http://localhost:3000/api/courses", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/courses`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
