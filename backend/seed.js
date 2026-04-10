@@ -30,18 +30,25 @@ export async function seed() {
 
     let adminUser = await User.findOne({ email: "admin@test.com" });
     if (!adminUser) {
-      const adminData = await makeUser("admin", "admin@test.com", "admin123", "admin");
+      const adminData = await makeUser("admin", "admin@test.com", "@Admin12345678", "admin");
       adminUser = await User.create(adminData);
       console.log("Created admin user");
     }
 
     let normalUser = await User.findOne({ email: "user@test.com" });
     if (!normalUser) {
-      const userData = await makeUser("serena", "user@test.com", "user123", "user");
+      const userData = await makeUser("serena", "user@test.com", "@User12345678", "user");
       normalUser = await User.create(userData);
       console.log("Created demo user");
     }
 
+    let secondUser = await User.findOne({ email: "user2@test.com" });
+    if (!secondUser) {
+      const userData = await makeUser("user2", "user2@test.com", "@User12345678", "user");
+      secondUser = await User.create(userData);
+      console.log("Created second demo user");
+    }
+    
     const courseCount = await Course.countDocuments();
 
     if (courseCount === 0) {
