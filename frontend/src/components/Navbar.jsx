@@ -105,13 +105,6 @@ export default function Navbar({
           <img src={homeIcon} alt="Home" />
         </button>
 
-        <button
-          type="button"
-          className="navIconBtn"
-          onClick={() => (window.location.href = "/notifications")}
-        >
-          <img src={notificationsIcon} alt="Notifications" />
-        </button>
 
         <button
           type="button"

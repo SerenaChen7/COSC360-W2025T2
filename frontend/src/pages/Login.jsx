@@ -2,10 +2,6 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 
-import googleIcon from "../assets/google-icon.png";
-import appleIcon from "../assets/apple-icon.png";
-import facebookIcon from "../assets/facebook-icon.png";
-
 import "./Login.css";
 
 export default function Login({ setPage, setRole, setCurrentUser }) {
@@ -28,8 +24,7 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
       setLoading(true);
       setMessage("");
 
-      //connected the frontend to the backend login API.
-      const response = await fetch(  
+      const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/auth/login`,
         {
           method: "POST",
@@ -40,7 +35,8 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
             email,
             password
           })
-        });
+        }
+      );
 
       const data = await response.json();
 
@@ -49,7 +45,6 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
         return;
       }
 
-      // After a successful login, we store the token and user information in localStorage, then update the global currentUser and role state.
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       setCurrentUser(data.user);
@@ -59,9 +54,8 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
       } else {
         setRole("user");
       }
-      // Redirect to home page after login
-        setPage("home");
-     
+
+      setPage("home");
     } catch (error) {
       setMessage("Unable to connect to server");
     } finally {
@@ -138,27 +132,12 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
             {message && <p className="loginMessage">{message}</p>}
           </div>
 
-          <div className="orCol">
-            <div className="orLine" />
-            <div className="orText">OR</div>
-            <div className="orLine" />
-          </div>
-
-          <div className="socialSide">
-            <button className="socialBtn" type="button">
-              <img src={googleIcon} alt="Google" />
-              Continue with Google
-            </button>
-
-            <button className="socialBtn" type="button">
-              <img src={appleIcon} alt="Apple" />
-              Continue with Apple
-            </button>
-
-            <button className="socialBtn" type="button">
-              <img src={facebookIcon} alt="Facebook" />
-              Continue with Facebook
-            </button>
+          <div className="quoteBox">
+            <p className="quoteText">
+              "Education is not the filling of a pail, but the lighting of a fire.
+              The beautiful thing about learning is that no one can take it away from you."
+            </p>
+            <p className="quoteAuthor">– William Butler Yeats</p>
           </div>
         </div>
 
