@@ -20,29 +20,51 @@ The system includes:
 - Docker-based deployment
 
 ---
-
 ## How to Run the Project
+### Setup Environment Variables
+Before starting the project, create a `.env` file:
+
+### Mac / Linux
+```bash
+cp .env.example .env
+```
+
+### Windows:
+Copy .env.example
+Rename it to .env
 
 ### Requirements
 - Docker Desktop installed and running
 
----
-
 ### Start the system
-
 From the project root:
-
 ```bash
 docker compose up --build
+```
+This may take a few minutes on first run
+Wait until all services (frontend, backend, database) are fully started
+
+### Stop the Project
+```bash
+docker compose down
+```
+(Optional: remove volumes)
+```bash
+docker compose down -v
+```
 
 ## Access the application
+```bash
 Frontend: http://localhost:4000
 Backend: http://localhost:3000
+```
 
 ## Notes
 MongoDB runs inside Docker (no local installation required)
 Backend connects to MongoDB via mongodb://mongo:27017/cosc360
 Environment variables are configured via Docker and .env files
+
+---
 
 ## Development (Optional)
 
@@ -75,9 +97,29 @@ Admin:
 User:
 - Email: user@test.com  
 - Password: user123  
+⚠️ If login fails, make sure the database is seeded properly.
 
 ---
 
-## Summary
+## Important Notes
+Make sure Docker Desktop is installed and running
+Do NOT run Docker mode and local development mode at the same time
+If ports are already in use, stop other services using those ports
+Backend connects to MongoDB via Docker (no local MongoDB required)
 
-This project demonstrates a complete full-stack application with database integration, authentication, and interactive UI features.
+---
+
+## Troubleshooting
+If the app does not load:
+1.Check Docker containers are running
+2. Restart with:
+ ```bash
+   docker compose down
+   docker compose up --build
+   ```
+
+If login does not work:
+Ensure seed data exists
+
+If API fails:
+Verify .env file is correctly set
