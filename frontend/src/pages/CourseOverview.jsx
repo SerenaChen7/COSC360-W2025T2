@@ -10,6 +10,7 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
   const [course, setCourse] = useState(null);
   const [recentPosts, setRecentPosts] = useState([]);
   const token = localStorage.getItem("token");
+  const favoriteCourseId = course?._id || courseId;
 
   const API_URL = import.meta.env.VITE_API_URL;
   const fetchJoinedStatus = async () => {
@@ -137,7 +138,10 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
       />
 
       <div className="course-overview-hero">
-        <CourseBanner course={course} isFavorite={isFavorite(courseId)} />
+        <CourseBanner
+          course={course}
+          isFavorite={favoriteCourseId ? isFavorite(favoriteCourseId) : false}
+        />
       </div>
 
       <div className="course-overview-tabs">

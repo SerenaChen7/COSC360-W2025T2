@@ -1,6 +1,62 @@
 import User from "../models/User.js";
 import Post from "../models/Post.js";
 
+export async function getFavorites(req, res) {
+  try {
+    const user = await User.findById(req.user.userId)
+      .populate("favorites")
+      .select("favorites");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json((user.favorites || []).filter(Boolean));
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch favorites",
+      error: error.message
+    });
+  }
+}
+
+export async function toggleFavorite(req, res) {
+  try {
+    const { courseId } = req.params;
+    const user = await User.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const currentFavorites = Array.isArray(user.favorites) ? user.favorites : [];
+    const alreadyFavorite = currentFavorites.some(
+      (favoriteId) => String(favoriteId) === String(courseId)
+    );
+
+    if (alreadyFavorite) {
+      user.favorites = currentFavorites.filter(
+        (favoriteId) => String(favoriteId) !== String(courseId)
+      );
+    } else {
+      user.favorites = [...currentFavorites, courseId];
+    }
+
+    await user.save();
+    await user.populate("favorites");
+
+    return res.status(200).json({
+      favorites: user.favorites,
+      isFavorite: !alreadyFavorite
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to update favorites",
+      error: error.message
+    });
+  }
+}
+
 export async function updateMyProfile(req, res) {
   try {
     const userId = req.user.userId;

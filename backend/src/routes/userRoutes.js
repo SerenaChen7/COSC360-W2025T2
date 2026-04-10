@@ -1,9 +1,18 @@
 import express from "express";
-import { searchUsers, toggleUserStatus, updateMyProfile } from "../controllers/userController.js";
+import {
+  getFavorites,
+  searchUsers,
+  toggleFavorite,
+  toggleUserStatus,
+  updateMyProfile
+} from "../controllers/userController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
+
+router.get("/favorites", requireAuth, getFavorites);
+router.patch("/favorites/:courseId", requireAuth, toggleFavorite);
 
 // GET /api/users/search?q=...
 router.get("/search", requireAuth, searchUsers);

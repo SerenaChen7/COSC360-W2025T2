@@ -21,6 +21,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
   const [isReplySending, setIsReplySending] = useState(false);
 
   const effectiveCourseId = courseId || course?._id;
+  const favoriteCourseId = course?._id || courseId;
   const token = localStorage.getItem("token");
   const [isJoined, setIsJoined] = useState(false);
   const [joining, setJoining] = useState(false);
@@ -348,7 +349,10 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       />
 
       <div className="course-discussion-hero">
-        <CourseBanner course={course} isFavorite={isFavorite(courseId)} />
+        <CourseBanner
+          course={course}
+          isFavorite={favoriteCourseId ? isFavorite(favoriteCourseId) : false}
+        />
       </div>
 
       <div className="course-discussion-tabs">
