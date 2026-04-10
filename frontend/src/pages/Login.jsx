@@ -84,53 +84,10 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
     }
   }
 
-  // We created a new function for social login that works similarly to handleLogin.
-  async function handleSocialLogin(platform) {
-    try {
-      setLoading(true);
-      setMessage("");
-
-      // We send fake social data to our new backend route to simulate a Google/Apple/FB login.
-      const response = await fetch("http://localhost:3000/api/auth/social-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: `student_${platform.toLowerCase()}@ubc.ca`,
-          username: `UBC ${platform} Student`,
-          platform: platform
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setMessage(data.message || "Social login failed");
-        return;
-      }
-
-      // Just like regular login, we save the token and user info, then update the app state.
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setCurrentUser(data.user);
-
-      if (data.user?.role) {
-        setRole(data.user.role);
-      } else {
-        setRole("user");
-      }
-
-      // Go to home page
-      setPage("home");
-     
-    } catch (error) {
-      setMessage("Unable to connect to social service");
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  function handleSocialLogin(platform) {
+  const provider = platform.toLowerCase();
+  window.location.href = `http://localhost:3000/api/auth/${provider}`;
+}
   return (
     <div className="loginPage">
       <Header />
