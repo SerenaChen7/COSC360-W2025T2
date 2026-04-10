@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import homeIcon from "../assets/home-icon.png";
 import notificationsIcon from "../assets/notifications-icon.png";
 import dashboardIcon from "../assets/darhboard-icon.png";
@@ -10,15 +10,7 @@ export default function Navbar({
   setRole,
   onProfileClick
 }) {
-  // We check if the user is logged in by looking for a "user" object in localStorage. If it exists, we consider the user to be logged in.
-  const storedUser = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem("user"));
-    } catch {
-      return null;
-    }
-  }, []);
-
+  const storedUser = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = !!storedUser;
 
   useEffect(() => {
@@ -103,7 +95,6 @@ export default function Navbar({
   return (
     <nav className="navbar">
       <div className="navRight">
-        {/* Home */}
         <button
           type="button"
           className="navIconBtn"
@@ -114,7 +105,6 @@ export default function Navbar({
           <img src={homeIcon} alt="Home" />
         </button>
 
-        {/* Notifications */}
         <button
           type="button"
           className="navIconBtn"
@@ -123,7 +113,6 @@ export default function Navbar({
           <img src={notificationsIcon} alt="Notifications" />
         </button>
 
-        {/* Dashboard */}
         <button
           type="button"
           className="navIconBtn"
@@ -143,7 +132,6 @@ export default function Navbar({
           <img src={dashboardIcon} alt="Dashboard" />
         </button>
 
-        {/* Profile Picture */}
         {isLoggedIn && (
           <button
             type="button"
