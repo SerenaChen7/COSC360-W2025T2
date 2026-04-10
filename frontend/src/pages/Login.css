@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,500&display=swap");
 .loginPage {
   background: #efefef;
   min-height: 100vh;
@@ -36,7 +37,7 @@
 
 .loginGrid {
   display: grid;
-  grid-template-columns: 340px 80px 360px;
+  grid-template-columns: 340px 420px;
   justify-content: center;
   gap: 60px;
   align-items: start;
@@ -131,4 +132,25 @@
 
 .socialBtn img {
   width: 18px;
+}
+
+.quoteBox {
+  max-width: 420px;
+  margin-left: 40px;
+}
+
+.quoteText {
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  font-style: italic;
+  line-height: 1.7;
+  color: #1f1f1f;
+}
+
+.quoteAuthor {
+  margin-top: 15px;
+  font-family: "Playfair Display", serif;
+  font-size: 14px;
+  color: #555;
+  text-align: right;
 }
