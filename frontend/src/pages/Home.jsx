@@ -23,7 +23,15 @@ const SORT_OPTIONS = [
   { value: "least", label: "Least Members" },
 ];
 
-export default function Home({ setPage, setSelectedCourseId, currentUser, setCurrentUser, setRole, isFavorite, toggleFavorite }) {
+export default function Home({
+  setPage,
+  setSelectedCourseId,
+  currentUser,
+  setCurrentUser,
+  setRole,
+  isFavorite,
+  toggleFavorite
+}) {
   const spotlightRef = useRef(null);
   const [allCourses, setAllCourses] = useState([]);
   const [searchResults, setSearchResults] = useState(null);
@@ -100,13 +108,11 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
     return allCourses.filter((course) => isFavorite(course._id));
   }, [allCourses, isFavorite]);
 
-  const handleToggleFavorite = (courseId) => {
-    const wasFavorite = isFavorite(courseId);
+  const handleToggleFavorite = async (courseId) => {
+    const nextIsFavorite = await toggleFavorite(courseId);
 
-    toggleFavorite(courseId);
-
-        // only scroll into view when adding to favorites, not when removing
-    if (!wasFavorite) {
+    // only scroll into view when adding to favorites, not when removing
+    if (nextIsFavorite) {
       setTimeout(() => {
         spotlightRef.current?.scrollIntoView({
           behavior: "smooth",

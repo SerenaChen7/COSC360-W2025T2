@@ -15,6 +15,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
   const [isJoined, setIsJoined] = useState(false);
   const [joining, setJoining] = useState(false);
   const [managingMembers, setManagingMembers] = useState(false);
+  const favoriteCourseId = course?._id || courseId;
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -157,7 +158,10 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
       />
 
       <div className="course-team-hero">
-        <CourseBanner course={course} isFavorite={isFavorite(courseId)} />
+        <CourseBanner
+          course={course}
+          isFavorite={favoriteCourseId ? isFavorite(favoriteCourseId) : false}
+        />
       </div>
 
       <div className="course-team-tabs">
