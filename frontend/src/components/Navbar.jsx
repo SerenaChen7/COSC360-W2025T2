@@ -85,11 +85,14 @@ export default function Navbar({
 
     if (setCurrentUser) setCurrentUser(null);
     if (setRole) setRole("guest");
-    if (setPage) setPage("home");
-
-    setTimeout(() => {
-      window.alert("Logout successfully");
-    }, 50);
+    
+    if (setPage) {
+      setPage("login"); 
+    }
+    
+    if (window.history.replaceState) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   };
 
   return (

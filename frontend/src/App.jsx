@@ -23,16 +23,7 @@ export default function App() {
   const [role, setRole] = useState(savedUser?.role || "guest");
   const [currentUser, setCurrentUser] = useState(savedUser || null);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
-  const isLoggedIn = !!currentUser;
-  if ((page === "dashboard" || page === "create") && !isLoggedIn) {
-    return (
-      <Login
-        setPage={setPage}
-        setRole={setRole}
-        setCurrentUser={setCurrentUser}
-      />
-    );
-  }
+  
   return (
     <>
       {page === "cover" && <CoverPage setPage={setPage} />}

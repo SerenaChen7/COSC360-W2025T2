@@ -16,12 +16,27 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const loginBtn =
-      document.querySelector(".navLoginText") ||
-      document.querySelector(".navLoginBtn");
+  // Look at the URL to see if we just returned from a social login
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  const userJson = params.get("user");
 
-    if (loginBtn) loginBtn.onclick = () => window.location.reload();
-  }, []);
+  if (token && userJson) {
+    try {
+      const userData = JSON.parse(userJson);
+      
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      
+      setCurrentUser(userData);
+      setRole(userData.role || "user");
+      
+      setPage("home");
+    } catch (err) {
+      setMessage("Error parsing social login data");
+    }
+  }
+}, [setPage, setCurrentUser, setRole]);
 
   async function handleLogin() {
     try {
@@ -69,6 +84,10 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
     }
   }
 
+  function handleSocialLogin(platform) {
+  const provider = platform.toLowerCase();
+  window.location.href = `http://localhost:3000/api/auth/${provider}`;
+}
   return (
     <div className="loginPage">
       <Header />
