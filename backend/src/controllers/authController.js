@@ -2,6 +2,40 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,16}$/;
+
+function buildUserResponse(user) {
+  return {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    profileImage: user.profileImage || "",
+    isDisabled: user.isDisabled
+  };
+}
+
+function validateImageFile(file) {
+  if (!file) {
+    return "";
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxSize = 5 * 1024 * 1024;
+
+  if (!allowedTypes.includes(file.mimetype)) {
+    return "Profile image must be JPG, PNG, or WEBP";
+  }
+
+  if (file.size > maxSize) {
+    return "Profile image must be smaller than 5MB";
+  }
+
+  return "";
+}
+
 export async function signupUser(req, res) {
   try {
     const { username, email, password, confirmPassword } = req.body;
@@ -12,14 +46,52 @@ export async function signupUser(req, res) {
       });
     }
 
+    const cleanedUsername = username.trim();
+    const cleanedEmail = email.toLowerCase().trim();
+
+    if (!cleanedUsername || !cleanedEmail) {
+      return res.status(400).json({
+        message: "Username and email cannot be empty"
+      });
+    }
+
+    if (cleanedUsername.length < 3) {
+      return res.status(400).json({
+        message: "Username must be at least 3 characters"
+      });
+    }
+
+    if (cleanedUsername.length > 30) {
+      return res.status(400).json({
+        message: "Username must be 30 characters or less"
+      });
+    }
+
+    if (!emailRegex.test(cleanedEmail)) {
+      return res.status(400).json({
+        message: "Please enter a valid email address"
+      });
+    }
+
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must be 8-16 characters and include uppercase, lowercase, number, and special character"
+      });
+    }
+
     if (password !== confirmPassword) {
       return res.status(400).json({
         message: "Passwords do not match"
       });
     }
 
-    const cleanedEmail = email.toLowerCase().trim();
-    const cleanedUsername = username.trim();
+    const imageValidationMessage = validateImageFile(req.file);
+    if (imageValidationMessage) {
+      return res.status(400).json({
+        message: imageValidationMessage
+      });
+    }
 
     const existingEmail = await User.findOne({ email: cleanedEmail });
     if (existingEmail) {
@@ -49,18 +121,11 @@ export async function signupUser(req, res) {
 
     return res.status(201).json({
       message: "Account created successfully",
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-        role: newUser.role,
-        profileImage: newUser.profileImage
-      }
+      user: buildUserResponse(newUser)
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Server error",
-      error: error.message
+      message: "Server error"
     });
   }
 }
@@ -75,7 +140,15 @@ export async function loginUser(req, res) {
       });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const cleanedEmail = email.toLowerCase().trim();
+
+    if (!emailRegex.test(cleanedEmail)) {
+      return res.status(400).json({
+        message: "Please enter a valid email address"
+      });
+    }
+
+    const user = await User.findOne({ email: cleanedEmail });
 
     if (!user) {
       return res.status(401).json({
@@ -110,18 +183,11 @@ export async function loginUser(req, res) {
     return res.status(200).json({
       message: "Login successful",
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        profileImage: user.profileImage || ""
-      }
+      user: buildUserResponse(user)
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Server error",
-      error: error.message
+      message: "Server error"
     });
   }
 }
@@ -145,19 +211,11 @@ export async function getCurrentUser(req, res) {
     }
 
     return res.status(200).json({
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        profileImage: user.profileImage || "",
-        isDisabled: user.isDisabled
-      }
+      user: buildUserResponse(user)
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Server error",
-      error: error.message
+      message: "Server error"
     });
   }
 }
