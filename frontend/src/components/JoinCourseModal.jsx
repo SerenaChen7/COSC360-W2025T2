@@ -25,6 +25,7 @@ const SORT_OPTIONS = [
 
 export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage, setSelectedCourseId }) {
   const [allCourses, setAllCourses] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState("");
   const [fieldFilter, setFieldFilter] = useState([]);
@@ -33,13 +34,24 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
   const [joiningId, setJoiningId] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/courses")
-      .then((res) => res.json())
-      .then((data) => {
-        setAllCourses(data);
+    const token = localStorage.getItem("token");
+
+    // Fetch both courses and existing requests to determine Pending status
+    Promise.all([
+      fetch("http://localhost:3000/api/courses").then((res) => res.json()),
+      fetch("http://localhost:3000/api/requests", {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((res) => res.json()),
+    ])
+      .then(([coursesData, requestsData]) => {
+        setAllCourses(coursesData);
+        setRequests(Array.isArray(requestsData) ? requestsData : []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("Error fetching modal data:", err);
+        setLoading(false);
+      });
   }, []);
 
   const fieldOptions = useMemo(() => {
@@ -53,6 +65,7 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
   }, [allCourses]);
 
   const displayed = useMemo(() => {
+    // Exclude courses that the user is already a member of
     let courses = allCourses.filter((c) => !joinedIds.includes(c._id));
 
     if (searchValue.trim()) {
@@ -86,18 +99,29 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
     e.stopPropagation();
     setJoiningId(courseId);
     const token = localStorage.getItem("token");
+
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+      const res = await fetch(`http://localhost:3000/api/join/${courseId}`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        }
       });
-      if (!res.ok) throw new Error("Failed to join");
-      const data = await res.json();
-      setAllCourses((prev) =>
-        prev.map((c) => (c._id === courseId ? { ...c, memberCount: data.memberCount } : c))
-      );
-      onJoined(courseId);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to send request");
+      }
+
+      const newRequest = await res.json();
+      
+      // Update local requests state to show "Pending" immediately
+      setRequests((prev) => [...prev, newRequest]);
+      alert("Application sent! Awaiting admin approval.");
+      
     } catch (err) {
+      alert(err.message);
       console.error(err);
     } finally {
       setJoiningId(null);
@@ -113,13 +137,11 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
   return (
     <div className="jcm-overlay" onClick={onClose}>
       <div className="jcm-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="jcm-header">
           <h2 className="jcm-title">Join Course</h2>
           <button className="jcm-close" onClick={onClose}>✕</button>
         </div>
 
-        {/* Filters + Search */}
         <div className="jcm-toolbar">
           <div className="jcm-filters">
             <Filter label="Field" options={fieldOptions} selectedValues={fieldFilter} onChange={setFieldFilter} />
@@ -139,7 +161,6 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
           </div>
         </div>
 
-        {/* Course List */}
         <div className="jcm-list">
           {loading ? (
             <p className="jcm-empty">Loading...</p>
@@ -149,6 +170,12 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
             displayed.map((course) => {
               const status = getStatus(course.duration);
               const term = formatTerm(course.duration);
+              
+              // Check if there is an existing request for this course
+              const isPending = requests.some(r => 
+                (r.course?._id === course._id) || (r.course === course._id)
+              );
+
               return (
                 <div key={course._id} className="jcm-card" onClick={() => handleCardClick(course._id)}>
                   <div className="jcm-card-body">
@@ -156,12 +183,10 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
                       <div>
                         <h3 className="jcm-card-title">{course.title}</h3>
                         {term && <p className="jcm-card-term">{term}</p>}
-                        {/* Top row: type + field */}
                         <div className="jcm-tags">
                           {course.type && <span className="jcm-tag jcm-tag--filled">{course.type}</span>}
                           {course.field && <span className="jcm-tag jcm-tag--filled">{course.field}</span>}
                         </div>
-                        {/* Bottom row: user tags */}
                         {course.tags?.length > 0 && (
                           <div className="jcm-tags">
                             {course.tags.map((tag) => (
@@ -169,7 +194,6 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
                             ))}
                           </div>
                         )}
-                        {/* Stats */}
                         <div className="jcm-stats">
                           <span>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -187,13 +211,19 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
                     </div>
                   </div>
                   <div className="jcm-card-actions">
-                    <button
-                      className="jcm-join-btn"
-                      onClick={(e) => handleJoin(e, course._id)}
-                      disabled={joiningId === course._id}
-                    >
-                      {joiningId === course._id ? "Joining..." : "+ Join Course"}
-                    </button>
+                    {isPending ? (
+                      <button className="jcm-join-btn" disabled style={{ opacity: 0.6, cursor: "not-allowed" }}>
+                        Pending...
+                      </button>
+                    ) : (
+                      <button
+                        className="jcm-join-btn"
+                        onClick={(e) => handleJoin(e, course._id)}
+                        disabled={joiningId === course._id}
+                      >
+                        {joiningId === course._id ? "Sending..." : "+ Join Course"}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -201,7 +231,6 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
           )}
         </div>
 
-        {/* Footer */}
         <div className="jcm-footer">
           <button className="jcm-cancel-btn" onClick={onClose}>Cancel</button>
         </div>

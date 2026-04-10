@@ -9,23 +9,18 @@ import { useEffect, useState } from "react";
 function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
   const [course, setCourse] = useState(null);
   const [recentPosts, setRecentPosts] = useState([]);
+  const [requestStatus, setRequestStatus] = useState(null); // 'pending', 'accepted', or 'rejected'
+  const [joining, setJoining] = useState(false);
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    if (!courseId) return;
-
-    fetch(`http://localhost:3000/api/courses/${courseId}/posts`)
-      .then((res) => res.json())
-      .then((data) => setRecentPosts(data.slice(0, 3)))
-      .catch((err) => console.error(err));
-  }, [courseId]);
-
+  // Format date helper
   const formatTime = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
 
+  // Sync joined status with localStorage
   const [isJoined, setIsJoined] = useState(() => {
     try {
       const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
@@ -34,16 +29,47 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
       return false;
     }
   });
-  const [joining, setJoining] = useState(false);
 
-  // The handleJoin function is responsible for sending a request to the backend to join the course. 
-  // It uses the JWT token for authentication and updates the local state and localStorage upon success.
-  const handleJoin = async () => {
+  // Fetch course data and recent posts
+  useEffect(() => {
     if (!courseId) return;
+
+    // Get Course details
+    fetch(`http://localhost:3000/api/courses/${courseId}`)
+      .then(res => res.json())
+      .then(data => setCourse(data))
+      .catch(err => console.error(err));
+
+    // Get recent discussions
+    fetch(`http://localhost:3000/api/courses/${courseId}/posts`)
+      .then((res) => res.json())
+      .then((data) => setRecentPosts(data.slice(0, 3)))
+      .catch((err) => console.error(err));
+
+    // Check if user has an existing request for this course
+    if (token && role === "user") {
+      fetch("http://localhost:3000/api/requests", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          const match = data.find(r => r.course?._id === courseId);
+          if (match) {
+            setRequestStatus(match.status);
+          }
+        })
+        .catch(err => console.error(err));
+    }
+  }, [courseId, token, role]);
+
+  // Handle the join request
+  const handleJoin = async () => {
+    if (!courseId || !token) return;
     setJoining(true);
 
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/join`, {
+      // Send request to the new actionRoutes endpoint
+      const res = await fetch(`http://localhost:3000/api/join/${courseId}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
@@ -53,46 +79,19 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Failed to join");
+        throw new Error(data.message || "Failed to send request");
       }
 
-      const ids = JSON.parse(localStorage.getItem("joinedCourseIds")) || [];
-      if (!ids.includes(courseId)) {
-        localStorage.setItem("joinedCourseIds", JSON.stringify([...ids, courseId]));
-      }
-
-      setIsJoined(true);
-
-      setCourse((prev) =>
-        prev
-          ? {
-              ...prev,
-              memberCount: data.memberCount
-            }
-          : prev
-      );
+      // Update UI to show pending status
+      setRequestStatus('pending');
+      
     } catch (err) {
       console.error(err);
+      alert(err.message);
     } finally {
       setJoining(false);
     }
   };
-
-  useEffect(() => {
-    if (courseId) {
-      fetch(`http://localhost:3000/api/courses/${courseId}`)
-        .then(res => res.json())
-        .then(data => setCourse(data))
-        .catch(err => console.error(err));
-      return;
-    }
-
-    fetch("http://localhost:3000/api/courses")
-      .then(res => res.json())
-      .then(data => setCourse(data[0]))
-      .catch(err => console.error(err));
-  }, [courseId]);
-
 
   return (
     <div className="course-overview-page">
@@ -145,7 +144,9 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
             <ul>
               <li>Members: {course?.memberCount ?? 0}</li>
               <li>Discussions: {course?.discussionCount || 0}</li>
-              <li>Status: {isJoined ? "Joined" : "Open to Join"}</li>
+              <li>
+                Status: {isJoined ? "Joined" : requestStatus === 'pending' ? "Pending Approval" : "Open to Join"}
+              </li>
             </ul>
           </div>
 
@@ -203,7 +204,7 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
           <div className="join-card">
             <h3>Join This Hub</h3>
             <p className="join-subtitle">
-              {isJoined ? "You are already a member" : "Ready to join?"}
+              {isJoined ? "You are already a member" : requestStatus === 'pending' ? "Request Sent" : "Ready to join?"}
             </p>
             <p>
               Become part of the community to participate in discussions,
@@ -216,19 +217,24 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
               </button>
             )}
 
-            {role === "user" &&
-              (isJoined ? (
+            {role === "user" && (
+              isJoined ? (
                 <button className="join-button" disabled>
                   ✓ Joined
                 </button>
+              ) : requestStatus === 'pending' ? (
+                <button className="join-button" style={{ backgroundColor: '#6c757d' }} disabled>
+                  ⌛ Pending
+                </button>
               ) : (
                 <button className="join-button" onClick={handleJoin} disabled={joining}>
-                  ➤ {joining ? "Joining..." : "Join Course"}
+                  ➤ {joining ? "Sending Request..." : "Join Course"}
                 </button>
-              ))}
+              )
+            )}
 
             {role === "admin" && (
-              <button className="join-button" disabled>
+              <button className="join-button" disabled style={{ backgroundColor: '#0b2d5c' }}>
                 Admin View
               </button>
             )}

@@ -2,17 +2,18 @@
   height: 60px;
   background: #001d40;
   display: flex;
-  justify-content: flex-end; /* push everything to the right */
+  justify-content: flex-end; /* Push everything to the right */
   align-items: center;
   padding: 0 60px;
   box-sizing: border-box;
+  position: relative; /* Base for dropdown positioning */
 }
 
 .navRight {
   display: flex;
   align-items: center;
   gap: 22px;
-  flex-wrap: nowrap; /* NEVER wrap to next line */
+  flex-wrap: nowrap; /* Prevent wrapping */
 }
 
 .navIconBtn {
@@ -21,14 +22,14 @@
   padding: 0;
   margin: 0;
   cursor: pointer;
-
-  /* make button not act weird */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   width: 32px;
   height: 32px;
+  position: relative; /* Base for the red dot */
+  border-radius: 4px;
+  transition: background 0.2s;
 }
 
 .navIconBtn img {
@@ -37,24 +38,106 @@
   display: block;
 }
 
-.navLoginText {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-}
-.navLoginBtn {
-  height: 42px;
-  background: #001d40;
-  color: rgb(255, 255, 255);
-  border: none;
-  letter-spacing: 0.05em;
-  font-size:100%;
-  cursor: pointer;
+.navIconBtn:hover {
+  background: #001024;
 }
 
-button:hover{
-  background: #001024;
+/* --- Notification Badge (Red Dot) --- */
+.notif-badge-red {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ff4d4f;
   color: white;
-  }
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 14px;
+  text-align: center;
+  border: 2px solid #001d40; /* Match navbar background */
+  line-height: 1;
+}
+
+/* --- Notification Dropdown Box --- */
+.notif-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.notif-dropdown-box {
+  position: absolute;
+  top: 50px; /* Appear below the navbar */
+  right: 0;
+  width: 300px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  overflow: hidden;
+  color: #333;
+}
+
+.notif-header {
+  padding: 14px;
+  background-color: #f5f5f5;
+  font-weight: 700;
+  font-size: 14px;
+  border-bottom: 1px solid #ddd;
+}
+
+.notif-list {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.notif-item-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+  text-align: left;
+}
+
+.notif-item-row:hover {
+  background-color: #f9f9f9;
+}
+
+.notif-empty-text {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+}
+
+/* --- Login / Logout Button --- */
+.navLoginBtn {
+  height: 42px;
+  background: transparent;
+  color: #fff;
+  border: none;
+  letter-spacing: 0.05em;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 12px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.navLoginBtn:hover {
+  background: #001024;
+}
+
+/* Scrollbar styling for notification list */
+.notif-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notif-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
