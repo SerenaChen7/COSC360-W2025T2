@@ -8,6 +8,8 @@ function CourseBanner({ course, isFavorite }) {
   const tags = course
     ? [course.field, course.type, ...(course.tags || [])].filter(Boolean)
     : [];
+  const memberCount = course?.memberCount ?? 0;
+  const memberLabel = memberCount === 1 ? "Member" : "Members";
 
   const bannerImage = course?.thumbnail
     ? `${API_URL}${course.thumbnail}`
@@ -39,7 +41,7 @@ function CourseBanner({ course, isFavorite }) {
         </div>
 
         <div className="course-banner-right">
-          <p>◌ Active Today • 167 Members</p>
+          <p>{`◌ Active Today • ${memberCount} ${memberLabel}`}</p>
           <p>◎ {course?.location || "Remote + Campus"}</p>
           <p>▣ Open to Join</p>
         </div>
