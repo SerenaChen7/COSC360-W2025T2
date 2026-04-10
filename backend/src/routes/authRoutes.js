@@ -1,13 +1,25 @@
 import express from "express";
 import passport from "passport"; 
-import { loginUser } from "../controllers/authController.js";
 import jwt from "jsonwebtoken";
+import multer from "multer";
+import { 
+  loginUser, 
+  signupUser, 
+  getCurrentUser 
+} from "../controllers/authController.js";
+import { requireAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// Configure multer for profile image uploads
+const upload = multer({ dest: "uploads/" });
+
+// Standard Auth Routes
 router.post("/signup", upload.single("profileImage"), signupUser);
 router.post("/login", loginUser);
+router.get("/me", requireAuth, getCurrentUser);
 
+// Google OAuth
 router.get("/google", 
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
@@ -15,11 +27,11 @@ router.get("/google",
 router.get("/google/callback", 
   passport.authenticate("google", { session: false, failureRedirect: "/login" }),
   (req, res) => {
-    // Generate token and redirect back to frontend
     sendTokenResponse(req.user, res);
   }
 );
 
+// Facebook OAuth
 router.get("/facebook", 
   passport.authenticate("facebook", { scope: ["email"] })
 );
@@ -31,21 +43,25 @@ router.get("/facebook/callback",
   }
 );
 
+// Apple OAuth
 router.get("/apple", 
   passport.authenticate("apple")
 );
 
-router.post("/apple/callback", // Apple uses POST for callbacks
+router.post("/apple/callback", 
   passport.authenticate("apple", { session: false, failureRedirect: "/login" }),
   (req, res) => {
     sendTokenResponse(req.user, res);
   }
 );
 
+/**
+ * Helper to generate JWT and redirect to the frontend
+ */
 function sendTokenResponse(user, res) {
   const token = jwt.sign(
     { userId: user._id, role: user.role },
-    process.env.JWT_SECRET || "dev_secret_key",
+    process.env.JWT_SECRET || "together_as_one_secret_2026",
     { expiresIn: "7d" }
   );
 
@@ -56,7 +72,12 @@ function sendTokenResponse(user, res) {
     role: user.role
   });
 
-  res.redirect(`http://localhost:5173/?token=${token}&user=${encodeURIComponent(userData)}`);
+  // Use port 4000 for Docker host access to frontend
+  const frontendUrl = process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URL 
+    : "http://localhost:4000";
+
+  res.redirect(`${frontendUrl}/?token=${token}&user=${encodeURIComponent(userData)}`);
 }
 
 export default router;
