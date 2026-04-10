@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import CoverPage from "./pages/CoverPage";
@@ -10,17 +10,32 @@ import Dashboard from "./pages/Dashboard";
 import Signup from "./pages/Signup";
 
 export default function App() {
-  const savedUser = JSON.parse(localStorage.getItem("user"));
+  const savedUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user"));
+    } catch {
+      return null;
+    }
+  }, []);
+
   const [page, setPage] = useState("cover");
   // here allows the login status to stay consistent across pages.
   const [role, setRole] = useState(savedUser?.role || "guest");
   const [currentUser, setCurrentUser] = useState(savedUser || null);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const isLoggedIn = !!currentUser;
+  if ((page === "dashboard" || page === "create") && !isLoggedIn) {
+    return (
+      <Login
+        setPage={setPage}
+        setRole={setRole}
+        setCurrentUser={setCurrentUser}
+      />
+    );
+  }
   return (
     <>
-      {page === "cover" && (
-        <CoverPage setPage={setPage} />
-      )}
+      {page === "cover" && <CoverPage setPage={setPage} />}
 
       {page === "home" && (
         <Home
@@ -40,11 +55,7 @@ export default function App() {
         />
       )}
 
-      {page === "signup" && (
-        <Signup
-          setPage={setPage}
-        />
-      )}
+      {page === "signup" && <Signup setPage={setPage} />}
 
       {page === "course" && (
         <CourseOverview
@@ -74,7 +85,7 @@ export default function App() {
           currentUser={currentUser}
         />
       )}
-      
+
       {page === "create" && (
         <>
           <Dashboard
@@ -94,6 +105,7 @@ export default function App() {
         <Dashboard
           setPage={setPage}
           setSelectedCourseId={setSelectedCourseId}
+          currentUser={currentUser}
         />
       )}
     </>

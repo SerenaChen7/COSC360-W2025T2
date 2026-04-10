@@ -4,9 +4,12 @@ import notificationsIcon from "../assets/notifications-icon.png";
 import dashboardIcon from "../assets/darhboard-icon.png";
 import "./Navbar.css";
 
-export default function Navbar({ setPage, setCurrentUser, setRole, onProfileClick }) {
-
-  // We check if the user is logged in by looking for a "user" object in localStorage. If it exists, we consider the user to be logged in.
+export default function Navbar({
+  setPage,
+  setCurrentUser,
+  setRole,
+  onProfileClick
+}) {
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = !!storedUser;
 
@@ -16,7 +19,15 @@ export default function Navbar({ setPage, setCurrentUser, setRole, onProfileClic
     const checkUserStatus = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) return;
+
+        if (!token) {
+          localStorage.removeItem("user");
+          localStorage.removeItem("joinedCourseIds");
+
+          if (setCurrentUser) setCurrentUser(null);
+          if (setRole) setRole("guest");
+          return;
+        }
 
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
           headers: {
@@ -24,15 +35,20 @@ export default function Navbar({ setPage, setCurrentUser, setRole, onProfileClic
           }
         });
 
-        if (res.status === 403) {
+        if (res.status === 401 || res.status === 403) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
+          localStorage.removeItem("joinedCourseIds");
 
           if (setCurrentUser) setCurrentUser(null);
           if (setRole) setRole("guest");
           if (setPage) setPage("login");
 
-          window.alert("Your account has been disabled by an admin.");
+          if (res.status === 403) {
+            window.alert("Your account has been disabled by an admin.");
+          } else {
+            window.alert("Your session expired. Please log in again.");
+          }
           return;
         }
 
@@ -43,6 +59,7 @@ export default function Navbar({ setPage, setCurrentUser, setRole, onProfileClic
         if (data?.user?.isDisabled) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
+          localStorage.removeItem("joinedCourseIds");
 
           if (setCurrentUser) setCurrentUser(null);
           if (setRole) setRole("guest");
@@ -78,8 +95,6 @@ export default function Navbar({ setPage, setCurrentUser, setRole, onProfileClic
   return (
     <nav className="navbar">
       <div className="navRight">
-
-        {/* Home */}
         <button
           type="button"
           className="navIconBtn"
@@ -90,7 +105,6 @@ export default function Navbar({ setPage, setCurrentUser, setRole, onProfileClic
           <img src={homeIcon} alt="Home" />
         </button>
 
-        {/* Notifications */}
         <button
           type="button"
           className="navIconBtn"
@@ -99,18 +113,25 @@ export default function Navbar({ setPage, setCurrentUser, setRole, onProfileClic
           <img src={notificationsIcon} alt="Notifications" />
         </button>
 
-        {/* Dashboard */}
         <button
           type="button"
           className="navIconBtn"
-          onClick={() =>
-            setPage ? setPage("dashboard") : (window.location.href = "/dashboard")
-          }
+          onClick={() => {
+            if (!isLoggedIn) {
+              if (setPage) setPage("login");
+              return;
+            }
+
+            if (setPage) {
+              setPage("dashboard");
+            } else {
+              window.location.href = "/dashboard";
+            }
+          }}
         >
           <img src={dashboardIcon} alt="Dashboard" />
         </button>
 
-        {/* Profile Picture */}
         {isLoggedIn && (
           <button
             type="button"

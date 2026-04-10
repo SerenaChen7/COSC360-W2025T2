@@ -16,9 +16,54 @@ export default function Signup({ setPage }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,16}$/;
   function handleImageChange(e) {
     const file = e.target.files[0];
     setProfileImage(file || null);
+  }
+  function validateSignup() {
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedUsername || !trimmedEmail || !password || !confirmPassword) {
+      return "Please fill in all fields";
+    }
+
+    if (trimmedUsername.length < 3) {
+      return "Username must be at least 3 characters";
+    }
+
+    if (trimmedUsername.length > 30) {
+      return "Username must be 30 characters or less";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return "Please enter a valid email address";
+    }
+
+    if (!passwordRegex.test(password)) {
+      return "Password must be 8-16 characters and include uppercase, lowercase, number, and special character";
+    }
+
+    if (password !== confirmPassword) {
+      return "Passwords do not match";
+    }
+
+    if (profileImage) {
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!allowedTypes.includes(profileImage.type)) {
+        return "Profile image must be JPG, PNG, or WEBP";
+      }
+
+      const maxSize = 5 * 1024 * 1024;
+      if (profileImage.size > maxSize) {
+        return "Profile image must be smaller than 5MB";
+      }
+    }
+
+    return "";
   }
 
   async function handleSignup() {
@@ -26,19 +71,15 @@ export default function Signup({ setPage }) {
       setLoading(true);
       setMessage("");
 
-      if (!username || !email || !password || !confirmPassword) {
-        setMessage("Please fill in all fields");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        setMessage("Passwords do not match");
+      const validationMessage = validateSignup();
+      if (validationMessage) {
+        setMessage(validationMessage);
         return;
       }
 
       const formData = new FormData();
-      formData.append("username", username);
-      formData.append("email", email);
+      formData.append("username", username.trim());
+      formData.append("email", email.trim());
       formData.append("password", password);
       formData.append("confirmPassword", confirmPassword);
 
@@ -49,8 +90,8 @@ export default function Signup({ setPage }) {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/auth/signup`,
         {
-            method: "POST",
-            body: formData
+          method: "POST",
+          body: formData
         });
 
       const data = await response.json();
@@ -69,6 +110,12 @@ export default function Signup({ setPage }) {
       setMessage("Unable to connect to server");
     } finally {
       setLoading(false);
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === "Enter" && !loading) {
+      handleSignup();
     }
   }
 
@@ -104,6 +151,8 @@ export default function Signup({ setPage }) {
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoComplete="username"
               />
             </div>
 
@@ -115,6 +164,8 @@ export default function Signup({ setPage }) {
                 placeholder="Email Address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoComplete="email"
               />
             </div>
 
@@ -128,6 +179,8 @@ export default function Signup({ setPage }) {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  autoComplete="new-password"
                 />
 
                 <button
@@ -138,6 +191,9 @@ export default function Signup({ setPage }) {
                 >
                   👁
                 </button>
+              </div>
+              <div className="hintText">
+                8-16 characters, include uppercase, lowercase, number, and special character
               </div>
             </div>
 
@@ -151,6 +207,8 @@ export default function Signup({ setPage }) {
                   placeholder="Confirm Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  autoComplete="new-password"
                 />
 
                 <button
@@ -171,7 +229,7 @@ export default function Signup({ setPage }) {
               <input
                 className="lineInput"
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/webp"
                 onChange={handleImageChange}
               />
             </div>

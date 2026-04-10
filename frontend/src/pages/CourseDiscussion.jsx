@@ -15,7 +15,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
   const [isSending, setIsSending] = useState(false);
   const fileInputRef = useRef(null);
 
-  //Reply state
+  // Reply state
   const [replyingToPostId, setReplyingToPostId] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [isReplySending, setIsReplySending] = useState(false);
@@ -26,6 +26,15 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
   const [joining, setJoining] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  const currentUserId = currentUser?.id || currentUser?._id || null;
+
+  const getAuthorId = (author) => {
+    if (!author) return null;
+    if (typeof author === "string") return author;
+    return author._id || author.id || null;
+  };
+
   const fetchJoinedStatus = async () => {
     if (!courseId) return;
 
@@ -71,7 +80,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       if (!res.ok) throw new Error(data.message || "Failed to join");
 
       setIsJoined(true);
-      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+      setCourse((prev) => (prev ? { ...prev, memberCount: data.memberCount } : prev));
     } catch (err) {
       console.error(err);
     } finally {
@@ -91,7 +100,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       if (!res.ok) throw new Error(data.message || "Failed to leave");
 
       setIsJoined(false);
-      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+      setCourse((prev) => (prev ? { ...prev, memberCount: data.memberCount } : prev));
     } catch (err) {
       console.error(err);
     } finally {
@@ -118,7 +127,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
     return name.charAt(0).toUpperCase();
   };
 
-  //All protected requests, such as creating posts, replying, and deleting content, send the JWT token in the Authorization header.
+  // All protected requests, such as creating posts, replying, and deleting content, send the JWT token in the Authorization header.
   const handleDeletePost = async (postId) => {
     if (!effectiveCourseId) return;
 
@@ -150,7 +159,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
     }
   };
 
-  //The same applies to deleting replies, where the token is sent in the Authorization header to ensure that only authorized users can delete their own replies or, in the case of admins, any reply.
+  // The same applies to deleting replies, where the token is sent in the Authorization header to ensure that only authorized users can delete their own replies or, in the case of admins, any reply.
   const handleDeleteReply = async (postId, replyId) => {
     if (!effectiveCourseId) return;
 
@@ -403,7 +412,10 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
                 <div className="pending-files-list">
                   {selectedFiles.map((file, index) => (
-                    <div className="pending-file-chip" key={`${file.name}-${file.lastModified}-${index}`}>
+                    <div
+                      className="pending-file-chip"
+                      key={`${file.name}-${file.lastModified}-${index}`}
+                    >
                       <span className="pending-file-name">📎 {file.name}</span>
                       <button
                         type="button"
@@ -421,10 +433,11 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
             <div className="discussion-list">
               {posts.map((post) => {
+                const postAuthorId = getAuthorId(post.author);
                 const canDeletePost =
                   currentUser &&
                   (currentUser.role === "admin" ||
-                    post.author?._id === currentUser.id);
+                    String(postAuthorId) === String(currentUserId));
 
                 return (
                   <div className="discussion-post" key={post._id}>
@@ -462,7 +475,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                         </button>
                       )}
                     </div>
-
+                    
 
                     {post.text && (
                       <p className="discussion-content">{post.text}</p>
@@ -531,10 +544,11 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                     {post.replies?.length > 0 && (
                       <div className="discussion-replies">
                         {post.replies.map((reply, index) => {
+                          const replyAuthorId = getAuthorId(reply.author);
                           const canDeleteReply =
                             currentUser &&
                             (currentUser.role === "admin" ||
-                              reply.author?._id === currentUser.id);
+                              String(replyAuthorId) === String(currentUserId));
 
                           return (
                             <div className="discussion-reply" key={reply._id || index}>
@@ -608,24 +622,33 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
               </button>
             )}
 
-            {(role === "user" || role === "admin") && (
-              isJoined ? (
-                <button className="join-button leave-button" onClick={handleLeave} disabled={joining}>
+            {(role === "user" || role === "admin") &&
+              (isJoined ? (
+                <button
+                  className="join-button leave-button"
+                  onClick={handleLeave}
+                  disabled={joining}
+                >
                   {joining ? "Leaving..." : "✕ Leave Course"}
                 </button>
               ) : (
-                <button className="join-button" onClick={handleJoin} disabled={joining}>
+                <button
+                  className="join-button"
+                  onClick={handleJoin}
+                  disabled={joining}
+                >
                   ➤ {joining ? "Joining..." : "Join Course"}
                 </button>
-              )
-            )}
+              ))}
           </div>
 
           {role === "admin" && (
             <AdminActions
               courseId={effectiveCourseId}
               course={course}
-              onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
+              onCourseUpdated={(updated) =>
+                setCourse((prev) => ({ ...prev, ...updated }))
+              }
             />
           )}
         </aside>
