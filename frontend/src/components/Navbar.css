@@ -16,6 +16,14 @@
   flex-wrap: nowrap; /* Prevent wrapping */
 }
 
+.navProfilePic {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #d9d9d9;
+}
+
 .navIconBtn {
   background: transparent;
   border: none;

@@ -9,8 +9,7 @@ const {
   mockAggregate,
   mockFindById,
   mockFindByIdAndUpdate,
-  mockCourseOptionsFindOne,
-  mockCourseOptionsCreate,
+  mockCourseOptionsFindOneAndUpdate,
   mockPostCountDocuments,
   mockCourseMemberFindOne,
   mockCourseMemberCreate
@@ -18,8 +17,7 @@ const {
   const mockAggregate = vi.fn();
   const mockFindById = vi.fn();
   const mockFindByIdAndUpdate = vi.fn();
-  const mockCourseOptionsFindOne = vi.fn();
-  const mockCourseOptionsCreate = vi.fn();
+  const mockCourseOptionsFindOneAndUpdate = vi.fn();
   const mockPostCountDocuments = vi.fn();
   const mockCourseMemberFindOne = vi.fn();
   const mockCourseMemberCreate = vi.fn();
@@ -41,8 +39,7 @@ const {
     mockAggregate,
     mockFindById,
     mockFindByIdAndUpdate,
-    mockCourseOptionsFindOne,
-    mockCourseOptionsCreate,
+    mockCourseOptionsFindOneAndUpdate,
     mockPostCountDocuments,
     mockCourseMemberFindOne,
     mockCourseMemberCreate
@@ -62,8 +59,7 @@ vi.mock("../backend/src/models/Course.js", () => ({
 
 vi.mock("../backend/src/models/CourseOptions.js", () => ({
   default: {
-    findOne: mockCourseOptionsFindOne,
-    create: mockCourseOptionsCreate
+    findOneAndUpdate: mockCourseOptionsFindOneAndUpdate
   }
 }));
 
@@ -87,7 +83,49 @@ import {
 describe("courseController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
     mockCourseMemberCreate.mockResolvedValue({});
+    mockCourseOptionsFindOneAndUpdate.mockResolvedValue({
+      types: [
+        "Bootcamp",
+        "Lab",
+        "Lecture",
+        "Seminar",
+        "Tutorial",
+        "Workshop"
+      ],
+      fields: [
+        "Arts",
+        "Biology",
+        "Business",
+        "Chemistry",
+        "Computer Science",
+        "Data Science",
+        "Economics",
+        "Engineering",
+        "Mathematics",
+        "Physics",
+        "Psychology",
+        "Statistics"
+      ],
+      tags: [
+        "Beginner",
+        "Intermediate",
+        "Advanced",
+        "Programming",
+        "Web Development",
+        "React",
+        "JavaScript",
+        "Database",
+        "Design",
+        "Frontend",
+        "Backend",
+        "AI",
+        "Machine Learning",
+        "Math",
+        "Science"
+      ]
+    });
   });
 
   describe("getAllCourses", () => {
@@ -135,7 +173,9 @@ describe("courseController", () => {
         }
       });
 
-      expect(pipeline.some(step => step.$sort && step.$sort.title === 1)).toBe(true);
+      expect(
+        pipeline.some((step) => step.$sort && step.$sort.title === 1)
+      ).toBe(true);
       expect(res.statusCode).toBe(200);
     });
   });
@@ -200,30 +240,8 @@ describe("courseController", () => {
       });
     });
 
-    it("should return 400 when course options are not set", async () => {
-      CourseOptions.findOne.mockResolvedValue(null);
-
-      const req = {
-        body: {
-          title: "COSC 360",
-          type: "Lecture",
-          field: "Computer Science",
-          description: "Web programming"
-        },
-        user: { userId: validUserId }
-      };
-      const res = createMockRes();
-
-      await createCourse(req, res);
-
-      expect(res.statusCode).toBe(400);
-      expect(res.body).toEqual({
-        message: "Course options not set up yet"
-      });
-    });
-
     it("should return 400 for invalid type", async () => {
-      CourseOptions.findOne.mockResolvedValue({
+      mockCourseOptionsFindOneAndUpdate.mockResolvedValue({
         types: ["Lab", "Seminar"],
         fields: ["Computer Science"],
         tags: ["React", "Frontend"]
@@ -248,10 +266,10 @@ describe("courseController", () => {
       });
     });
 
-    it("should return 400 for invalid tag", async () => {
-      CourseOptions.findOne.mockResolvedValue({
+    it("should return 400 for invalid field", async () => {
+      mockCourseOptionsFindOneAndUpdate.mockResolvedValue({
         types: ["Lecture"],
-        fields: ["Computer Science"],
+        fields: ["Mathematics"],
         tags: ["React", "Frontend"]
       });
 
@@ -260,8 +278,7 @@ describe("courseController", () => {
           title: "COSC 360",
           type: "Lecture",
           field: "Computer Science",
-          description: "Web programming",
-          tags: ["AI"]
+          description: "Web programming"
         },
         user: { userId: validUserId }
       };
@@ -271,15 +288,20 @@ describe("courseController", () => {
 
       expect(res.statusCode).toBe(400);
       expect(res.body).toEqual({
-        message: "One or more tags are invalid"
+        message: "Invalid course field"
       });
     });
 
     it("should create course successfully with valid input", async () => {
-      CourseOptions.findOne.mockResolvedValue({
+      mockCourseOptionsFindOneAndUpdate.mockResolvedValue({
         types: ["Lecture"],
         fields: ["Computer Science"],
         tags: ["React", "Frontend"]
+      });
+
+      Course.findByIdAndUpdate.mockResolvedValue({
+        _id: validCourseId,
+        memberCount: 1
       });
 
       const req = {
@@ -296,6 +318,17 @@ describe("courseController", () => {
       const res = createMockRes();
 
       await createCourse(req, res);
+
+      expect(CourseOptions.findOneAndUpdate).toHaveBeenCalledTimes(1);
+      expect(mockCourseMemberCreate).toHaveBeenCalledWith({
+        courseId: validCourseId,
+        userId: validUserId,
+        roleInCourse: "Admin"
+      });
+      expect(Course.findByIdAndUpdate).toHaveBeenCalledWith(
+        validCourseId,
+        { $inc: { memberCount: 1 } }
+      );
 
       expect(res.statusCode).toBe(201);
       expect(res.body.title).toBe("COSC 360");
@@ -369,8 +402,8 @@ describe("courseController", () => {
   });
 
   describe("getCourseOptions", () => {
-    it("should return existing options when found", async () => {
-      CourseOptions.findOne.mockResolvedValue({
+    it("should return course options from ensureCourseOptions", async () => {
+      mockCourseOptionsFindOneAndUpdate.mockResolvedValue({
         types: ["Lecture"],
         fields: ["Computer Science"],
         tags: ["React"]
@@ -381,6 +414,7 @@ describe("courseController", () => {
 
       await getCourseOptions(req, res);
 
+      expect(CourseOptions.findOneAndUpdate).toHaveBeenCalledTimes(1);
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual({
         types: ["Lecture"],
@@ -389,53 +423,21 @@ describe("courseController", () => {
       });
     });
 
-    it("should create default options when none exist", async () => {
-      CourseOptions.findOne.mockResolvedValue(null);
-      CourseOptions.create.mockResolvedValue({
-        types: ["Bootcamp", "Lab", "Lecture", "Seminar", "Tutorial", "Workshop"],
-        fields: [
-          "Arts",
-          "Biology",
-          "Business",
-          "Chemistry",
-          "Computer Science",
-          "Data Science",
-          "Economics",
-          "Engineering",
-          "Mathematics",
-          "Physics",
-          "Psychology",
-          "Statistics"
-        ],
-        tags: [
-          "Beginner",
-          "Intermediate",
-          "Advanced",
-          "Programming",
-          "Web Development",
-          "React",
-          "JavaScript",
-          "Database",
-          "Design",
-          "Frontend",
-          "Backend",
-          "AI",
-          "Machine Learning",
-          "Math",
-          "Science"
-        ]
-      });
+    it("should return 500 when ensureCourseOptions throws", async () => {
+      mockCourseOptionsFindOneAndUpdate.mockRejectedValue(
+        new Error("options failed")
+      );
 
       const req = {};
       const res = createMockRes();
 
       await getCourseOptions(req, res);
 
-      expect(CourseOptions.create).toHaveBeenCalledTimes(1);
-      expect(res.statusCode).toBe(200);
-      expect(res.body.types).toContain("Lecture");
-      expect(res.body.fields).toContain("Computer Science");
-      expect(res.body.tags).toContain("React");
+      expect(res.statusCode).toBe(500);
+      expect(res.body).toEqual({
+        message: "Failed to fetch course options",
+        error: "options failed"
+      });
     });
   });
 });

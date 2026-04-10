@@ -33,6 +33,7 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
   const [sortFilter, setSortFilter] = useState([]);
   const [joiningId, setJoiningId] = useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
     const token = localStorage.getItem("token");
 

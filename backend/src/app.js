@@ -22,6 +22,7 @@ app.use("/uploads", express.static(path.resolve("uploads")));
 app.use("/api/auth", authRoutes);
 
 app.use("/api/courses", courseRoutes);
+app.use("/api/users", userRoutes);
 
 app.use('/api/notifications', notificationRoutes);
 

@@ -6,6 +6,7 @@ import HomeCourse from "../components/HomeCourse";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import SpotlightSection from "../components/SpotlightSection";
+import ProfileEdit from "./ProfileEdit";
 import { useFavorites } from "../hooks/useFavorites";
 
 const LEVEL_OPTIONS = [
@@ -31,14 +32,17 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
   const [courseFilter, setCourseFilter] = useState([]);
   const [levelFilter, setLevelFilter] = useState([]);
   const [sortFilter, setSortFilter] = useState([]);
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
-    fetch("http://localhost:3000/api/courses")
+    fetch(`${API_URL}/api/courses`)
       .then((res) => res.json())
       .then((data) => setAllCourses(data))
       .catch((err) => console.error("Failed to fetch courses:", err));
-  }, []);
+  }, [API_URL]);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -49,19 +53,18 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
 
       try {
         const response = await fetch(
-          `http://localhost:3000/api/courses/search?q=${searchTerm}`
+          `${API_URL}/api/courses/search?q=${searchTerm}`
         );
         const data = await response.json();
         setSearchResults(data);
       } catch (error) {
         console.error("Search failed:", error);
       }
-    }, 300); // debounce 300ms
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, API_URL]);
 
-  // Derive course type options (COSC, MATH, STAT, etc.) from loaded courses
   const courseTypeOptions = useMemo(() => {
     const types = [...new Set(allCourses.map((c) => c.title.split(" ")[0]))].sort();
     return types.map((t) => ({ value: t, label: t }));
@@ -94,7 +97,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
     return courses;
   }, [allCourses, searchResults, courseFilter, levelFilter, sortFilter]);
 
-  //Asychronously fetches the list of courses from the backend API 
+    //Asychronously fetches the list of courses from the backend API 
   const spotlightCourses = useMemo(() => {
     return allCourses.filter((course) => favorites.has(course._id));
   }, [allCourses, favorites]);
@@ -104,7 +107,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
 
     toggleFavorite(courseId);
 
-    // only scroll into view when adding to favorites, not when removing
+        // only scroll into view when adding to favorites, not when removing
     if (!wasFavorite) {
       setTimeout(() => {
         spotlightRef.current?.scrollIntoView({
@@ -123,21 +126,22 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
         setRole={setRole}
+        onProfileClick={() => setShowProfileEdit(true)}
       />
       <HeroBanner />
       <div style={{ padding: "20px 60px 0 60px" }}>
-  <h2
-    style={{
-      fontFamily: '"Public Sans", sans-serif',
-      fontSize: "26px",
-      fontWeight: 700,
-      color: "#001D40",
-      margin: 0
-    }}
-  >
-    Hi {currentUser?.username || "Guest"},
-  </h2>
-</div>
+        <h2
+          style={{
+            fontFamily: '"Public Sans", sans-serif',
+            fontSize: "26px",
+            fontWeight: 700,
+            color: "#001D40",
+            margin: 0
+          }}
+        >
+          Hi {currentUser?.username || "Guest"},
+        </h2>
+      </div>
 
       <div ref={spotlightRef}>
         <SpotlightSection
@@ -203,6 +207,13 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
         </div>
       </div>
 
+      {showProfileEdit && (
+        <ProfileEdit
+          currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
+          onClose={() => setShowProfileEdit(false)}
+        />
+      )}
     </>
   );
 }

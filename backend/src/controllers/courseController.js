@@ -205,8 +205,8 @@ export async function createCourse(req, res) {
 export const getCoursePosts = async (req, res) => {
   try {
     const posts = await Post.find({ course: req.params.id })
-      .populate("author", "username email role")
-      .populate("replies.author", "username email role")
+      .populate("author", "username email role profileImage")
+      .populate("replies.author", "username email role profileImage")
       .sort({ createdAt: -1 });
     res.status(200).json(posts);
   } catch (error) {

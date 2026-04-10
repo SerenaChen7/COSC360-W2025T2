@@ -5,7 +5,9 @@ import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
+router.post("/signup", upload.single("profileImage"), signupUser);
 router.post("/login", loginUser);
+router.get("/me", requireAuth, getCurrentUser);
 
 router.get("/google", 
   passport.authenticate("google", { scope: ["profile", "email"] })

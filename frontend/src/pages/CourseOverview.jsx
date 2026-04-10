@@ -71,12 +71,10 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
       // Send request to the new actionRoutes endpoint
       const res = await fetch(`http://localhost:3000/api/join/${courseId}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to join");
 
       if (!res.ok) {
         throw new Error(data.message || "Failed to send request");

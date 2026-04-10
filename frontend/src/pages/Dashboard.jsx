@@ -56,7 +56,7 @@ export default function Dashboard({ setPage, setSelectedCourseId, currentUser, s
   const fetchJoinedCourses = () => {
     if (!token) return;
     setLoadingCourses(true);
-    fetch("http://localhost:3000/api/courses/joined", {
+    fetch(`${API_URL}/api/courses/joined`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then((r) => r.json())
@@ -115,7 +115,7 @@ export default function Dashboard({ setPage, setSelectedCourseId, currentUser, s
 
   const handleLeave = async (courseId) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/courses/${courseId}/leave`, {
+      const res = await fetch(`${API_URL}/api/courses/${courseId}/leave`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
