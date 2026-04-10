@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
+import passport from "./config/passport.js";
 import submitRoutes from "./routes/submitRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
@@ -10,7 +11,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
 
 // expose uploaded files
 app.use("/uploads", express.static(path.resolve("uploads")));

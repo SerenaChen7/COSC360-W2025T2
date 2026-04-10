@@ -1,53 +1,15 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema(
-  {
-    // Unique, Required username
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      minlength: 3,
-      maxlength: 30
-    },
-    // Unique, Required email for authentication
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-      match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    },
-    // Security: Stores the hashed version of the password
-    passwordHash: {
-      type: String,
-      required: true
-    },
-    // System-level access control
-    role: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user"
-    },
-    profileImage: {
-      type: String,
-      default: ""
-    },
-    bio: {
-      type: String,
-      default: "",
-      maxlength: 300,
-      trim: true
-    },
-    isDisabled: {
-      type: Boolean,
-      default: false
-    }
-  },{
-    // Automatically adds createdAt and updatedAt fields (Auto-timestamp)
-    timestamps: true
-  });
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true, trim: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  // passwordHash is now optional for social users
+  passwordHash: { type: String, required: false },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  // Added fields for social providers
+  googleId: { type: String, unique: true, sparse: true },
+  facebookId: { type: String, unique: true, sparse: true },
+  appleId: { type: String, unique: true, sparse: true }
+}, { timestamps: true });
 
 export default mongoose.model("User", userSchema);
