@@ -46,7 +46,7 @@ router.get("/", getAllCourses);
 router.get("/:id", getCourseById);
 
 // PATCH /api/courses/:id
-router.patch("/:id", upload.single("thumbnail"), updateCourse);
+router.patch("/:id", requireAuth, upload.single("thumbnail"), updateCourse);
 
 // POST /api/courses/:id/join
 router.post("/:id/join", requireAuth, joinCourse);
@@ -67,7 +67,7 @@ router.get("/:id/posts", getCoursePosts);
 router.delete("/:courseId/posts/:postId", requireAuth, deletePost);
 
 // DELETE /api/courses/:id
-router.delete("/:id", deleteCourse);
+router.delete("/:id", requireAuth, deleteCourse);
 
 // POST /api/courses/:id/posts with files upload
 router.post("/:id/posts", requireAuth, upload.array("files", 5), createPost);
