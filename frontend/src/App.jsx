@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import CoverPage from "./pages/CoverPage";
@@ -24,6 +24,30 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(savedUser || null);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const userData = params.get("user");
+
+    if (token && userData) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userData));
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+
+        setCurrentUser(user);
+        setRole(user.role || "user");
+
+        setPage("home");
+
+        window.history.replaceState({}, document.title, "/");
+      } catch (err) {
+        console.error("Social login parsing error:", err);
+      }
+    }
+  }, []); 
+
   return (
     <>
       {page === "cover" && <CoverPage setPage={setPage} />}

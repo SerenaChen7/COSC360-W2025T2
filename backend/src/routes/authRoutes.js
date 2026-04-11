@@ -43,17 +43,7 @@ router.get("/facebook/callback",
   }
 );
 
-// Apple OAuth
-router.get("/apple", 
-  passport.authenticate("apple")
-);
-
-router.post("/apple/callback", 
-  passport.authenticate("apple", { session: false, failureRedirect: "/login" }),
-  (req, res) => {
-    sendTokenResponse(req.user, res);
-  }
-);
+// Removed Apple OAuth routes as requested
 
 /**
  * Helper to generate JWT and redirect to the frontend
@@ -65,11 +55,13 @@ function sendTokenResponse(user, res) {
     { expiresIn: "7d" }
   );
 
+  // Included profileImage so the frontend can display the social avatar immediately
   const userData = JSON.stringify({
     id: user._id,
     username: user.username,
     email: user.email,
-    role: user.role
+    role: user.role,
+    profileImage: user.profileImage || ""
   });
 
   // Use port 4000 for Docker host access to frontend

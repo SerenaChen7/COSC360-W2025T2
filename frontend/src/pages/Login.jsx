@@ -3,7 +3,6 @@ import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 
 import googleIcon from "../assets/google-icon.png";
-import appleIcon from "../assets/apple-icon.png";
 import facebookIcon from "../assets/facebook-icon.png";
 
 import "./Login.css";
@@ -16,35 +15,38 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-  // Look at the URL to see if we just returned from a social login
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
-  const userJson = params.get("user");
+    const loginBtn =
+      document.querySelector(".navLoginText") ||
+      document.querySelector(".navLoginBtn");
 
-  if (token && userJson) {
-    try {
-      const userData = JSON.parse(userJson);
-      
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-      
-      setCurrentUser(userData);
-      setRole(userData.role || "user");
-      
-      setPage("home");
-    } catch (err) {
-      setMessage("Error parsing social login data");
+    if (loginBtn) loginBtn.onclick = () => window.location.reload();
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const userJson = params.get("user");
+
+    if (token && userJson) {
+      try {
+        const userData = JSON.parse(userJson);
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        setCurrentUser(userData);
+        setRole(userData.role || "user");
+        setPage("home");
+      } catch (err) {
+        setMessage("Error parsing social login data");
+      }
     }
-  }
-}, [setPage, setCurrentUser, setRole]);
+  }, [setPage, setCurrentUser, setRole]);
 
   async function handleLogin() {
     try {
       setLoading(true);
       setMessage("");
 
-      //connected the frontend to the backend login API.
-      const response = await fetch(  
+      const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/auth/login`,
         {
           method: "POST",
@@ -55,7 +57,8 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
             email,
             password
           })
-        });
+        }
+      );
 
       const data = await response.json();
 
@@ -64,7 +67,6 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
         return;
       }
 
-      // After a successful login, we store the token and user information in localStorage, then update the global currentUser and role state.
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       setCurrentUser(data.user);
@@ -74,9 +76,8 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
       } else {
         setRole("user");
       }
-      // Redirect to home page after login
-        setPage("home");
-     
+
+      setPage("home");
     } catch (error) {
       setMessage("Unable to connect to server");
     } finally {
@@ -85,9 +86,10 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
   }
 
   function handleSocialLogin(platform) {
-  const provider = platform.toLowerCase();
-  window.location.href = `http://localhost:3000/api/auth/${provider}`;
-}
+    const provider = platform.toLowerCase();
+    window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/${provider}`;
+  }
+
   return (
     <div className="loginPage">
       <Header />
@@ -164,17 +166,19 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
           </div>
 
           <div className="socialSide">
-            <button className="socialBtn" type="button" onClick={() => handleSocialLogin("Google")}>
+            <button
+              className="socialBtn"
+              type="button"
+              onClick={() => handleSocialLogin("Google")}
+            >
               <img src={googleIcon} alt="Google" />
               Continue with Google
             </button>
-
-            <button className="socialBtn" type="button" onClick={() => handleSocialLogin("Apple")}>
-              <img src={appleIcon} alt="Apple" />
-              Continue with Apple
-            </button>
-
-            <button className="socialBtn" type="button" onClick={() => handleSocialLogin("Facebook")}>
+            <button
+              className="socialBtn"
+              type="button"
+              onClick={() => handleSocialLogin("Facebook")}
+            >
               <img src={facebookIcon} alt="Facebook" />
               Continue with Facebook
             </button>

@@ -16,9 +16,9 @@ app.use(passport.initialize());
 // expose uploaded files
 app.use("/uploads", express.static(path.resolve("uploads")));
 
-app.use("/api", submitRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api", submitRoutes);
 
 export default app;

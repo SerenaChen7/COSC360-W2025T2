@@ -146,7 +146,9 @@ export default function Navbar({
               className="navProfilePic"
               src={
                 storedUser.profileImage
-                  ? `${import.meta.env.VITE_API_URL}${storedUser.profileImage}`
+                  ? (storedUser.profileImage.startsWith("http")
+                    ? storedUser.profileImage
+                    : `${import.meta.env.VITE_API_URL}${storedUser.profileImage}`)
                   : "https://via.placeholder.com/32"
               }
               alt="Profile"
