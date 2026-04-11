@@ -465,7 +465,11 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                       <div className="discussion-avatar">
                         {post.author?.profileImage ? (
                           <img
-                            src={`${API_URL}${post.author.profileImage}`}
+                            src={
+                              post.author.profileImage.startsWith("http")
+                                ? post.author.profileImage
+                                : `${API_URL}${post.author.profileImage}`
+                            }
                             alt="avatar"
                             className="discussion-avatar-img"
                           />
@@ -581,7 +585,11 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                                   <div className="discussion-avatar small">
                                     {reply.author?.profileImage ? (
                                       <img
-                                        src={`${API_URL}${reply.author.profileImage}`}
+                                        src={
+                                          reply.author.profileImage.startsWith("http")
+                                            ? reply.author.profileImage
+                                            : `${API_URL}${reply.author.profileImage}`
+                                        }
                                         alt="avatar"
                                         className="discussion-avatar-img"
                                       />

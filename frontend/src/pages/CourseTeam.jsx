@@ -178,11 +178,15 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
                 <div className="member-row">
                   <div className="member-avatar">
                     {creator.profileImage ? (
-                      <img
-                        src={`${API_URL}${creator.profileImage}`}
-                        alt={creator.username}
-                        className="member-avatar-img"
-                      />
+                       <img
+                          src={
+                            creator.profileImage.startsWith("http")
+                              ? creator.profileImage 
+                              : `${API_URL}${creator.profileImage}` 
+                          }
+                          alt={creator.username}
+                          className="member-avatar-img"
+                        />
                     ) : (
                       creator.username?.charAt(0).toUpperCase()
                     )}
@@ -217,7 +221,11 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
                     <div className="member-avatar">
                       {m.userId?.profileImage ? (
                         <img
-                          src={`${API_URL}${m.userId.profileImage}`}
+                          src={
+                            m.userId.profileImage.startsWith("http")
+                              ? m.userId.profileImage
+                              : `${API_URL}${m.userId.profileImage}`
+                          }
                           alt={m.userId?.username}
                           className="member-avatar-img"
                         />
