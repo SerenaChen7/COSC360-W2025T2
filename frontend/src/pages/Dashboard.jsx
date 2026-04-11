@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import JoinCourseModal from "../components/JoinCourseModal";
+import { formatCourseTerm, getCourseStatus } from "../utils/courseDisplay";
 import "./Dashboard.css";
 
 const JOINED_KEY = "joinedCourseIds";
@@ -16,22 +17,6 @@ function getJoinedIds() {
 
 function saveJoinedIds(ids) {
   localStorage.setItem(JOINED_KEY, JSON.stringify(ids));
-}
-
-// Check if the course is Ongoing or Done
-function getStatus(duration) {
-  if (!duration?.endDate) return "Ongoing";
-  return new Date(duration.endDate) < new Date() ? "Done" : "Ongoing";
-}
-
-// Make the date look like "Winter 2025/2026 Term 2"
-function formatTerm(duration) {
-  if (!duration?.startDate) return null;
-  const start = new Date(duration.startDate);
-  const end = duration.endDate ? new Date(duration.endDate) : null;
-  const fmt = (d) =>
-    d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-  return end ? `${fmt(start)} – ${fmt(end)}` : `From ${fmt(start)}`;
 }
 
 export default function Dashboard({ setPage, setSelectedCourseId, currentUser, setCurrentUser, setRole, onProfileClick }) {
@@ -144,8 +129,8 @@ export default function Dashboard({ setPage, setSelectedCourseId, currentUser, s
           ) : (
             <div className="dashboard-courses-grid">
               {joinedCourses.map((course) => {
-                const status = getStatus(course.duration);
-                const term = formatTerm(course.duration);
+                const status = getCourseStatus(course.duration);
+                const term = formatCourseTerm(course.duration);
                 return (
                   <div key={course._id} className="dc-card" onClick={() => handleCourseClick(course._id)}>
                     <div className="dc-card-inner">
@@ -166,8 +151,8 @@ export default function Dashboard({ setPage, setSelectedCourseId, currentUser, s
                             </div>
                           )}
                         </div>
-                        <span className={`dc-status dc-status--${status === "ongoing" ? "ongoing" : "done"}`}>
-                          <span className="dc-status-dot" /> {status}
+                        <span className={`dc-status dc-status--${status.variant}`}>
+                          <span className="dc-status-dot" /> {status.label}
                         </span>
                       </div>
 

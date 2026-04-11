@@ -12,8 +12,14 @@ function AdminActions({ courseId, course, onCourseUpdated, managingMembers, onTo
 
     if (confirmDelete) {
       try {
+        const token = localStorage.getItem("token");
         const response = await fetch(`${API_URL}/api/courses/${courseId}`, {
           method: "DELETE",
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`
+              }
+            : undefined
         });
 
         if (response.ok) {

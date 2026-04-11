@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import './SearchBar.css';
 
-const SearchBar = ({ onSearchChange }) => {
+const SearchBar = ({ onSearchChange, onSearchSubmit }) => {
   const [term, setTerm] = useState("");
+  const handleSearch = onSearchChange || onSearchSubmit || (() => {});
 
   return (
     <div className="search-pill">
@@ -15,7 +16,7 @@ const SearchBar = ({ onSearchChange }) => {
         onChange={(e) => {
           const value = e.target.value;
           setTerm(value);
-          onSearchChange(value); 
+          handleSearch(value);
         }}
       />
       <span className="search-icon">🔍</span>

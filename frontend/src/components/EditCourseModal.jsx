@@ -147,6 +147,7 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
     setSaving(true);
 
     try {
+      const token = localStorage.getItem("token");
       const formPayload = new FormData();
       formPayload.append("title", formData.title);
       formPayload.append("type", formData.type);
@@ -162,6 +163,11 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
 
       const res = await fetch(`${API_URL}/api/courses/${course._id}`, {
         method: "PATCH",
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`
+            }
+          : undefined,
         body: formPayload
       });
 

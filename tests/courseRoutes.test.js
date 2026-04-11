@@ -1,9 +1,10 @@
-import express from "express";
-import request from "supertest";
 import { describe, it, expect, vi } from "vitest";
+import { createMockRes } from "./helpers/mockResponse.js";
+import { runRoute } from "./helpers/runRoute.js";
 
 vi.mock("multer", () => {
   const multerMock = () => ({
+    single: () => (req, res, next) => next(),
     array: () => (req, res, next) => next()
   });
   return {
@@ -44,20 +45,21 @@ vi.mock("../backend/src/controllers/courseController.js", () => ({
 import courseRoutes from "../backend/src/routes/courseRoutes.js";
 
 describe("courseRoutes", () => {
-  function makeApp() {
-    const app = express();
-    app.use(express.json());
-    app.use("/api/courses", courseRoutes);
-    return app;
-  }
-
   it("GET /api/courses/options should return 200", async () => {
-    const app = makeApp();
+    const req = {
+      headers: {}
+    };
+    const res = createMockRes();
 
-    const response = await request(app).get("/api/courses/options");
+    await runRoute(courseRoutes, {
+      method: "get",
+      path: "/options",
+      req,
+      res
+    });
 
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
       types: ["Lecture"],
       fields: ["Computer Science"],
       tags: ["React"]
@@ -65,28 +67,95 @@ describe("courseRoutes", () => {
   });
 
   it("POST /api/courses should return 401 when not authenticated", async () => {
-    const app = makeApp();
+    const req = {
+      headers: {},
+      body: {
+        title: "COSC 360",
+        type: "Lecture",
+        field: "Computer Science",
+        description: "Web programming"
+      }
+    };
+    const res = createMockRes();
 
-    const response = await request(app).post("/api/courses").send({
-      title: "COSC 360",
-      type: "Lecture",
-      field: "Computer Science",
-      description: "Web programming"
+    await runRoute(courseRoutes, {
+      method: "post",
+      path: "/",
+      req,
+      res
     });
 
-    expect(response.status).toBe(401);
-    expect(response.body).toEqual({
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({
       message: "Authentication required"
     });
   });
 
   it("POST /api/courses/:id/join should return 401 when not authenticated", async () => {
-    const app = makeApp();
+    const req = {
+      headers: {},
+      params: {
+        id: "course1"
+      }
+    };
+    const res = createMockRes();
 
-    const response = await request(app).post("/api/courses/course1/join");
+    await runRoute(courseRoutes, {
+      method: "post",
+      path: "/:id/join",
+      req,
+      res
+    });
 
-    expect(response.status).toBe(401);
-    expect(response.body).toEqual({
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({
+      message: "Authentication required"
+    });
+  });
+
+  it("PATCH /api/courses/:id should return 401 when not authenticated", async () => {
+    const req = {
+      headers: {},
+      params: {
+        id: "course1"
+      },
+      body: {
+        title: "Updated title"
+      }
+    };
+    const res = createMockRes();
+
+    await runRoute(courseRoutes, {
+      method: "patch",
+      path: "/:id",
+      req,
+      res
+    });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({
+      message: "Authentication required"
+    });
+  });
+
+  it("DELETE /api/courses/:id should return 401 when not authenticated", async () => {
+    const req = {
+      headers: {},
+      params: {
+        id: "course1"
+      }
+    };
+    const res = createMockRes();
+
+    await runRoute(courseRoutes, {
+      method: "delete",
+      path: "/:id",
+      req,
+      res
+    });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({
       message: "Authentication required"
     });
   });
