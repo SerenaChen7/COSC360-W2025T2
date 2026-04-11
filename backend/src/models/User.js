@@ -41,6 +41,15 @@ const userSchema = new mongoose.Schema(
       maxlength: 300,
       trim: true
     },
+    favorites: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Course"
+        }
+      ],
+      default: []
+    },
     isDisabled: {
       type: Boolean,
       default: false

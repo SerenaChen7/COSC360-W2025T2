@@ -60,6 +60,46 @@ async function ensureCourseOptions() {
   return options;
 }
 
+function getTodayRange() {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
+  return { startOfToday, endOfToday };
+}
+
+async function getCourseActivityToday(courseId) {
+  const { startOfToday, endOfToday } = getTodayRange();
+
+  const joinedToday = await CourseMember.exists({
+    courseId,
+    createdAt: {
+      $gte: startOfToday,
+      $lte: endOfToday
+    }
+  });
+
+  const postedToday = await Post.exists({
+    course: courseId,
+    createdAt: {
+      $gte: startOfToday,
+      $lte: endOfToday
+    }
+  });
+
+  const repliedToday = await Post.exists({
+    course: courseId,
+    "replies.createdAt": {
+      $gte: startOfToday,
+      $lte: endOfToday
+    }
+  });
+
+  return Boolean(joinedToday || postedToday || repliedToday);
+}
+
 export const getAllCourses = async (req, res) => {
   try {
     const { title, type, sort, q } = req.query;
@@ -100,7 +140,18 @@ export const getAllCourses = async (req, res) => {
     else if (sort === "least") pipeline.push({ $sort: { memberCount: 1 } });
 
     const courses = await Course.aggregate(pipeline);
-    res.status(200).json(courses);
+
+    const coursesWithActivity = await Promise.all(
+      courses.map(async (course) => {
+        const isActiveToday = await getCourseActivityToday(course._id);
+        return {
+          ...course,
+          isActiveToday
+        };
+      })
+    );
+
+    res.status(200).json(coursesWithActivity);
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch courses",
@@ -274,10 +325,12 @@ export const getCourseById = async (req, res) => {
     }
 
     const discussionCount = await Post.countDocuments({ course: courseId });
+    const isActiveToday = await getCourseActivityToday(courseId);
 
     const result = {
       ...course.toObject(),
-      discussionCount
+      discussionCount,
+      isActiveToday
     };
 
     res.status(200).json(result);
@@ -295,7 +348,16 @@ export const searchCourses = async (req, res) => {
 
     if (!query.trim()) {
       const courses = await Course.find();
-      return res.status(200).json(courses);
+      const coursesWithActivity = await Promise.all(
+        courses.map(async (course) => {
+          const isActiveToday = await getCourseActivityToday(course._id);
+          return {
+            ...course.toObject(),
+            isActiveToday
+          };
+        })
+      );
+      return res.status(200).json(coursesWithActivity);
     }
 
     const results = await Course.find({
@@ -307,7 +369,16 @@ export const searchCourses = async (req, res) => {
       ]
     });
 
-    res.status(200).json(results);
+    const resultsWithActivity = await Promise.all(
+      results.map(async (course) => {
+        const isActiveToday = await getCourseActivityToday(course._id);
+        return {
+          ...course.toObject(),
+          isActiveToday
+        };
+      })
+    );
+    res.status(200).json(resultsWithActivity);
   } catch (error) {
     res.status(500).json({
       message: "Failed to search courses",
@@ -343,8 +414,10 @@ export async function createCourse(req, res) {
       startDate,
       endDate,
       location,
-      tags
     } = req.body;
+
+    // tags may come as "tags[]" from FormData
+    const tags = req.body["tags[]"] ?? req.body.tags;
 
     if (!title || !type || !field || !description) {
       return res.status(400).json({
@@ -366,7 +439,8 @@ export async function createCourse(req, res) {
       });
     }
 
-    const submittedTags = Array.isArray(tags) ? tags : [];
+    const submittedTags = Array.isArray(tags) ? tags : (tags ? [tags] : []);
+    const thumbnail = req.file ? `/uploads/${req.file.filename}` : "";
 
     const newCourse = new Course({
       title,
@@ -375,6 +449,7 @@ export async function createCourse(req, res) {
       description,
       location: location || "",
       tags: submittedTags,
+      thumbnail,
       memberCount: 0,
       duration: {
         startDate: startDate || null,
@@ -441,6 +516,11 @@ export const createPost = async (req, res) => {
       return res.status(401).json({ message: "Authentication required" });
     }
 
+    const membership = await CourseMember.findOne({ courseId, userId: currentUserId });
+    if (!membership) {
+      return res.status(403).json({ message: "You must be a member of this hub to post" });
+    }
+
     const attachments = files.map((file) => ({
       fileName: file.originalname,
       fileUrl: `/uploads/${file.filename}`,
@@ -483,6 +563,11 @@ export const createReply = async (req, res) => {
 
     if (!currentUserId) {
       return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const membership = await CourseMember.findOne({ courseId, userId: currentUserId });
+    if (!membership) {
+      return res.status(403).json({ message: "You must be a member of this hub to reply" });
     }
 
     const post = await Post.findOne({
@@ -581,11 +666,13 @@ export const updateCourse = async (req, res) => {
       description,
       type,
       field,
-      tags,
       location,
       startDate,
       endDate
     } = req.body;
+
+    // tags may come as "tags[]" from FormData
+    const tags = req.body["tags[]"] ?? req.body.tags;
 
     const updateFields = {};
 
@@ -593,10 +680,11 @@ export const updateCourse = async (req, res) => {
     if (description !== undefined) updateFields.description = description;
     if (type !== undefined) updateFields.type = type;
     if (field !== undefined) updateFields.field = field;
-    if (tags !== undefined) updateFields.tags = Array.isArray(tags) ? tags : [];
+    if (tags !== undefined) updateFields.tags = Array.isArray(tags) ? tags : (tags ? [tags] : []);
     if (location !== undefined) updateFields.location = location;
     if (startDate !== undefined) updateFields["duration.startDate"] = startDate || null;
     if (endDate !== undefined) updateFields["duration.endDate"] = endDate || null;
+    if (req.file) updateFields.thumbnail = `/uploads/${req.file.filename}`;
 
     const updatedCourse = await Course.findByIdAndUpdate(
       req.params.id,

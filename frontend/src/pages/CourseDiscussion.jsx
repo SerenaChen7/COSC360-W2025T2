@@ -7,7 +7,7 @@ import "./CourseDiscussion.css";
 import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 
-function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
+function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite, onProfileClick }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [course, setCourse] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -21,6 +21,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
   const [isReplySending, setIsReplySending] = useState(false);
 
   const effectiveCourseId = courseId || course?._id;
+  const favoriteCourseId = course?._id || courseId;
   const token = localStorage.getItem("token");
   const [isJoined, setIsJoined] = useState(false);
   const [joining, setJoining] = useState(false);
@@ -80,7 +81,9 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       if (!res.ok) throw new Error(data.message || "Failed to join");
 
       setIsJoined(true);
-      setCourse((prev) => (prev ? { ...prev, memberCount: data.memberCount } : prev));
+      setCourse((prev) =>
+        prev ? { ...prev, memberCount: data.memberCount, isActiveToday: true } : prev
+      );
     } catch (err) {
       console.error(err);
     } finally {
@@ -127,7 +130,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
     return name.charAt(0).toUpperCase();
   };
 
-  // All protected requests, such as creating posts, replying, and deleting content, send the JWT token in the Authorization header.
+    // All protected requests, such as creating posts, replying, and deleting content, send the JWT token in the Authorization header.
   const handleDeletePost = async (postId) => {
     if (!effectiveCourseId) return;
 
@@ -140,7 +143,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         {
           method: "DELETE",
           headers: {
-            // We include the Authorization header with the token to authenticate the request
+                        // We include the Authorization header with the token to authenticate the request
             Authorization: `Bearer ${token}`
           }
         }
@@ -159,7 +162,6 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
     }
   };
 
-  // The same applies to deleting replies, where the token is sent in the Authorization header to ensure that only authorized users can delete their own replies or, in the case of admins, any reply.
   const handleDeleteReply = async (postId, replyId) => {
     if (!effectiveCourseId) return;
 
@@ -262,6 +264,15 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       }
 
       setPosts((prev) => [data, ...prev]);
+      setCourse((prev) =>
+        prev
+          ? {
+              ...prev,
+              isActiveToday: true,
+              discussionCount: (prev.discussionCount || 0) + 1
+            }
+          : prev
+      );
       setNewText("");
       setSelectedFiles([]);
     } catch (error) {
@@ -300,6 +311,9 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
       setPosts((prev) =>
         prev.map((post) => (post._id === postId ? data : post))
+      );
+      setCourse((prev) =>
+        prev ? { ...prev, isActiveToday: true } : prev
       );
 
       setReplyText("");
@@ -345,10 +359,14 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
         setRole={setRole}
+        onProfileClick={onProfileClick}
       />
 
       <div className="course-discussion-hero">
-        <CourseBanner course={course} />
+        <CourseBanner
+          course={course}
+          isFavorite={favoriteCourseId ? isFavorite(favoriteCourseId) : false}
+        />
       </div>
 
       <div className="course-discussion-tabs">
@@ -366,9 +384,11 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
             <div className="discussion-input-row">
               <textarea
                 placeholder={
-                  currentUser
-                    ? "Add your comment... (Enter to send, Shift+Enter for new line)"
-                    : "Log in to join the discussion"
+                  !currentUser
+                    ? "Log in to join the discussion"
+                    : !isJoined
+                    ? "Join this hub to participate in discussions"
+                    : "Add your comment... (Enter to send, Shift+Enter for new line)"
                 }
                 className="discussion-input"
                 value={newText}
@@ -380,7 +400,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                     await handleSendPost();
                   }
                 }}
-                disabled={isSending || !currentUser}
+                disabled={isSending || !currentUser || !isJoined}
               />
 
               <label className="file-upload-button" title="Attach files">
@@ -391,14 +411,14 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                   multiple
                   onChange={handleFileChange}
                   hidden
-                  disabled={isSending || !currentUser}
+                  disabled={isSending || !currentUser || !isJoined}
                 />
               </label>
 
               <button
                 className="discussion-send-button"
                 onClick={handleSendPost}
-                disabled={isSending || !currentUser}
+                disabled={isSending || !currentUser || !isJoined}
               >
                 {isSending ? "Sending..." : "Send"}
               </button>
@@ -475,7 +495,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                         </button>
                       )}
                     </div>
-                    
+
 
                     {post.text && (
                       <p className="discussion-content">{post.text}</p>
@@ -496,21 +516,23 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                     )}
 
                     <div className="discussion-post-actions">
-                      <button
-                        type="button"
-                        className="reply-toggle-button"
-                        onClick={() => {
-                          if (replyingToPostId === post._id) {
-                            setReplyingToPostId(null);
-                            setReplyText("");
-                          } else {
-                            setReplyingToPostId(post._id);
-                            setReplyText("");
-                          }
-                        }}
-                      >
-                        Reply
-                      </button>
+                      {currentUser && isJoined && (
+                        <button
+                          type="button"
+                          className="reply-toggle-button"
+                          onClick={() => {
+                            if (replyingToPostId === post._id) {
+                              setReplyingToPostId(null);
+                              setReplyText("");
+                            } else {
+                              setReplyingToPostId(post._id);
+                              setReplyText("");
+                            }
+                          }}
+                        >
+                          Reply
+                        </button>
+                      )}
                     </div>
 
                     {replyingToPostId === post._id && (
@@ -527,14 +549,14 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                               await handleSendReply(post._id);
                             }
                           }}
-                          disabled={isReplySending || !currentUser}
+                          disabled={isReplySending || !currentUser || !isJoined}
                         />
 
                         <button
                           type="button"
                           className="discussion-reply-send-button"
                           onClick={() => handleSendReply(post._id)}
-                          disabled={isReplySending || !currentUser}
+                          disabled={isReplySending || !currentUser || !isJoined}
                         >
                           {isReplySending ? "Sending..." : "Send Reply"}
                         </button>
@@ -649,6 +671,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
               onCourseUpdated={(updated) =>
                 setCourse((prev) => ({ ...prev, ...updated }))
               }
+              setPage={setPage}
             />
           )}
         </aside>

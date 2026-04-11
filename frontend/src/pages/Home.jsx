@@ -6,8 +6,6 @@ import HomeCourse from "../components/HomeCourse";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import SpotlightSection from "../components/SpotlightSection";
-import ProfileEdit from "./ProfileEdit";
-import { useFavorites } from "../hooks/useFavorites";
 
 const LEVEL_OPTIONS = [
   { value: "100 Level", label: "100 Level" },
@@ -24,7 +22,16 @@ const SORT_OPTIONS = [
   { value: "least", label: "Least Members" },
 ];
 
-export default function Home({ setPage, setSelectedCourseId, currentUser, setCurrentUser, setRole }) {
+export default function Home({
+  setPage,
+  setSelectedCourseId,
+  currentUser,
+  setCurrentUser,
+  setRole,
+  isFavorite,
+  toggleFavorite,
+  onProfileClick
+}) {
   const spotlightRef = useRef(null);
   const [allCourses, setAllCourses] = useState([]);
   const [searchResults, setSearchResults] = useState(null);
@@ -32,8 +39,6 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
   const [courseFilter, setCourseFilter] = useState([]);
   const [levelFilter, setLevelFilter] = useState([]);
   const [sortFilter, setSortFilter] = useState([]);
-  const [showProfileEdit, setShowProfileEdit] = useState(false);
-  const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -97,18 +102,16 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
     return courses;
   }, [allCourses, searchResults, courseFilter, levelFilter, sortFilter]);
 
-    //Asychronously fetches the list of courses from the backend API 
+  //Asychronously fetches the list of courses from the backend API
   const spotlightCourses = useMemo(() => {
-    return allCourses.filter((course) => favorites.has(course._id));
-  }, [allCourses, favorites]);
+    return allCourses.filter((course) => isFavorite(course._id));
+  }, [allCourses, isFavorite]);
 
-  const handleToggleFavorite = (courseId) => {
-    const wasFavorite = isFavorite(courseId);
+  const handleToggleFavorite = async (courseId) => {
+    const nextIsFavorite = await toggleFavorite(courseId);
 
-    toggleFavorite(courseId);
-
-        // only scroll into view when adding to favorites, not when removing
-    if (!wasFavorite) {
+    // only scroll into view when adding to favorites, not when removing
+    if (nextIsFavorite) {
       setTimeout(() => {
         spotlightRef.current?.scrollIntoView({
           behavior: "smooth",
@@ -126,7 +129,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
         setRole={setRole}
-        onProfileClick={() => setShowProfileEdit(true)}
+        onProfileClick={onProfileClick}
       />
       <HeroBanner />
       <div style={{ padding: "20px 60px 0 60px" }}>
@@ -191,6 +194,7 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
                 key={course._id}
                 {...course}
                 id={course._id}
+                imageUrl={course.thumbnail}
                 isFavorite={isFavorite(course._id)}
                 onToggleFavorite={handleToggleFavorite}
                 onViewDetails={() => {
@@ -206,14 +210,6 @@ export default function Home({ setPage, setSelectedCourseId, currentUser, setCur
           )}
         </div>
       </div>
-
-      {showProfileEdit && (
-        <ProfileEdit
-          currentUser={currentUser}
-          setCurrentUser={setCurrentUser}
-          onClose={() => setShowProfileEdit(false)}
-        />
-      )}
     </>
   );
 }

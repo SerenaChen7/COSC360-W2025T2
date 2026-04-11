@@ -1,0 +1,169 @@
+.admin-users-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.admin-users-content {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+
+.admin-users-card {
+  background: #ffffff;
+  border: 1px solid #d8dee8;
+  border-radius: 10px;
+  padding: 32px;
+}
+
+.admin-users-card h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #17305c;
+}
+
+.admin-users-subtitle {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: #5a6780;
+}
+
+.admin-users-search-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-users-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #17305c;
+  outline: none;
+}
+
+.admin-users-input:focus {
+  border-color: #0b2d5c;
+}
+
+.admin-users-search-btn {
+  background: #0b2d5c;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-users-search-btn:hover {
+  background: #123d79;
+}
+
+.admin-users-search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-users-message {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #5a6780;
+}
+
+.admin-users-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #e8edf4;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-users-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e8edf4;
+}
+
+.admin-users-row:last-child {
+  border-bottom: none;
+}
+
+.admin-users-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #dce6f7;
+  color: #17305c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.admin-users-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-users-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-users-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #17305c;
+}
+
+.admin-users-email,
+.admin-users-role {
+  margin: 0;
+  font-size: 12px;
+  color: #5f6f86;
+}
+
+.admin-status-button {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.admin-status-button.disable {
+  background: #7f1d1d;
+  color: #fff;
+}
+
+.admin-status-button.disable:hover {
+  background: #991b1b;
+}
+
+.admin-status-button.enable {
+  background: #0b2d5c;
+  color: #fff;
+}
+
+.admin-status-button.enable:hover {
+  background: #123d79;
+}

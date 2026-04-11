@@ -31,7 +31,7 @@ const upload = multer({ dest: "uploads/" });
 router.get("/options", getCourseOptions);
 
 // POST /api/courses
-router.post("/", requireAuth, createCourse);
+router.post("/", requireAuth, upload.single("thumbnail"), createCourse);
 
 // GET /api/courses/search?q=...
 router.get("/search", searchCourses);
@@ -46,7 +46,7 @@ router.get("/", getAllCourses);
 router.get("/:id", getCourseById);
 
 // PATCH /api/courses/:id
-router.patch("/:id", updateCourse);
+router.patch("/:id", upload.single("thumbnail"), updateCourse);
 
 // POST /api/courses/:id/join
 router.post("/:id/join", requireAuth, joinCourse);
