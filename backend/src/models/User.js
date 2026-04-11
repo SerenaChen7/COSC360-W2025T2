@@ -2,16 +2,16 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    // Unique, Required username
+    // Unique, Required username with validation from team
     username: {
       type: String,
       required: true,
       unique: true,
       trim: true,
       minlength: 3,
-      maxlength: 30
+      maxlength: 100
     },
-    // Unique, Required email for authentication
+    // Unique, Required email for authentication with regex validation
     email: {
       type: String,
       required: true,
@@ -23,7 +23,18 @@ const userSchema = new mongoose.Schema(
     // Security: Stores the hashed version of the password
     passwordHash: {
       type: String,
-      required: true
+      default: null
+    },
+    // Social Login IDs
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
+    facebookId: {
+      type: String,
+      unique: true,
+      sparse: true
     },
     // System-level access control
     role: {
@@ -31,16 +42,19 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user"
     },
+    // Unified field for social avatar URLs and local upload paths
     profileImage: {
       type: String,
       default: ""
     },
+    // Added by teammate
     bio: {
       type: String,
       default: "",
       maxlength: 300,
       trim: true
     },
+    // Added by teammate for course favorites
     favorites: {
       type: [
         {
@@ -54,9 +68,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     }
-  },{
-    // Automatically adds createdAt and updatedAt fields (Auto-timestamp)
+  },
+  {
     timestamps: true
-  });
+  }
+);
 
 export default mongoose.model("User", userSchema);

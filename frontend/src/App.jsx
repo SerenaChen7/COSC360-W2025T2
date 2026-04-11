@@ -33,11 +33,44 @@ export default function App() {
   });
   const [showProfileEdit, setShowProfileEdit] = useState(false);
 
+  // Added by teammate for course favorites
   const { isFavorite, toggleFavorite } = useFavorites(
     currentUser?.id || currentUser?._id
   );
 
   const isLoggedIn = !!currentUser;
+
+  // --- YOUR SOCIAL LOGIN LOGIC START ---
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const userData = params.get("user");
+
+    if (token && userData) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userData));
+
+        // Unify the image field name to match teammate's profileImage usage
+        const unifiedUser = {
+          ...user,
+          profileImage: user.profileImage || user.picture || user.avatar || ""
+        };
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(unifiedUser));
+
+        setCurrentUser(unifiedUser);
+        setRole(unifiedUser.role || "user");
+        setPage("home");
+
+        // Clean up URL
+        window.history.replaceState({}, document.title, "/");
+      } catch (err) {
+        console.error("Social login parsing error:", err);
+      }
+    }
+  }, []);
+  // --- YOUR SOCIAL LOGIN LOGIC END ---
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -64,6 +97,7 @@ export default function App() {
       />
     );
   }
+
   return (
     <>
       {page === "cover" && <CoverPage setPage={setPage} />}

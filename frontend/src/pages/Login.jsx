@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
+
+import googleIcon from "../assets/google-icon.png";
+import facebookIcon from "../assets/facebook-icon.png";
 
 import "./Login.css";
 
@@ -11,14 +14,7 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const loginBtn =
-      document.querySelector(".navLoginText") ||
-      document.querySelector(".navLoginBtn");
-
-    if (loginBtn) loginBtn.onclick = () => window.location.reload();
-  }, []);
-
+  // Standard Login Handler
   async function handleLogin() {
     try {
       setLoading(true);
@@ -45,22 +41,25 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
         return;
       }
 
+      // Save credentials
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      
       setCurrentUser(data.user);
-
-      if (data.user?.role) {
-        setRole(data.user.role);
-      } else {
-        setRole("user");
-      }
-
+      setRole(data.user?.role || "user");
       setPage("home");
     } catch (error) {
       setMessage("Unable to connect to server");
     } finally {
       setLoading(false);
     }
+  }
+
+  // Social Login Handler
+  function handleSocialLogin(platform) {
+    const provider = platform.toLowerCase();
+    // Redirect to backend passport route
+    window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/${provider}`;
   }
 
   return (
@@ -132,12 +131,29 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
             {message && <p className="loginMessage">{message}</p>}
           </div>
 
-          <div className="quoteBox">
-            <p className="quoteText">
-              "Education is not the filling of a pail, but the lighting of a fire.
-              The beautiful thing about learning is that no one can take it away from you."
-            </p>
-            <p className="quoteAuthor">– William Butler Yeats</p>
+          <div className="orCol">
+            <div className="orLine" />
+            <div className="orText">OR</div>
+            <div className="orLine" />
+          </div>
+
+          <div className="socialSide">
+            <button
+              className="socialBtn"
+              type="button"
+              onClick={() => handleSocialLogin("Google")}
+            >
+              <img src={googleIcon} alt="Google" />
+              Continue with Google
+            </button>
+            <button
+              className="socialBtn"
+              type="button"
+              onClick={() => handleSocialLogin("Facebook")}
+            >
+              <img src={facebookIcon} alt="Facebook" />
+              Continue with Facebook
+            </button>
           </div>
         </div>
 

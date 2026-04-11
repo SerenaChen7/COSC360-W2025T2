@@ -37,10 +37,13 @@
 
 .loginGrid {
   display: grid;
-  grid-template-columns: 340px 420px;
+  /* Changed to equal width for better balance */
+  grid-template-columns: 340px auto 340px; 
   justify-content: center;
-  gap: 60px;
+  gap: 20px;
   align-items: start;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .formSide {
@@ -98,11 +101,13 @@
   align-items: center;
   gap: 10px;
   padding-top: 10px;
+  /* Centering the OR column in the grid */
+  width: 80px;
 }
 
 .orLine {
   width: 1px;
-  height: 70px;
+  height: 90px;
   background: #d7d7d7;
 }
 
@@ -111,27 +116,36 @@
   color: #777;
 }
 
+/* Social Login Side Layout Adjustments */
 .socialSide {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  padding-top: 18px;
+  padding-top: 5px; /* Aligned with the top of form inputs */
 }
 
 .socialBtn {
-  height: 45px;
+  height: 48px; /* Slightly taller for better touch target */
   border: 1px solid #9c9c9c;
   background: white;
   display: flex;
   align-items: center;
+  justify-content: flex-start; /* Keeps icons aligned */
   gap: 15px;
-  padding: 0 15px;
+  padding: 0 20px;
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.socialBtn:hover {
+  background: #f5f5f5;
+  border-color: #001d40;
 }
 
 .socialBtn img {
-  width: 18px;
+  width: 20px;
 }
 
 .quoteBox {

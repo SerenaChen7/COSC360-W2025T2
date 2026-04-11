@@ -61,9 +61,9 @@ export async function signupUser(req, res) {
       });
     }
 
-    if (cleanedUsername.length > 30) {
+    if (cleanedUsername.length > 100) {
       return res.status(400).json({
-        message: "Username must be 30 characters or less"
+        message: "Username must be 100 characters or less"
       });
     }
 
@@ -217,5 +217,54 @@ export async function getCurrentUser(req, res) {
     return res.status(500).json({
       message: "Server error"
     });
+  }
+}
+
+export async function socialLogin(req, res) {
+  try {
+    const { email, username, platform } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Social login needs an email" });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    let user = await User.findOne({ email: cleanEmail });
+
+    // If they are new, we make a safe account for them
+    if (!user) {
+      const salt = await bcrypt.genSalt(10);
+      const randomPass = Math.random().toString(36).slice(-8); // A secret random password
+      const hash = await bcrypt.hash(randomPass, salt);
+
+      user = await User.create({
+        username: username || `${platform}_User`,
+        email: cleanEmail,
+        passwordHash: hash, 
+        role: "user"        
+      });
+      console.log(`[DB] Created new user: ${cleanEmail} via ${platform}`);
+    }
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET || "dev_secret_key", 
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({
+      message: "Social login success!",
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (err) {
+    console.error("Database error during social login:", err);
+    res.status(500).json({ message: "Social login failed!" });
   }
 }
