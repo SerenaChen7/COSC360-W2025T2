@@ -61,9 +61,9 @@ export async function signupUser(req, res) {
       });
     }
 
-    if (cleanedUsername.length > 30) {
+    if (cleanedUsername.length > 100) {
       return res.status(400).json({
-        message: "Username must be 30 characters or less"
+        message: "Username must be 100 characters or less"
       });
     }
 
