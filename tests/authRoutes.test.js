@@ -1,6 +1,6 @@
-import express from "express";
-import request from "supertest";
 import { describe, it, expect, vi } from "vitest";
+import { createMockRes } from "./helpers/mockResponse.js";
+import { runRoute } from "./helpers/runRoute.js";
 
 vi.mock("../backend/src/controllers/authController.js", () => ({
   loginUser: (req, res) => {
@@ -43,19 +43,71 @@ vi.mock("../backend/src/middleware/authMiddleware.js", () => ({
 import authRoutes from "../backend/src/routes/authRoutes.js";
 
 describe("authRoutes", () => {
-  it("POST /api/auth/login should reach login controller", async () => {
-    const app = express();
-    app.use(express.json());
-    app.use("/api/auth", authRoutes);
+  it("POST /api/auth/signup should reach signup controller", async () => {
+    const req = {
+      body: {
+        username: "Eric",
+        email: "eric@example.com",
+        password: "@Password1",
+        confirmPassword: "@Password1"
+      }
+    };
+    const res = createMockRes();
 
-    const response = await request(app)
-      .post("/api/auth/login")
-      .send({
+    await runRoute(authRoutes, {
+      method: "post",
+      path: "/signup",
+      req,
+      res
+    });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toEqual({ created: true });
+  });
+
+  it("POST /api/auth/login should reach login controller", async () => {
+    const req = {
+      body: {
         email: "test@example.com",
         password: "123456"
-      });
+      }
+    };
+    const res = createMockRes();
 
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({ ok: true });
+    await runRoute(authRoutes, {
+      method: "post",
+      path: "/login",
+      req,
+      res
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+  });
+
+  it("GET /api/auth/me should reach getCurrentUser controller", async () => {
+    const req = {
+      headers: {}
+    };
+    const res = createMockRes();
+
+    await runRoute(authRoutes, {
+      method: "get",
+      path: "/me",
+      req,
+      res
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
+      user: {
+        id: "u1",
+        username: "Eric",
+        email: "eric@example.com",
+        role: "user",
+        profileImage: "",
+        isDisabled: false
+      }
+    });
   });
 });
