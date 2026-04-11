@@ -58,7 +58,7 @@ export default function Home({
 
       try {
         const response = await fetch(
-          `${API_URL}/api/courses/search?q=${searchTerm}`
+          `${API_URL}/api/courses/search?q=${encodeURIComponent(searchTerm)}`
         );
         const data = await response.json();
         setSearchResults(data);
@@ -184,7 +184,7 @@ export default function Home({
               singleSelect
             />
           </div>
-          <SearchBar onSearchSubmit={setSearchTerm} />
+          <SearchBar onSearchChange={setSearchTerm} />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>

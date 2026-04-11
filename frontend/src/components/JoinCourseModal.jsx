@@ -1,20 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import Filter from "./Filter";
+import { formatCourseTerm, getCourseStatus } from "../utils/courseDisplay";
+import { getDisplayedJoinableCourses } from "../utils/joinCourseFilters";
 import "./JoinCourseModal.css";
-
-function getStatus(duration) {
-  if (!duration?.endDate) return "Ongoing";
-  return new Date(duration.endDate) < new Date() ? "Done" : "Ongoing";
-}
-
-function formatTerm(duration) {
-  if (!duration?.startDate) return null;
-  const start = new Date(duration.startDate);
-  const end = duration.endDate ? new Date(duration.endDate) : null;
-  const fmt = (d) =>
-    d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-  return end ? `${fmt(start)} – ${fmt(end)}` : `From ${fmt(start)}`;
-}
 
 const SORT_OPTIONS = [
   { value: "az", label: "A → Z" },
@@ -54,33 +42,12 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
   }, [allCourses]);
 
   const displayed = useMemo(() => {
-    let courses = allCourses.filter((c) => !joinedIds.includes(c._id));
-
-    if (searchValue.trim()) {
-      const q = searchValue.toLowerCase();
-      courses = courses.filter(
-        (c) =>
-          c.title?.toLowerCase().includes(q) ||
-          c.field?.toLowerCase().includes(q) ||
-          c.type?.toLowerCase().includes(q) ||
-          c.tags?.some((t) => t.toLowerCase().includes(q))
-      );
-    }
-
-    if (fieldFilter.length > 0) {
-      courses = courses.filter((c) => fieldFilter.includes(c.field));
-    }
-
-    if (typeFilter.length > 0) {
-      courses = courses.filter((c) => typeFilter.includes(c.type));
-    }
-
-    if (sortFilter[0] === "az") courses = [...courses].sort((a, b) => a.title.localeCompare(b.title));
-    else if (sortFilter[0] === "za") courses = [...courses].sort((a, b) => b.title.localeCompare(a.title));
-    else if (sortFilter[0] === "most") courses = [...courses].sort((a, b) => b.memberCount - a.memberCount);
-    else if (sortFilter[0] === "least") courses = [...courses].sort((a, b) => a.memberCount - b.memberCount);
-
-    return courses;
+    return getDisplayedJoinableCourses(allCourses, joinedIds, {
+      searchValue,
+      fieldFilter,
+      typeFilter,
+      sortFilter
+    });
   }, [allCourses, joinedIds, searchValue, fieldFilter, typeFilter, sortFilter]);
 
   const handleJoin = async (e, courseId) => {
@@ -148,8 +115,8 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
             <p className="jcm-empty">No courses available to join.</p>
           ) : (
             displayed.map((course) => {
-              const status = getStatus(course.duration);
-              const term = formatTerm(course.duration);
+              const status = getCourseStatus(course.duration);
+              const term = formatCourseTerm(course.duration);
               return (
                 <div key={course._id} className="jcm-card" onClick={() => handleCardClick(course._id)}>
                   <div className="jcm-card-body">
@@ -182,8 +149,8 @@ export default function JoinCourseModal({ onClose, onJoined, joinedIds, setPage,
                           </span>
                         </div>
                       </div>
-                      <span className={`jcm-status jcm-status--${status === "Ongoing" ? "ongoing" : "done"}`}>
-                        <span className="jcm-status-dot" /> {status}
+                      <span className={`jcm-status jcm-status--${status.variant}`}>
+                        <span className="jcm-status-dot" /> {status.label}
                       </span>
                     </div>
                   </div>
