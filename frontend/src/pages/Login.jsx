@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 
@@ -14,33 +14,7 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const loginBtn =
-      document.querySelector(".navLoginText") ||
-      document.querySelector(".navLoginBtn");
-
-    if (loginBtn) loginBtn.onclick = () => window.location.reload();
-
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const userJson = params.get("user");
-
-    if (token && userJson) {
-      try {
-        const userData = JSON.parse(userJson);
-
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(userData));
-
-        setCurrentUser(userData);
-        setRole(userData.role || "user");
-        setPage("home");
-      } catch (err) {
-        setMessage("Error parsing social login data");
-      }
-    }
-  }, [setPage, setCurrentUser, setRole]);
-
+  // Standard Login Handler
   async function handleLogin() {
     try {
       setLoading(true);
@@ -67,16 +41,12 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
         return;
       }
 
+      // Save credentials
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      
       setCurrentUser(data.user);
-
-      if (data.user?.role) {
-        setRole(data.user.role);
-      } else {
-        setRole("user");
-      }
-
+      setRole(data.user?.role || "user");
       setPage("home");
     } catch (error) {
       setMessage("Unable to connect to server");
@@ -85,8 +55,10 @@ export default function Login({ setPage, setRole, setCurrentUser }) {
     }
   }
 
+  // Social Login Handler
   function handleSocialLogin(platform) {
     const provider = platform.toLowerCase();
+    // Redirect to backend passport route
     window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/${provider}`;
   }
 

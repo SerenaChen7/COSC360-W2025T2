@@ -7,7 +7,7 @@ import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 import { useEffect, useState } from "react";
 
-function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setRole }) {
+function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite, onProfileClick }) {
   const [course, setCourse] = useState(null);
   const [creator, setCreator] = useState(null);
   const [members, setMembers] = useState([]);
@@ -15,6 +15,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
   const [isJoined, setIsJoined] = useState(false);
   const [joining, setJoining] = useState(false);
   const [managingMembers, setManagingMembers] = useState(false);
+  const favoriteCourseId = course?._id || courseId;
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -132,7 +133,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
 
       setIsJoined(true);
       setCourse((prev) =>
-        prev ? { ...prev, memberCount: data.memberCount } : prev
+        prev ? { ...prev, memberCount: data.memberCount, isActiveToday: true } : prev
       );
       fetchMembers(courseId);
     } catch (err) {
@@ -154,10 +155,14 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
         setRole={setRole}
+        onProfileClick={onProfileClick}
       />
 
       <div className="course-team-hero">
-        <CourseBanner course={course} />
+        <CourseBanner
+          course={course}
+          isFavorite={favoriteCourseId ? isFavorite(favoriteCourseId) : false}
+        />
       </div>
 
       <div className="course-team-tabs">
@@ -275,6 +280,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
               onCourseUpdated={(updated) => setCourse((prev) => ({ ...prev, ...updated }))}
               managingMembers={managingMembers}
               onToggleManage={() => setManagingMembers((prev) => !prev)}
+              setPage={setPage}
             />
           )}
         </aside>

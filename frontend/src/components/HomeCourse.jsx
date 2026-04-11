@@ -1,6 +1,8 @@
 import "./HomeCourse.css";
 import defaultImg from "../assets/default-course.png";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function HomeCourse({
   id,
   title,
@@ -19,6 +21,10 @@ function HomeCourse({
 }) {
   const fallbackImage = defaultImg;
 
+  const resolvedImageUrl = imageUrl
+    ? imageUrl.startsWith("http") ? imageUrl : `${API_URL}${imageUrl}`
+    : fallbackImage;
+
   const handleImageError = (e) => {
     e.currentTarget.src = fallbackImage;
   };
@@ -27,7 +33,7 @@ function HomeCourse({
     <article className="course-card">
       <div className="course-image">
         <img
-          src={imageUrl || fallbackImage}
+          src={resolvedImageUrl}
           alt={`${title} banner`}
           className="course-image__img"
           onError={handleImageError}

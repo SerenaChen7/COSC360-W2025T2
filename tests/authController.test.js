@@ -123,7 +123,8 @@ describe("loginUser controller", () => {
       username: "Eric",
       email: "eric@example.com",
       role: "user",
-      profileImage: ""
+      profileImage: "",
+      isDisabled: false
     });
   });
 });

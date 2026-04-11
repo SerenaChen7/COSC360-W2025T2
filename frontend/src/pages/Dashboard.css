@@ -45,12 +45,6 @@
   gap: 16px;
   min-width: 200px;
   transition: all 0.2s;
-  cursor: pointer;
-}
-
-.stat-card.active {
-  border-color: #93c5fd;
-  box-shadow: 0 2px 8px rgba(0, 29, 64, 0.05);
 }
 
 .stat-icon-wrapper {
@@ -63,43 +57,11 @@
 }
 
 .blue-bg { background-color: #e0f2fe; color: #0369a1; }
-.green-bg { background-color: #dcfce7; color: #15803d; }
-
 .stat-number {
   font-size: 20px;
   font-weight: 700;
   color: #001D40;
   display: block;
-}
-
-/* --- CAPSULE TAB SWITCHER --- */
-.dashboard-tabs-container {
-  background: #f1f5f9;
-  padding: 4px;
-  border-radius: 10px;
-  display: flex;
-  margin-bottom: 24px;
-  width: 100%;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 10px 0;
-  border: none;
-  background: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  color: #64748b;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.tab-btn.active {
-  background: white;
-  color: #001D40;
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* --- ACTION BUTTONS (Top Right) --- */

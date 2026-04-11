@@ -20,7 +20,10 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
     tags: course?.tags || []
   });
 
-  const [preview, setPreview] = useState(course?.imageUrl || "");
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [preview, setPreview] = useState(
+    course?.thumbnail ? `${import.meta.env.VITE_API_URL}${course.thumbnail}` : ""
+  );
   const [courseTypeOptions, setCourseTypeOptions] = useState([]);
   const [courseFieldOptions, setCourseFieldOptions] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
@@ -55,6 +58,7 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
       return;
     }
 
+    setThumbnailFile(file);
     setPreview(URL.createObjectURL(file));
   };
 
@@ -143,23 +147,22 @@ export default function EditCourseModal({ course, onClose, onUpdated }) {
     setSaving(true);
 
     try {
-      const payload = {
-        title: formData.title,
-        type: formData.type,
-        field: formData.field,
-        description: formData.description,
-        startDate: formData.startDate || null,
-        endDate: formData.endDate || null,
-        location: formData.location || "",
-        tags: formData.tags
-      };
+      const formPayload = new FormData();
+      formPayload.append("title", formData.title);
+      formPayload.append("type", formData.type);
+      formPayload.append("field", formData.field);
+      formPayload.append("description", formData.description);
+      formPayload.append("startDate", formData.startDate || "");
+      formPayload.append("endDate", formData.endDate || "");
+      formPayload.append("location", formData.location || "");
+      formData.tags.forEach((tag) => formPayload.append("tags[]", tag));
+      if (thumbnailFile) {
+        formPayload.append("thumbnail", thumbnailFile);
+      }
 
       const res = await fetch(`${API_URL}/api/courses/${course._id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        body: formPayload
       });
 
       const data = await res.json();

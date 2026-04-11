@@ -142,23 +142,27 @@ export default function CreateCourse({ setPage, setSelectedCourseId }) {
     }
 
     try {
-      const payload = {
-        title: formData.title,
-        type: formData.type,
-        field: formData.field,
-        description: formData.description,
-        startDate: formData.startDate || null,
-        endDate: formData.endDate || null,
-        location: formData.location || "",
-        tags: formData.tags,
-      };
+      const token = localStorage.getItem("token");
+
+      const formPayload = new FormData();
+      formPayload.append("title", formData.title);
+      formPayload.append("type", formData.type);
+      formPayload.append("field", formData.field);
+      formPayload.append("description", formData.description);
+      formPayload.append("startDate", formData.startDate || "");
+      formPayload.append("endDate", formData.endDate || "");
+      formPayload.append("location", formData.location || "");
+      formData.tags.forEach((tag) => formPayload.append("tags[]", tag));
+      if (image) {
+        formPayload.append("thumbnail", image);
+      }
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/courses`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formPayload,
       });
 
       const data = await res.json();

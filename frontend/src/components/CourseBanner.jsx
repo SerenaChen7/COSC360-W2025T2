@@ -2,15 +2,24 @@ import backgroundImg from "../assets/Background.png";
 import courseImg from "../assets/Course.png";
 import "./CourseBanner.css";
 
-function CourseBanner({ course }) {
+const API_URL = import.meta.env.VITE_API_URL;
+
+function CourseBanner({ course, isFavorite }) {
   const tags = course
     ? [course.field, course.type, ...(course.tags || [])].filter(Boolean)
     : [];
+  const memberCount = course?.memberCount ?? 0;
+  const memberLabel = memberCount === 1 ? "Member" : "Members";
 
+  const bannerImage = course?.thumbnail
+    ? `${API_URL}${course.thumbnail}`
+    : courseImg;
+
+  const activityLabel = course?.isActiveToday ? "Active Today" : "Not Active Today";
   return (
     <section
       className="course-banner"
-      style={{ backgroundImage: `url(${courseImg})` }}
+      style={{ backgroundImage: `url(${bannerImage})` }}
     >
       <div
         className="course-banner-overlay"
@@ -19,7 +28,7 @@ function CourseBanner({ course }) {
 
       <div className="course-banner-content">
         <div className="course-banner-left">
-          <h1>{course ? `${course.title} ⭐` : "Loading..."}</h1>
+          <h1>{course ? `${course.title}${isFavorite ? " ⭐" : ""}` : "Loading..."}</h1>
 
           <p>{course?.description || "Loading course description..."}</p>
 
@@ -33,7 +42,7 @@ function CourseBanner({ course }) {
         </div>
 
         <div className="course-banner-right">
-          <p>◌ Active Today • 167 Members</p>
+          <p>{`◌ ${activityLabel} • ${memberCount} ${memberLabel}`}</p>
           <p>◎ {course?.location || "Remote + Campus"}</p>
           <p>▣ Open to Join</p>
         </div>
