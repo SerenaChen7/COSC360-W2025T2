@@ -103,6 +103,13 @@ User2:
 - Password: @User12345678
 ⚠️ If login fails, make sure the database is seeded properly.
 
+Google: can use your own account to log in
+
+Facebook:
+- Email: c07917277@gmail.com
+- Password: Xuruoyan0!
+
+
 ---
 
 ## Important Notes

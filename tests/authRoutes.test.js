@@ -45,6 +45,8 @@ import authRoutes from "../backend/src/routes/authRoutes.js";
 describe("authRoutes", () => {
   it("POST /api/auth/signup should reach signup controller", async () => {
     const req = {
+      // ✅ Added headers here to prevent multer from crashing
+      headers: {}, 
       body: {
         username: "Eric",
         email: "eric@example.com",

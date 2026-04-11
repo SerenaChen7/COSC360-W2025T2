@@ -20,8 +20,8 @@ export function validateSignupForm({
     return "Username must be at least 3 characters";
   }
 
-  if (trimmedUsername.length > 30) {
-    return "Username must be 30 characters or less";
+  if (trimmedUsername.length > 100) {
+    return "Username must be 100 characters or less";
   }
 
   if (!emailRegex.test(trimmedEmail)) {
