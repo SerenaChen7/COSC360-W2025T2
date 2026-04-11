@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
+import { validateSignupForm } from "../utils/signupValidation";
 import "./Login.css";
 
 export default function Signup({ setPage }) {
@@ -16,54 +17,9 @@ export default function Signup({ setPage }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const passwordRegex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,16}$/;
   function handleImageChange(e) {
     const file = e.target.files[0];
     setProfileImage(file || null);
-  }
-  function validateSignup() {
-    const trimmedUsername = username.trim();
-    const trimmedEmail = email.trim();
-
-    if (!trimmedUsername || !trimmedEmail || !password || !confirmPassword) {
-      return "Please fill in all fields";
-    }
-
-    if (trimmedUsername.length < 3) {
-      return "Username must be at least 3 characters";
-    }
-
-    if (trimmedUsername.length > 30) {
-      return "Username must be 30 characters or less";
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      return "Please enter a valid email address";
-    }
-
-    if (!passwordRegex.test(password)) {
-      return "Password must be 8-16 characters and include uppercase, lowercase, number, and special character";
-    }
-
-    if (password !== confirmPassword) {
-      return "Passwords do not match";
-    }
-
-    if (profileImage) {
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-      if (!allowedTypes.includes(profileImage.type)) {
-        return "Profile image must be JPG, PNG, or WEBP";
-      }
-
-      const maxSize = 5 * 1024 * 1024;
-      if (profileImage.size > maxSize) {
-        return "Profile image must be smaller than 5MB";
-      }
-    }
-
-    return "";
   }
 
   async function handleSignup() {
@@ -71,7 +27,13 @@ export default function Signup({ setPage }) {
       setLoading(true);
       setMessage("");
 
-      const validationMessage = validateSignup();
+      const validationMessage = validateSignupForm({
+        username,
+        email,
+        password,
+        confirmPassword,
+        profileImage
+      });
       if (validationMessage) {
         setMessage(validationMessage);
         return;
@@ -247,9 +209,7 @@ export default function Signup({ setPage }) {
           </div>
 
           <div className="orCol">
-            <div className="orLine" />
-            <div className="orText">OR</div>
-            <div className="orLine" />
+
           </div>
 
           <div className="socialSide">
