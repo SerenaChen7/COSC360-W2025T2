@@ -34,7 +34,7 @@ function formatTerm(duration) {
   return end ? `${fmt(start)} – ${fmt(end)}` : `From ${fmt(start)}`;
 }
 
-export default function Dashboard({ setPage, setSelectedCourseId, currentUser, setCurrentUser, setRole }) {
+export default function Dashboard({ setPage, setSelectedCourseId, currentUser, setCurrentUser, setRole, onProfileClick }) {
   const [joinedIds, setJoinedIds] = useState(getJoinedIds);
   const [joinedCourses, setJoinedCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
@@ -97,10 +97,11 @@ export default function Dashboard({ setPage, setSelectedCourseId, currentUser, s
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
         setRole={setRole}
+        onProfileClick={onProfileClick}
       />
 
       <div className="dashboard-page">
-        {/* --- HEADER --- */}
+                {/* --- HEADER --- */}
         <div className="dashboard-header">
           <div>
             <h1 className="dashboard-heading">Dashboard</h1>

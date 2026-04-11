@@ -15,6 +15,7 @@ function CourseBanner({ course, isFavorite }) {
     ? `${API_URL}${course.thumbnail}`
     : courseImg;
 
+  const activityLabel = course?.isActiveToday ? "Active Today" : "Not Active Today";
   return (
     <section
       className="course-banner"
@@ -41,7 +42,7 @@ function CourseBanner({ course, isFavorite }) {
         </div>
 
         <div className="course-banner-right">
-          <p>{`◌ Active Today • ${memberCount} ${memberLabel}`}</p>
+          <p>{`◌ ${activityLabel} • ${memberCount} ${memberLabel}`}</p>
           <p>◎ {course?.location || "Remote + Campus"}</p>
           <p>▣ Open to Join</p>
         </div>

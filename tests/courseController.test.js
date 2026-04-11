@@ -12,7 +12,9 @@ const {
   mockCourseOptionsFindOneAndUpdate,
   mockPostCountDocuments,
   mockCourseMemberFindOne,
-  mockCourseMemberCreate
+  mockCourseMemberCreate,
+  mockCourseMemberExists,
+  mockPostExists
 } = vi.hoisted(() => {
   const mockAggregate = vi.fn();
   const mockFindById = vi.fn();
@@ -21,6 +23,8 @@ const {
   const mockPostCountDocuments = vi.fn();
   const mockCourseMemberFindOne = vi.fn();
   const mockCourseMemberCreate = vi.fn();
+  const mockCourseMemberExists = vi.fn();
+  const mockPostExists = vi.fn();
 
   function MockCourse(data) {
     Object.assign(this, data);
@@ -42,14 +46,17 @@ const {
     mockCourseOptionsFindOneAndUpdate,
     mockPostCountDocuments,
     mockCourseMemberFindOne,
-    mockCourseMemberCreate
+    mockCourseMemberCreate,
+    mockCourseMemberExists,
+    mockPostExists
   };
 });
 
 vi.mock("../backend/src/models/CourseMember.js", () => ({
   default: {
     findOne: mockCourseMemberFindOne,
-    create: mockCourseMemberCreate
+    create: mockCourseMemberCreate,
+    exists: mockCourseMemberExists
   }
 }));
 
@@ -65,7 +72,8 @@ vi.mock("../backend/src/models/CourseOptions.js", () => ({
 
 vi.mock("../backend/src/models/Post.js", () => ({
   default: {
-    countDocuments: mockPostCountDocuments
+    countDocuments: mockPostCountDocuments,
+    exists: mockPostExists
   }
 }));
 
@@ -85,6 +93,8 @@ describe("courseController", () => {
     vi.clearAllMocks();
 
     mockCourseMemberCreate.mockResolvedValue({});
+    mockCourseMemberExists.mockResolvedValue(null);
+    mockPostExists.mockResolvedValue(null);
     mockCourseOptionsFindOneAndUpdate.mockResolvedValue({
       types: [
         "Bootcamp",
@@ -144,7 +154,20 @@ describe("courseController", () => {
 
       expect(Course.aggregate).toHaveBeenCalledTimes(1);
       expect(res.statusCode).toBe(200);
-      expect(res.body).toEqual(fakeCourses);
+      expect(res.body).toEqual([
+        {
+          _id: "1",
+          title: "COSC 360",
+          discussionCount: 2,
+          isActiveToday: false
+        },
+        {
+          _id: "2",
+          title: "COSC 315",
+          discussionCount: 0,
+          isActiveToday: false
+        }
+      ]);
     });
 
     it("should build pipeline with q and az sort", async () => {
@@ -217,7 +240,8 @@ describe("courseController", () => {
       expect(res.body).toEqual({
         _id: "course1",
         title: "COSC 360",
-        discussionCount: 3
+        discussionCount: 3,
+        isActiveToday: false
       });
     });
   });

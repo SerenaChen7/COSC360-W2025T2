@@ -7,7 +7,7 @@ import "./CourseDiscussion.css";
 import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 
-function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite }) {
+function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite, onProfileClick }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [course, setCourse] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -81,7 +81,9 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       if (!res.ok) throw new Error(data.message || "Failed to join");
 
       setIsJoined(true);
-      setCourse((prev) => (prev ? { ...prev, memberCount: data.memberCount } : prev));
+      setCourse((prev) =>
+        prev ? { ...prev, memberCount: data.memberCount, isActiveToday: true } : prev
+      );
     } catch (err) {
       console.error(err);
     } finally {
@@ -128,7 +130,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
     return name.charAt(0).toUpperCase();
   };
 
-  // All protected requests, such as creating posts, replying, and deleting content, send the JWT token in the Authorization header.
+    // All protected requests, such as creating posts, replying, and deleting content, send the JWT token in the Authorization header.
   const handleDeletePost = async (postId) => {
     if (!effectiveCourseId) return;
 
@@ -141,7 +143,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         {
           method: "DELETE",
           headers: {
-            // We include the Authorization header with the token to authenticate the request
+                        // We include the Authorization header with the token to authenticate the request
             Authorization: `Bearer ${token}`
           }
         }
@@ -160,7 +162,6 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
     }
   };
 
-  // The same applies to deleting replies, where the token is sent in the Authorization header to ensure that only authorized users can delete their own replies or, in the case of admins, any reply.
   const handleDeleteReply = async (postId, replyId) => {
     if (!effectiveCourseId) return;
 
@@ -263,6 +264,15 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
       }
 
       setPosts((prev) => [data, ...prev]);
+      setCourse((prev) =>
+        prev
+          ? {
+              ...prev,
+              isActiveToday: true,
+              discussionCount: (prev.discussionCount || 0) + 1
+            }
+          : prev
+      );
       setNewText("");
       setSelectedFiles([]);
     } catch (error) {
@@ -301,6 +311,9 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
 
       setPosts((prev) =>
         prev.map((post) => (post._id === postId ? data : post))
+      );
+      setCourse((prev) =>
+        prev ? { ...prev, isActiveToday: true } : prev
       );
 
       setReplyText("");
@@ -346,6 +359,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
         setRole={setRole}
+        onProfileClick={onProfileClick}
       />
 
       <div className="course-discussion-hero">
@@ -481,7 +495,7 @@ function CourseDiscussion({ setPage, role, courseId, currentUser, setCurrentUser
                         </button>
                       )}
                     </div>
-                    
+
 
                     {post.text && (
                       <p className="discussion-content">{post.text}</p>

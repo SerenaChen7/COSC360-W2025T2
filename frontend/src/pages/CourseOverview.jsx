@@ -6,7 +6,7 @@ import "./CourseOverview.css";
 import AdminActions from "../components/AdminActions";
 import { useEffect, useState } from "react";
 
-function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite }) {
+function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite, onProfileClick }) {
   const [course, setCourse] = useState(null);
   const [recentPosts, setRecentPosts] = useState([]);
   const token = localStorage.getItem("token");
@@ -66,7 +66,7 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
   const [joining, setJoining] = useState(false);
 
   // The handleJoin function is responsible for sending a request to the backend to join the course. 
-  // It uses the JWT token for authentication and updates the local state and localStorage upon success.
+    // It uses the JWT token for authentication and updates the local state and localStorage upon success.
   const handleJoin = async () => {
     if (!courseId) return;
     setJoining(true);
@@ -80,7 +80,9 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
       if (!res.ok) throw new Error(data.message || "Failed to join");
 
       setIsJoined(true);
-      setCourse((prev) => prev ? { ...prev, memberCount: data.memberCount } : prev);
+      setCourse((prev) =>
+        prev ? { ...prev, memberCount: data.memberCount, isActiveToday: true } : prev
+      );
     } catch (err) {
       console.error(err);
     } finally {
@@ -135,6 +137,7 @@ function CourseOverview({ setPage, role, courseId, currentUser, setCurrentUser, 
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
         setRole={setRole}
+        onProfileClick={onProfileClick}
       />
 
       <div className="course-overview-hero">

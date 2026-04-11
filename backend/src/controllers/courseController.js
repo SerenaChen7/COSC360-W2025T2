@@ -60,6 +60,46 @@ async function ensureCourseOptions() {
   return options;
 }
 
+function getTodayRange() {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
+  return { startOfToday, endOfToday };
+}
+
+async function getCourseActivityToday(courseId) {
+  const { startOfToday, endOfToday } = getTodayRange();
+
+  const joinedToday = await CourseMember.exists({
+    courseId,
+    createdAt: {
+      $gte: startOfToday,
+      $lte: endOfToday
+    }
+  });
+
+  const postedToday = await Post.exists({
+    course: courseId,
+    createdAt: {
+      $gte: startOfToday,
+      $lte: endOfToday
+    }
+  });
+
+  const repliedToday = await Post.exists({
+    course: courseId,
+    "replies.createdAt": {
+      $gte: startOfToday,
+      $lte: endOfToday
+    }
+  });
+
+  return Boolean(joinedToday || postedToday || repliedToday);
+}
+
 export const getAllCourses = async (req, res) => {
   try {
     const { title, type, sort, q } = req.query;
@@ -100,7 +140,18 @@ export const getAllCourses = async (req, res) => {
     else if (sort === "least") pipeline.push({ $sort: { memberCount: 1 } });
 
     const courses = await Course.aggregate(pipeline);
-    res.status(200).json(courses);
+
+    const coursesWithActivity = await Promise.all(
+      courses.map(async (course) => {
+        const isActiveToday = await getCourseActivityToday(course._id);
+        return {
+          ...course,
+          isActiveToday
+        };
+      })
+    );
+
+    res.status(200).json(coursesWithActivity);
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch courses",
@@ -274,10 +325,12 @@ export const getCourseById = async (req, res) => {
     }
 
     const discussionCount = await Post.countDocuments({ course: courseId });
+    const isActiveToday = await getCourseActivityToday(courseId);
 
     const result = {
       ...course.toObject(),
-      discussionCount
+      discussionCount,
+      isActiveToday
     };
 
     res.status(200).json(result);
@@ -295,7 +348,16 @@ export const searchCourses = async (req, res) => {
 
     if (!query.trim()) {
       const courses = await Course.find();
-      return res.status(200).json(courses);
+      const coursesWithActivity = await Promise.all(
+        courses.map(async (course) => {
+          const isActiveToday = await getCourseActivityToday(course._id);
+          return {
+            ...course.toObject(),
+            isActiveToday
+          };
+        })
+      );
+      return res.status(200).json(coursesWithActivity);
     }
 
     const results = await Course.find({
@@ -307,7 +369,16 @@ export const searchCourses = async (req, res) => {
       ]
     });
 
-    res.status(200).json(results);
+    const resultsWithActivity = await Promise.all(
+      results.map(async (course) => {
+        const isActiveToday = await getCourseActivityToday(course._id);
+        return {
+          ...course.toObject(),
+          isActiveToday
+        };
+      })
+    );
+    res.status(200).json(resultsWithActivity);
   } catch (error) {
     res.status(500).json({
       message: "Failed to search courses",

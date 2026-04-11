@@ -7,7 +7,7 @@ import AdminActions from "../components/AdminActions";
 import removeIcon from "../assets/remove.png";
 import { useEffect, useState } from "react";
 
-function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite }) {
+function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setRole, isFavorite, onProfileClick }) {
   const [course, setCourse] = useState(null);
   const [creator, setCreator] = useState(null);
   const [members, setMembers] = useState([]);
@@ -133,7 +133,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
 
       setIsJoined(true);
       setCourse((prev) =>
-        prev ? { ...prev, memberCount: data.memberCount } : prev
+        prev ? { ...prev, memberCount: data.memberCount, isActiveToday: true } : prev
       );
       fetchMembers(courseId);
     } catch (err) {
@@ -155,6 +155,7 @@ function CourseTeam({ setPage, role, courseId, currentUser, setCurrentUser, setR
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
         setRole={setRole}
+        onProfileClick={onProfileClick}
       />
 
       <div className="course-team-hero">
